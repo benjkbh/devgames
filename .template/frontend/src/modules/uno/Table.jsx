@@ -6,13 +6,16 @@ import {
 import {
   Alerte, Badge, Bouton, Carte, CarteJeu, ChampCopiable, Chargement,
   Confirmation, COULEURS_UNO, Dialogue, EtatVide, Eventail, IcoCarteRole,
-  IcoFermer, IcoSortie, Page, Sr, VALEURS_UNO, cx, useAction, useLecture,
+  IcoFermer, IcoSortie, Page, QuestionBool, Sr, VALEURS_UNO, cx, useAction,
+  useLecture,
 } from '../../ui';
 import {
   cheminSpectateur, contrer, direUno, exclure, jouer, lancer, lienSpectateur,
-  lienTable, lireTable, passer, piocher, quitter, rejoindre,
+  lienTable, lireTable, passer, piocher, quitter, regler, rejoindre,
 } from './api';
+import { musique } from './ambiance';
 import { useEcranEtroit } from './ecran';
+import { REGLES, reglesActives } from './regles';
 import { Presence, Tapis } from './Tapis';
 
 // Une table : salle d'attente (lien à partager, joueurs, lancement par
@@ -42,6 +45,31 @@ export function Partage({ code }) {
         <span className="uno-code-libelle">Lien pour regarder, sans compte</span>
         <ChampCopiable valeur={lienSpectateur(code)} libelle="Lien pour regarder la table" />
       </div>
+    </div>
+  );
+}
+
+// Règles de la table : l'hôte les change entre deux manches, les autres les
+// lisent.
+export function Regles({ table, onAction }) {
+  const hote = table.hote === table.moi && table.etat !== 'partie';
+  const actives = reglesActives(table.regles);
+  if (!hote) {
+    return (
+      <p className="uno-regles-texte">
+        <strong>Règles : </strong>
+        {actives.length ? actives.join(' · ') : 'classiques.'}
+      </p>
+    );
+  }
+  return (
+    <div className="uno-regles">
+      {REGLES.map(({ cle, titre, aide }) => (
+        <QuestionBool key={cle} libelle={titre} description={aide}
+                      checked={Boolean(table.regles && table.regles[cle])}
+                      onChange={(v) => onAction(() => regler(
+                        table.code, { ...table.regles, [cle]: v }))} />
+      ))}
     </div>
   );
 }
@@ -119,6 +147,9 @@ export function SalleAttente({ table, onAction, onExclure }) {
       <Carte titre={`Joueurs (${table.joueurs.length} / ${table.max_joueurs})`}>
         <Scores table={table} onExclure={hote ? onExclure : undefined} />
       </Carte>
+      <Carte titre="Règles" className="uno-carte-regles">
+        <Regles table={table} onAction={onAction} />
+      </Carte>
       <div className="uno-attente-actions">
         {hote ? (
           <Bouton variante="principal" taille="l" icone={<IcoCarteRole />}
@@ -151,9 +182,31 @@ function ChoixCouleur({ ouvert, onChoisir, onFermer }) {
   );
 }
 
+// Règle du 7 : le joueur dont on prend la main.
+function ChoixJoueur({ carte, joueurs, onChoisir, onFermer }) {
+  return (
+    <Dialogue ouvert={Boolean(carte)} titre="Échanger votre main avec…"
+              description="Le 7 échange votre main avec celle du joueur de votre choix."
+              onFermer={onFermer}>
+      <ul className="uno-echange">
+        {joueurs.map((j) => (
+          <li key={j.nom}>
+            <button type="button" className="uno-echange-choix"
+                    onClick={() => onChoisir(j.nom)}>
+              <span className="uno-siege-nom">{j.nom}</span>
+              <span className="dim">{`${j.cartes} carte${j.cartes > 1 ? 's' : ''}`}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </Dialogue>
+  );
+}
+
 export function Plateau({ table, onAction, onExclure }) {
   const p = table.partie;
   const [joker, setJoker] = useState(null);
+  const [sept, setSept] = useState(null);
   // Rectangle de la carte jouée : elle a quitté la main au rendu suivant, la
   // défausse glisse depuis là.
   const origine = useRef(null);
@@ -169,12 +222,14 @@ export function Plateau({ table, onAction, onExclure }) {
   const peutUno = !p.uno_annonce && !finie
     && (main.length === 1 || (main.length === 2 && monTour));
 
-  const poser = (carte, couleur) => onAction(
-    () => jouer(code, carte.id, couleur, false),
+  const poser = (carte, couleur, cible) => onAction(
+    () => jouer(code, carte.id, couleur, false, cible),
   );
   const cliquer = (carte, e) => {
     origine.current = e.currentTarget.getBoundingClientRect();
     if (carte.couleur === 'noir') setJoker(carte);
+    else if (p.regles && p.regles.sept_zero && carte.valeur === '7'
+      && main.length > 1) setSept(carte);
     else poser(carte);
   };
 
@@ -206,6 +261,7 @@ export function Plateau({ table, onAction, onExclure }) {
               {`${p.gagnant} remporte la manche et marque ${p.points} points.`}
             </p>
             <Scores table={table} onExclure={hote ? onExclure : undefined} />
+            <Regles table={table} onAction={onAction} />
             {hote ? (
               <Bouton variante="principal" taille="l" icone={<IcoCarteRole />}
                       disabled={table.joueurs.length < table.min_joueurs}
@@ -262,6 +318,9 @@ export function Plateau({ table, onAction, onExclure }) {
 
       <ChoixCouleur ouvert={Boolean(joker)} onFermer={() => setJoker(null)}
                     onChoisir={(c) => { const carte = joker; setJoker(null); poser(carte, c); }} />
+      <ChoixJoueur carte={sept} joueurs={p.joueurs.filter((j) => j.nom !== table.moi)}
+                   onFermer={() => setSept(null)}
+                   onChoisir={(nom) => { const carte = sept; setSept(null); poser(carte, undefined, nom); }} />
     </div>
   );
 }
@@ -307,6 +366,13 @@ export default function Table() {
   const libre = useRef(false);
   const { donnees: table, erreur, relire } = useLecture(lireTable, { code }, SONDAGE);
   const action = useAction();
+
+  // Pendant la manche, le second morceau ; à la table, la veillée.
+  const enManche = Boolean(table && table.membre && table.etat === 'partie');
+  useEffect(() => {
+    musique.piste(enManche ? 'partie' : 'veillee');
+  }, [enManche]);
+  useEffect(() => () => musique.piste('veillee'), []);
 
   const agir = async (appel) => {
     const r = await action.executer(appel);
@@ -355,6 +421,9 @@ export default function Table() {
         </h1>
         <span className="uno-barre-code" aria-hidden="true">{table.code}</span>
         {table.manches > 0 && <Badge titre={`Manche ${table.manches}`} />}
+        {reglesActives(table.regles).map((r) => (
+          <Badge key={r} couleur="or" titre={r} />
+        ))}
         {table.membre && (
           <Bouton variante="fantome" taille="s" icone={<IcoSortie />}
                   titre="Quitter la table" onClick={() => setSortie(true)} />

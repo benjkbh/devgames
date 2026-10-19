@@ -40,6 +40,7 @@ TABLE = {
     ('POST', '/api/uno/rejoindre'): uno.rejoindre,
     ('POST', '/api/uno/quitter'): uno.quitter,
     ('POST', '/api/uno/exclure'): uno.exclure,
+    ('POST', '/api/uno/regler'): uno.regler,
     ('POST', '/api/uno/lancer'): uno.lancer,
     ('POST', '/api/uno/jouer'): uno.jouer,
     ('POST', '/api/uno/piocher'): uno.piocher,

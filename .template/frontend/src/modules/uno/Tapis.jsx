@@ -12,6 +12,45 @@ import { useEcranEtroit } from './ecran';
 // flèches du sens du jeu. Le contenu du bas (la main du joueur, le résultat de
 // la manche) est passé en `children` : il est posé sur le même tapis.
 
+// Décor du feutre, dans l'esprit du village la nuit : pleine lune, loup qui
+// hurle sur son rocher, lisière de sapins, étoiles, et une bougie à chaque
+// coin. Purement décoratif : derrière tout, sans réaction à la souris.
+const ETOILES = Array.from({ length: 26 }, (_, i) => [
+  (i * 241) % 1000, 10 + ((i * 97) % 330), i % 4 === 0 ? 1.6 : 1,
+]);
+const SAPINS = Array.from({ length: 30 }, (_, i) => [
+  i * 35 + ((i * 17) % 22), 26 + ((i * 41) % 30), i % 3 === 0,
+]);
+const LOUP = 'M8 96C18 94 26 92 31 85C34 77 40 69 48 65C53 61 55 53 57 45C58 39 59 35 61 31L60 20L66 28C70 26 75 22 86 12L87 18C83 25 79 31 73 35C70 39 69 45 69 53C69 61 71 67 71 75L69 96L57 96L59 81C55 83 52 89 51 96L40 96C38 91 35 92 33 96Z';
+
+function Decor() {
+  return (
+    <div className="uno-decor" aria-hidden="true">
+      <svg className="uno-decor-ciel" viewBox="0 0 1000 360" preserveAspectRatio="xMidYMin slice">
+        {ETOILES.map(([x, y, r]) => (
+          <circle key={`${x}-${y}`} cx={x} cy={y} r={r} />
+        ))}
+      </svg>
+      <span className="uno-lune" />
+      <svg className="uno-loup" viewBox="0 0 100 100">
+        <path d="M2 99C10 88 24 90 40 88C56 86 78 90 98 99Z" className="uno-rocher" />
+        <path d={LOUP} />
+      </svg>
+      <svg className="uno-sapins" viewBox="0 0 1060 90" preserveAspectRatio="none">
+        {SAPINS.map(([x, h, avant]) => (
+          <path key={x} className={avant ? 'avant' : undefined}
+                d={`M${x} 90 L${x - 15} 90 L${x - 5} ${90 - h * 0.45} L${x - 12} ${90 - h * 0.45} L${x - 2} ${90 - h * 0.85} L${x - 8} ${90 - h * 0.85} L${x} ${90 - h - 20} L${x + 8} ${90 - h * 0.85} L${x + 2} ${90 - h * 0.85} L${x + 12} ${90 - h * 0.45} L${x + 5} ${90 - h * 0.45} L${x + 15} 90Z`} />
+        ))}
+      </svg>
+      {['hg', 'hd', 'bg', 'bd'].map((coin) => (
+        <span key={coin} className={`uno-bougie uno-bougie-${coin}`}>
+          <i /><b />
+        </span>
+      ))}
+    </div>
+  );
+}
+
 // Pastille de la couleur demandée, dans la teinte des cartes.
 const PASTILLES = { rouge: 'sang', jaune: 'or', vert: 'vert', bleu: 'bleu' };
 
@@ -110,6 +149,7 @@ export function Tapis({
   return (
     <div ref={racine} className={cx('uno-tapis', `uno-centre-${p.couleur}`)}>
       <div className="uno-feutre">
+        <Decor />
         <ul className="uno-sieges" aria-label="Joueurs">
           {sieges.map((j) => (
             <Siege key={j.nom} joueur={j} table={table} actif={p.tour === j.nom}

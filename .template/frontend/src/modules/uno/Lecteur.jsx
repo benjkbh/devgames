@@ -1,30 +1,39 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { IcoMuet, IcoSon, cx, usePreference } from '../../ui';
-import { CLE_MUET, CLE_VOLUME, musique } from './ambiance';
+import {
+  CLE_EFFETS, CLE_MUET, CLE_VOLUME, musique,
+} from './ambiance';
 
 // Lecteur de la musique d'ambiance du module UNO, fixé en bas à droite :
 // grand bouton son / muet, curseur de volume, égaliseur animé pendant la
-// lecture. Volume et silence sont des préférences du poste. La musique part
-// dès l'ouverture du module (le clic sur UNO dans le menu a déjà amorcé le
-// moteur, `amorcerMusique`) ; si le navigateur la refuse encore, elle part au
-// premier clic ou à la première touche dans le module (sauf en muet). Le
-// moteur (`musique`) est unique : quitter le module descend le son en fondu,
-// y revenir le remonte, sans coupure.
+// lecture, interrupteur des bruitages de cartes. Volume, silence et bruitages
+// sont des préférences du poste. Le son part dès l'ouverture du module (le
+// clic sur UNO dans le menu a déjà amorcé le moteur, `amorcerMusique`) ; si le
+// navigateur le refuse encore, il part au premier clic ou à la première touche
+// dans le module (sauf si tout est coupé). Le moteur (`musique`) est unique :
+// quitter le module descend le son en fondu, y revenir le remonte, sans
+// coupure ; `Table` y choisit le morceau (veillée ou partie).
 
 const VOLUMES = Array.from({ length: 101 }, (_, i) => String(i));
 
 export default function Lecteur() {
   const [volume, setVolume] = usePreference(CLE_VOLUME, '40', VOLUMES);
   const [muet, setMuet] = usePreference(CLE_MUET, '0', ['0', '1']);
+  const [effets, setEffets] = usePreference(CLE_EFFETS, '1', ['0', '1']);
   const [joue, setJoue] = useState(false);
   const [erreur, setErreur] = useState('');
   const cadre = useRef(null);
   const estMuet = muet === '1';
+  const avecEffets = effets === '1';
+  // Le moteur sert aussi aux bruitages : il est lancé si l'un des deux vit.
+  const veutDuSon = !estMuet || avecEffets;
 
   const lancer = async () => {
     try {
-      musique.regler({ volume: Number(volume) / 100, muet: estMuet });
+      musique.regler({
+        volume: Number(volume) / 100, muet: estMuet, effets: avecEffets,
+      });
       await musique.demarrer();
       setJoue(musique.ctx.state === 'running');
       // Suit le contexte : suspendu par le navigateur, puis repris.
@@ -36,9 +45,9 @@ export default function Lecteur() {
     }
   };
 
-  // Ouverture du module : la musique monte (sauf en muet).
+  // Ouverture du module : le son monte (sauf si tout est coupé).
   useEffect(() => {
-    if (!estMuet) lancer();
+    if (veutDuSon) lancer();
     return () => musique.arreter();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -46,7 +55,7 @@ export default function Lecteur() {
   // lance la musique. Un geste sur le lecteur lui-même est laissé à son
   // bouton.
   useEffect(() => {
-    if (estMuet || joue) return undefined;
+    if (!veutDuSon || joue) return undefined;
     const geste = (e) => {
       if (cadre.current && cadre.current.contains(e.target)) return;
       lancer();
@@ -57,11 +66,13 @@ export default function Lecteur() {
       document.removeEventListener('pointerdown', geste);
       document.removeEventListener('keydown', geste);
     };
-  }, [estMuet, joue]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [veutDuSon, joue]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    musique.regler({ volume: Number(volume) / 100, muet: estMuet });
-  }, [volume, estMuet]);
+    musique.regler({
+      volume: Number(volume) / 100, muet: estMuet, effets: avecEffets,
+    });
+  }, [volume, estMuet, avecEffets]);
 
   const basculer = () => {
     if (estMuet) {
@@ -98,6 +109,15 @@ export default function Lecteur() {
           </span>
         </div>
         <span className="uno-lecteur-etat" aria-live="polite">{etat}</span>
+        <button type="button" className="uno-lecteur-effets"
+                aria-pressed={avecEffets}
+                onClick={() => {
+                  setEffets(avecEffets ? '0' : '1');
+                  if (!avecEffets && !joue) lancer();
+                }}>
+          <span className="uno-lecteur-effets-coche" aria-hidden="true" />
+          Bruitages des cartes
+        </button>
         <label className="uno-lecteur-volume">
           <span className="sr">Volume de la musique</span>
           <input type="range" min="0" max="100" step="1" value={volume}

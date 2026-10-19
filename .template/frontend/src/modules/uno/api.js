@@ -8,16 +8,19 @@ export const lireTable = ({ code }) => lire('/api/uno/salon', { code });
 // Une table vue d'un spectateur : sans session, sans aucune main.
 export const lireSpectateur = ({ code }) => lire('/api/uno/spectateur', { code });
 
-export const creerTable = (nom, publique) => poster('/api/uno/creer',
-  { nom, public: publique });
+export const creerTable = (nom, publique, regles) => poster('/api/uno/creer',
+  { nom, public: publique, regles });
+export const regler = (code, regles) => poster('/api/uno/regler',
+  { code, regles });
 export const rejoindre = (code) => poster('/api/uno/rejoindre', { code });
 export const quitter = (code) => poster('/api/uno/quitter', { code });
 export const exclure = (code, joueur) => poster('/api/uno/exclure',
   { code, joueur });
 export const lancer = (code) => poster('/api/uno/lancer', { code });
 
-export const jouer = (code, carte, couleur, uno) => poster('/api/uno/jouer',
-  { code, carte, couleur, uno });
+// `cible` : avec la règle du 7, le joueur dont on prend la main.
+export const jouer = (code, carte, couleur, uno, cible) => poster(
+  '/api/uno/jouer', { code, carte, couleur, uno, cible });
 export const piocher = (code) => poster('/api/uno/piocher', { code });
 export const passer = (code) => poster('/api/uno/passer', { code });
 export const direUno = (code) => poster('/api/uno/uno', { code });

@@ -23,7 +23,7 @@ import threading
 import time
 from dataclasses import dataclass, field
 
-from .regles import CoupInvalide, Partie
+from .regles import CoupInvalide, Partie, nettoyer_regles
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -71,6 +71,9 @@ class Salon:
     version: int = 0
     # Joueurs exclus par l'hôte : ils ne peuvent plus s'asseoir.
     exclus: set[str] = field(default_factory=set)
+    # Règles facultatives, choisies par l'hôte entre deux manches.
+    regles: dict[str, bool] = field(default_factory=lambda: nettoyer_regles(
+        None))
 
     @property
     def derniere_presence(self) -> float:
@@ -87,7 +90,7 @@ class Salon:
     def resume(self) -> dict[str, Any]:
         return {'code': self.code, 'nom': self.nom, 'hote': self.hote,
                 'public': self.public, 'etat': self.etat,
-                'joueurs': list(self.joueurs)}
+                'joueurs': list(self.joueurs), 'regles': dict(self.regles)}
 
 
 def _nettoyer_nom(nom: object, defaut: str) -> str:
@@ -146,8 +149,8 @@ class Salons:
             salon.comptee = True
 
     # -- salons --------------------------------------------------------------
-    def creer(self, joueur: str, nom: object = '',
-              public: bool = True) -> str:
+    def creer(self, joueur: str, nom: object = '', public: bool = True,
+              regles: object = None) -> str:
         with self._verrou:
             self._purger()
             if len(self._salons) >= MAX_SALONS:
@@ -157,7 +160,8 @@ class Salons:
             self._salons[code] = Salon(
                 code=code, nom=_nettoyer_nom(nom, 'Table de %s' % joueur),
                 hote=joueur, public=bool(public), joueurs=[joueur],
-                touche=self._horloge(), vus={joueur: self._horloge()})
+                touche=self._horloge(), vus={joueur: self._horloge()},
+                regles=nettoyer_regles(regles))
             return code
 
     def rejoindre(self, code: object, joueur: str) -> str:
@@ -213,6 +217,21 @@ class Salons:
             salon.exclus.add(cible)
             self._retirer(salon, cible)
 
+    def regler(self, code: object, joueur: str, regles: object) -> None:
+        """L'hôte change les règles de la table, entre deux manches."""
+        with self._verrou:
+            salon = self._membre(code, joueur)
+            if salon.hote != joueur:
+                raise ErreurSalon("Seul l'hôte change les règles.")
+            if salon.etat == 'partie':
+                raise ErreurSalon('Les règles ne changent pas en cours de '
+                                  'manche.')
+            # Les règles absentes de la demande gardent leur valeur.
+            salon.regles = nettoyer_regles({**salon.regles,
+                                            **(regles if isinstance(
+                                                regles, dict) else {})})
+            self._toucher(salon)
+
     def lancer(self, code: object, joueur: str) -> None:
         """Nouvelle manche, par l'hôte, avec tous les joueurs assis."""
         with self._verrou:
@@ -224,7 +243,7 @@ class Salons:
             if len(salon.joueurs) < MIN_JOUEURS:
                 raise ErreurSalon('Il faut au moins %d joueurs.'
                                   % MIN_JOUEURS)
-            salon.partie = Partie(salon.joueurs, self._rng)
+            salon.partie = Partie(salon.joueurs, self._rng, salon.regles)
             salon.comptee = False
             salon.manches += 1
             self._toucher(salon)
@@ -244,7 +263,7 @@ class Salons:
                 except (TypeError, ValueError):
                     raise ErreurSalon('Carte illisible.') from None
                 p.jouer(joueur, carte, params.get('couleur'),
-                        bool(params.get('uno')))
+                        bool(params.get('uno')), params.get('cible'))
             elif action == 'piocher':
                 p.piocher(joueur)
             elif action == 'passer':

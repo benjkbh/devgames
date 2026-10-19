@@ -72,6 +72,13 @@
 .uno-tapis {
   --rayon: clamp(26px, 5vw, 84px);
   --cadre: clamp(8px, 1.4vw, 16px);
+  /* Taille des cartes « l » : elle suit la hauteur de la fenêtre pour que tout
+     le tapis tienne à l'écran (une fenêtre de 940 px de haut, soit du 1080p
+     avec les barres du navigateur : environ 90 px). Le reste en découle. */
+  --uno-l: clamp(58px, calc((100vh - 380px) / 6.1), 104px);
+  --cj-taille-l: var(--uno-l);
+  --cj-taille-xs: calc(var(--uno-l) * .36);
+  --anneau: calc(var(--uno-l) * 3.3);
   --uno-lumiere: #d4a54a;
   /* Quartiers de l'anneau : éteints, sauf la couleur demandée. */
   --a-rouge: color-mix(in srgb, var(--uno-rouge) 26%, transparent);
@@ -80,7 +87,7 @@
   --a-jaune: color-mix(in srgb, var(--uno-jaune) 26%, transparent);
   position: relative;
   width: 100%;
-  max-width: 1180px;
+  max-width: 1120px;
   margin-inline: auto;
   padding: var(--cadre);
   border-radius: var(--rayon);
@@ -94,6 +101,15 @@
     0 4px 10px rgba(0, 0, 0, .35),
     0 26px 54px rgba(0, 0, 0, .42);
 }
+/* Clous de laiton le long du cadre. */
+.uno-tapis::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--cadre) / 2 - 1px);
+  border-radius: calc(var(--rayon) - var(--cadre) / 2 + 1px);
+  border: 2px dotted rgba(236, 200, 120, .55);
+  pointer-events: none;
+}
 .uno-centre-rouge { --uno-lumiere: var(--uno-rouge); --a-rouge: var(--uno-rouge); }
 .uno-centre-bleu  { --uno-lumiere: var(--uno-bleu);  --a-bleu: var(--uno-bleu); }
 .uno-centre-vert  { --uno-lumiere: var(--uno-vert);  --a-vert: var(--uno-vert); }
@@ -104,19 +120,82 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--e5);
-  padding: var(--e6) var(--e6) var(--e5);
+  gap: var(--e4);
+  padding: var(--e5) var(--e6) var(--e4);
   border-radius: calc(var(--rayon) - var(--cadre));
   background:
     radial-gradient(60% 55% at 50% 50%, color-mix(in srgb, var(--uno-lumiere) 22%, transparent), transparent 75%),
+    radial-gradient(45% 40% at 14% 6%, rgba(175, 195, 235, .17), transparent 70%),
     repeating-linear-gradient(45deg, rgba(255, 255, 255, .02) 0 1px, transparent 1px 4px),
-    radial-gradient(120% 110% at 50% 30%, #22572f, #153b22 55%, #0b2214);
+    radial-gradient(120% 110% at 50% 30%, #1f4d3b, #133327 55%, #08190f);
   box-shadow:
     inset 0 0 0 2px rgba(212, 165, 74, .55),
     inset 0 0 0 5px rgba(0, 0, 0, .35),
     inset 0 12px 70px rgba(0, 0, 0, .6);
   color: #ece4d2;
 }
+
+/* Décor : le village la nuit, derrière le jeu. */
+.uno-feutre > *:not(.uno-decor) { position: relative; z-index: 1; }
+.uno-decor { position: absolute; inset: 0; z-index: 0; overflow: hidden; border-radius: inherit; pointer-events: none; }
+.uno-decor-ciel { position: absolute; inset: 0 0 auto 0; width: 100%; height: 45%; fill: #f3ead0; opacity: .5; }
+.uno-lune {
+  position: absolute;
+  left: 17%;
+  top: 7%;
+  width: clamp(40px, 5.2vw, 76px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, #fbf3d8, #e6d8ab 70%, #cdbf92);
+  box-shadow: 0 0 36px 12px rgba(240, 230, 190, .2), 0 0 110px 46px rgba(190, 205, 240, .1);
+  opacity: .82;
+}
+.uno-loup { position: absolute; left: 3.5%; bottom: 12%; width: clamp(64px, 8.5vw, 122px); fill: rgba(2, 8, 5, .66); }
+.uno-loup .uno-rocher { fill: rgba(2, 8, 5, .74); }
+.uno-sapins { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: clamp(40px, 9vh, 90px); fill: rgba(3, 12, 7, .5); }
+.uno-sapins .avant { fill: rgba(2, 8, 5, .7); }
+/* Une bougie à chaque coin : la flamme vacille, la lueur respire. */
+.uno-bougie { position: absolute; width: 12px; height: 40px; }
+.uno-bougie-hg { left: 2.6%; top: 7%; }
+.uno-bougie-hd { right: 2.6%; top: 7%; }
+.uno-bougie-bg { left: 2.6%; bottom: 8%; }
+.uno-bougie-bd { right: 2.6%; bottom: 8%; }
+.uno-bougie::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 26px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #cdbf9f, #f4ecd6 45%, #b9ac8a);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .5);
+}
+.uno-bougie i {
+  position: absolute;
+  left: 50%;
+  bottom: 26px;
+  width: 8px;
+  height: 15px;
+  margin-left: -4px;
+  border-radius: 50% 50% 45% 45% / 65% 65% 35% 35%;
+  background: radial-gradient(ellipse at 50% 72%, #fff6c8, #ffc65a 55%, rgba(255, 140, 40, .25));
+  filter: drop-shadow(0 0 5px #ffb347);
+  transform-origin: 50% 100%;
+  animation: uno-flamme .9s ease-in-out infinite alternate;
+}
+.uno-bougie b {
+  position: absolute;
+  left: 50%;
+  bottom: 34px;
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 190, 90, .26), transparent 65%);
+  transform: translate(-50%, 50%);
+  animation: uno-lueur 2.6s ease-in-out infinite alternate;
+}
+.uno-bougie-hd i, .uno-bougie-bg b { animation-delay: -.45s; }
+.uno-bougie-bg i, .uno-bougie-hd b { animation-delay: -.2s; }
+.uno-bougie-bd i, .uno-bougie-bd b { animation-delay: -.7s; }
 
 /* Joueurs assis autour. */
 .uno-sieges { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--e3); margin: 0; padding: 0; list-style: none; }
@@ -173,7 +252,8 @@
 .uno-anneau, .uno-piles { grid-area: 1 / 1; align-self: center; }
 .uno-anneau {
   position: relative;
-  width: min(330px, 100%);
+  width: var(--anneau);
+  max-width: 100%;
   aspect-ratio: 1;
   border-radius: 50%;
   pointer-events: none;
@@ -246,8 +326,8 @@
 .uno-bouton-uno {
   position: absolute;
   z-index: 3;
-  left: calc(50% + 178px);
-  top: 165px;
+  left: calc(50% + var(--anneau) / 2 + 22px);
+  top: calc(var(--anneau) / 2);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -274,7 +354,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--e2);
-  padding: var(--e3) var(--e4) var(--e4);
+  padding: var(--e2) var(--e4) var(--e3);
   border: 1px solid rgba(236, 228, 210, .16);
   border-radius: var(--r-xl);
   background: rgba(4, 12, 7, .4);
@@ -285,6 +365,7 @@
 .uno-joueur-tour { padding: 1px var(--e3); border-radius: var(--r-plein); background: #e8c27a; color: #1a1206; font-size: var(--t-xs); font-weight: 800; letter-spacing: .06em; text-transform: uppercase; animation: uno-clignote 1.5s ease-in-out infinite; }
 .uno-joueur-actions { display: flex; align-items: center; gap: var(--e2); margin-left: auto; }
 .uno-main { justify-content: safe center; overflow-x: auto; }
+.uno-main.eventail-arc { padding-bottom: calc(var(--cj-largeur-place) * .3); }
 
 .uno-fin .carte-corps { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e4); }
 .uno-fin .uno-scores { align-self: stretch; }
@@ -317,11 +398,40 @@
 .uno-couleur-vert  { background: var(--uno-vert); }
 .uno-couleur-bleu  { background: var(--uno-bleu); }
 
+/* -- règles de la table et échange du 7 --- */
+.uno-regles { display: flex; flex-direction: column; gap: var(--e3); }
+.uno-regles-texte { color: var(--dim); }
+.uno-regles-texte strong { color: var(--txt-2); }
+.uno-fin .uno-regles, .uno-fin .uno-regles-texte { align-self: stretch; }
+.uno-echange { display: flex; flex-direction: column; gap: var(--e2); margin: 0; padding: 0; list-style: none; }
+.uno-echange-choix {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e3);
+  width: 100%;
+  padding: var(--e3) var(--e4);
+  border: 1px solid var(--bord);
+  border-radius: var(--r-m);
+  background: var(--surface-2);
+  color: var(--txt);
+  font: inherit;
+  cursor: pointer;
+}
+.uno-echange-choix:hover { border-color: var(--accent); background: var(--accent-doux); }
+.uno-echange-choix:focus-visible { outline: none; box-shadow: var(--anneau); }
+
 /* -- animations --- */
 @keyframes uno-pulse {
   0%, 100% { box-shadow: 0 0 0 1px #e8c27a, 0 0 8px rgba(232, 194, 122, .35); }
   50% { box-shadow: 0 0 0 3px #f6e2a4, 0 0 26px rgba(240, 205, 123, .85); }
 }
+@keyframes uno-flamme {
+  0% { transform: scale(1, 1) skewX(-4deg); }
+  50% { transform: scale(.92, 1.1) skewX(3deg); }
+  100% { transform: scale(1.06, .94) skewX(-2deg); }
+}
+@keyframes uno-lueur { from { opacity: .65; } to { opacity: 1; } }
 @keyframes uno-clignote { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
 @keyframes uno-orbite { to { transform: rotate(360deg); } }
 @keyframes uno-surgit {
@@ -338,6 +448,15 @@
   75% { transform: rotate(3deg); }
 }
 
+/* Écran large : le message du tour passe à gauche de l'anneau, le bouton UNO à
+   sa droite ; le tapis y gagne de la hauteur. */
+@media (min-width: 1000px) {
+  .uno-centre { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+  .uno-anneau, .uno-piles { grid-area: 1 / 2; }
+  .uno-etat { grid-area: 1 / 1; justify-self: end; align-items: flex-end; max-width: 100%; padding-right: var(--e5); text-align: right; }
+  .uno-indic { justify-content: flex-end; }
+}
+
 /* -- écrans étroits : le tapis se resserre, les cartes rapetissent --- */
 @media (max-width: 760px) {
   .uno-attente { grid-template-columns: 1fr; }
@@ -346,15 +465,17 @@
 @media (max-width: 720px) {
   .uno-tapis {
     /* Les cartes « l » (main, pioche, défausse) passent à 68 px. */
-    --cj-taille-l: 68px;
+    --uno-l: 68px;
+    --anneau: 236px;
     --rayon: 30px;
     --cadre: 8px;
   }
+  .uno-loup, .uno-bougie { display: none; }
+  .uno-lune { left: auto; right: 7%; width: 36px; }
   .uno-feutre { gap: var(--e3); padding: var(--e4) var(--e2) var(--e3); }
   .uno-sieges { gap: var(--e2); }
   .uno-siege { flex: 1 1 96px; min-width: 96px; max-width: 150px; padding: 6px 8px 8px; }
   .uno-siege-main { --cj-taille-xs: 28px; }
-  .uno-anneau { width: min(240px, 100%); }
   .uno-anneau::before {
     -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 10px), #000 calc(100% - 9px));
     mask: radial-gradient(farthest-side, transparent calc(100% - 10px), #000 calc(100% - 9px));
@@ -362,6 +483,7 @@
   .uno-piles { gap: var(--e4); }
   .uno-tour { font-size: var(--t-l); padding: 4px var(--e4); }
   .uno-bouton-uno { left: auto; right: 2px; top: 120px; width: 76px; height: 76px; }
+  .uno-tapis::after { border-width: 1.5px; }
   .uno-bouton-uno-texte { font-size: 24px; }
   .uno-joueur { padding: var(--e2) var(--e2) var(--e3); }
   .uno-joueur-actions { margin-left: 0; }
@@ -372,6 +494,7 @@
   .uno-joueur-tour, .uno-bouton-uno, .uno-contre { animation: none; }
   .uno-couleur { transition: none; }
   .uno-bouton-uno { transform: translateY(-50%); }
+  .uno-bougie i, .uno-bougie b { animation: none; }
 }
 
 /* -- musique d'ambiance : lecteur fixe, bien visible -- */
@@ -414,6 +537,10 @@
 .uno-lecteur-tete { display: flex; align-items: center; gap: var(--e2); }
 .uno-lecteur-titre { font-family: var(--police-titre); font-size: var(--t-l); font-weight: 700; color: #e8c27a; }
 .uno-lecteur-etat { color: rgba(236, 228, 210, .75); font-size: var(--t-xs); }
+.uno-lecteur-effets { display: inline-flex; align-items: center; gap: var(--e2); padding: 0; border: 0; background: none; color: rgba(236, 228, 210, .85); font: inherit; font-size: var(--t-xs); text-align: left; cursor: pointer; }
+.uno-lecteur-effets-coche { flex: 0 0 auto; width: 14px; height: 14px; border: 1.5px solid #d4a54a; border-radius: 3px; }
+.uno-lecteur-effets[aria-pressed="true"] .uno-lecteur-effets-coche { background: #d4a54a; box-shadow: inset 0 0 0 2px #0b0e18; }
+.uno-lecteur-effets:focus-visible { outline: 2px solid #d4a54a; outline-offset: 2px; }
 .uno-lecteur-volume { display: flex; align-items: center; gap: var(--e2); }
 .uno-lecteur-volume input { flex: 1 1 auto; accent-color: #d4a54a; cursor: pointer; }
 .uno-lecteur-volume input:disabled { opacity: .4; cursor: not-allowed; }
@@ -430,7 +557,9 @@
 .uno-page, .uno-accueil { padding-bottom: 120px; }
 @media (max-width: 720px) {
   .uno-lecteur { right: var(--e3); bottom: var(--e3); left: var(--e3); border-radius: var(--r-l); }
+  .uno-lecteur { padding: var(--e2) var(--e3); }
   .uno-lecteur-corps { flex: 1 1 auto; min-width: 0; }
+  .uno-lecteur-etat { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .uno-lecteur.joue .uno-lecteur-egaliseur i { animation: none; height: 8px; }

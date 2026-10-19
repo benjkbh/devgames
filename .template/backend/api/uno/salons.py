@@ -66,7 +66,8 @@ def creer(req: Requete) -> Reponse:
     corps = corps_objet(req)
 
     def action(j: str) -> Reponse:
-        code = req.uno.creer(j, corps.get('nom'), corps.get('public', True))
+        code = req.uno.creer(j, corps.get('nom'), corps.get('public', True),
+                             corps.get('regles'))
         req.journal('uno : table %s créée' % code)
         return HTTPStatus.OK, req.uno.vue(code, j)
     return _proteger(req, action)
@@ -95,6 +96,15 @@ def exclure(req: Requete) -> Reponse:
 
     def action(j: str) -> Reponse:
         req.uno.exclure(corps.get('code'), j, corps.get('joueur'))
+        return HTTPStatus.OK, req.uno.vue(corps.get('code'), j)
+    return _proteger(req, action)
+
+
+def regler(req: Requete) -> Reponse:
+    corps = corps_objet(req)
+
+    def action(j: str) -> Reponse:
+        req.uno.regler(corps.get('code'), j, corps.get('regles'))
         return HTTPStatus.OK, req.uno.vue(corps.get('code'), j)
     return _proteger(req, action)
 

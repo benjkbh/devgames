@@ -8,6 +8,7 @@ import {
   Saisie, Section, useAction, useLecture,
 } from '../../ui';
 import { creerTable, lireTables, rejoindre } from './api';
+import { REGLES, REGLES_DEFAUT, reglesActives } from './regles';
 
 // Accueil du module : créer une table, en rejoindre une par son code, ou
 // dans la liste des tables publiques ouvertes.
@@ -31,6 +32,8 @@ function ListeTables({ tables, action, titreAction, vide }) {
               <strong>{t.nom}</strong>
               <span className="dim">
                 {`Code ${t.code} · hôte : ${t.hote}`}
+                {reglesActives(t.regles).length > 0
+                  && ` · ${reglesActives(t.regles).join(', ')}`}
               </span>
             </div>
             <span className="uno-tables-joueurs" title="Joueurs assis">
@@ -50,6 +53,7 @@ export default function Accueil() {
   const naviguer = useNavigate();
   const [nom, setNom] = useState('');
   const [publique, setPublique] = useState(true);
+  const [regles, setRegles] = useState(REGLES_DEFAUT);
   const [code, setCode] = useState('');
   const creation = useAction();
   const entree = useAction();
@@ -61,7 +65,7 @@ export default function Accueil() {
   const ouvrir = (c) => naviguer(`/uno/${c}`);
   const creer = async (e) => {
     e.preventDefault();
-    const r = await creation.executer(() => creerTable(nom, publique));
+    const r = await creation.executer(() => creerTable(nom, publique, regles));
     if (r.ok) ouvrir(r.resultat.code);
   };
   const entrer = async (c) => {
@@ -113,6 +117,11 @@ export default function Accueil() {
             <QuestionBool libelle="Table publique" checked={publique}
                           description="Visible dans la liste des tables ouvertes. Sinon, seuls ceux qui ont le code ou le lien peuvent s’asseoir."
                           onChange={setPublique} />
+            {REGLES.map(({ cle, titre, aide }) => (
+              <QuestionBool key={cle} libelle={titre} description={aide}
+                            checked={regles[cle]}
+                            onChange={(v) => setRegles({ ...regles, [cle]: v })} />
+            ))}
             {creation.erreur && <Alerte compacte>{creation.erreur}</Alerte>}
             <Bouton type="submit" variante="principal" icone={<IcoPlus />}
                     waiting={creation.occupe} titre="Créer la table" />

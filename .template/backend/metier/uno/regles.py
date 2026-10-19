@@ -19,6 +19,14 @@ Règles retenues (règles de base) :
   - la manche s'arrête quand un joueur n'a plus de carte. Il marque la
     somme des cartes restant aux autres : chiffre = sa valeur, action = 20,
     joker et +4 = 50.
+
+Règles de la table (`REGLES`, choisies par l'hôte, copiées dans la manche) :
+  - `pioche_jusqua` : qui ne peut pas jouer pioche jusqu'à tirer une carte
+    jouable (qu'il peut poser ou garder) au lieu d'une seule carte ;
+  - `sept_zero` : poser un 7 échange sa main avec celle d'un joueur au choix ;
+    poser un 0 fait passer toutes les mains au joueur suivant, dans le sens du
+    jeu. Une dernière carte posée gagne la manche sans autre effet ; échanger
+    ou faire tourner les mains efface les UNO annoncés ou à contrer.
 """
 from __future__ import annotations
 
@@ -38,6 +46,15 @@ TAILLE_MAIN = 7
 JOURNAL_MAX = 30
 # Événements de la manche gardés pour les interfaces (animations).
 EVENEMENTS_MAX = 12
+# Règles facultatives d'une table, et leur valeur par défaut.
+REGLES: dict[str, bool] = {'pioche_jusqua': False, 'sept_zero': False}
+
+
+def nettoyer_regles(brut: object) -> dict[str, bool]:
+    """Les règles connues, en booléens ; le reste est ignoré."""
+    donnees = brut if isinstance(brut, dict) else {}
+    return {cle: bool(donnees.get(cle, defaut))
+            for cle, defaut in REGLES.items()}
 
 
 class CoupInvalide(Exception):
@@ -96,10 +113,12 @@ def jouable(carte: Carte, dessus: Carte, couleur: str,
 class Partie:
     """Une manche entre `joueurs` (2 à 10), dans l'ordre de la table."""
 
-    def __init__(self, joueurs: list[str], rng: random.Random) -> None:
+    def __init__(self, joueurs: list[str], rng: random.Random,
+                 regles: object = None) -> None:
         if not 2 <= len(joueurs) <= 10:
             raise CoupInvalide('Il faut entre 2 et 10 joueurs.')
         self.rng = rng
+        self.regles = nettoyer_regles(regles)
         self.ordre = list(joueurs)
         self.pioche = paquet()
         rng.shuffle(self.pioche)
@@ -157,10 +176,11 @@ class Partie:
         self.journal.append(ligne)
         del self.journal[:-JOURNAL_MAX]
 
-    def _evenement(self, joueur: str, type_: str, cartes: int = 1) -> None:
+    def _evenement(self, joueur: str, type_: str, cartes: int = 1,
+                   **autres: Any) -> None:
         n = self.evenements[-1]['n'] + 1 if self.evenements else 1
         self.evenements.append({'n': n, 'joueur': joueur, 'type': type_,
-                                'cartes': cartes})
+                                'cartes': cartes, **autres})
         del self.evenements[:-EVENEMENTS_MAX]
 
     def _rang(self, pas: int) -> int:
@@ -170,7 +190,8 @@ class Partie:
         self.tour = self._rang(pas)
         self.pioche_jouable = None
 
-    def _tirer(self, joueur: str, n: int) -> list[Carte]:
+    def _tirer(self, joueur: str, n: int,
+               evenement: bool = True) -> list[Carte]:
         """`joueur` pioche `n` cartes ; la défausse est rebattue au besoin."""
         tirees = []
         for _ in range(n):
@@ -182,7 +203,7 @@ class Partie:
                     break
             tirees.append(self.pioche.pop())
         self.mains[joueur] += tirees
-        if tirees:
+        if tirees and evenement:
             self._evenement(joueur, 'pioche', len(tirees))
         if len(self.mains[joueur]) > 1:
             self.uno_dit.discard(joueur)
@@ -205,7 +226,7 @@ class Partie:
 
     # -- coups ---------------------------------------------------------------
     def jouer(self, joueur: str, carte_id: int, couleur: str | None = None,
-              uno: bool = False) -> None:
+              uno: bool = False, cible: str | None = None) -> None:
         self._exige_tour(joueur)
         main = self.mains[joueur]
         carte = next((c for c in main if c.id == carte_id), None)
@@ -221,6 +242,11 @@ class Partie:
             raise CoupInvalide('Cette carte ne peut pas être posée.')
         if carte.couleur is None and couleur not in COULEURS:
             raise CoupInvalide('Choisissez une couleur.')
+        echange = (self.regles['sept_zero'] and carte.valeur == '7'
+                   and len(main) > 1)
+        if echange and (cible not in self.mains or cible == joueur):
+            raise CoupInvalide('Choisissez le joueur dont vous prenez la '
+                               'main.')
 
         self._fin_de_fenetre(joueur)
         main.remove(carte)
@@ -260,7 +286,37 @@ class Partie:
         if not main:
             self._terminer(joueur)
             return
+        if echange:
+            self._echanger(joueur, str(cible))
+        elif self.regles['sept_zero'] and carte.valeur == '0':
+            self._tourner()
         self._avancer(pas)
+
+    def _oublier_uno(self, *joueurs: str) -> None:
+        """Les mains ont changé : plus de UNO annoncé ni à contrer."""
+        for j in joueurs:
+            self.uno_dit.discard(j)
+        if self.expose in joueurs:
+            self.expose = None
+
+    def _echanger(self, joueur: str, cible: str) -> None:
+        """Règle du 7 : `joueur` et `cible` échangent leur main."""
+        self.mains[joueur], self.mains[cible] = (
+            self.mains[cible], self.mains[joueur])
+        self._oublier_uno(joueur, cible)
+        self._noter('%s échange sa main avec %s.' % (joueur, cible))
+        self._evenement(joueur, 'echange', cible=cible)
+
+    def _tourner(self) -> None:
+        """Règle du 0 : chaque main passe au joueur suivant, dans le sens du
+        jeu."""
+        n = len(self.ordre)
+        anciennes = {j: self.mains[j] for j in self.ordre}
+        for i, j in enumerate(self.ordre):
+            self.mains[self.ordre[(i + self.sens) % n]] = anciennes[j]
+        self._oublier_uno(*self.ordre)
+        self._noter('Toutes les mains passent au joueur suivant.')
+        self._evenement(self.courant, 'rotation')
 
     def piocher(self, joueur: str) -> Carte | None:
         """Pioche une carte ; rend la carte si elle est jouable (le joueur
@@ -270,12 +326,24 @@ class Partie:
             raise CoupInvalide('Vous avez déjà pioché : posez la carte ou '
                                'passez.')
         self._fin_de_fenetre(joueur)
-        tirees = self._tirer(joueur, 1)
-        self._noter('%s pioche une carte.' % joueur)
-        if tirees and jouable(tirees[0], self.dessus, self.couleur,
+        tirees: list[Carte] = []
+        while True:
+            une = self._tirer(joueur, 1, evenement=False)
+            tirees += une
+            # Sans la règle, une seule carte ; avec, jusqu'à une jouable.
+            if (not une or not self.regles['pioche_jusqua']
+                    or jouable(une[0], self.dessus, self.couleur,
+                               self.mains[joueur])):
+                break
+        if tirees:
+            self._evenement(joueur, 'pioche', len(tirees))
+        self._noter('%s pioche %s.' % (
+            joueur, 'une carte' if len(tirees) <= 1
+            else '%d cartes' % len(tirees)))
+        if tirees and jouable(tirees[-1], self.dessus, self.couleur,
                               self.mains[joueur]):
-            self.pioche_jouable = tirees[0].id
-            return tirees[0]
+            self.pioche_jouable = tirees[-1].id
+            return tirees[-1]
         self._avancer()
         return None
 
@@ -363,6 +431,7 @@ class Partie:
             'pioche': len(self.pioche),
             'journal': list(self.journal[-12:]),
             'evenements': list(self.evenements),
+            'regles': dict(self.regles),
             'gagnant': self.gagnant,
             'points': self.points,
         }

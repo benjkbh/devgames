@@ -436,6 +436,138 @@ class Evenements(unittest.TestCase):
         self.assertIn('main', p.vue('ana'))
 
 
+def partie_regles(**regles: bool) -> Partie:
+    return Partie(['ana', 'bob', 'cyd'], random.Random(1), regles)
+
+
+class ReglesDeTable(unittest.TestCase):
+
+    def test_regles_par_defaut_et_nettoyage(self) -> None:
+        self.assertEqual(regles.nettoyer_regles(None),
+                         {'pioche_jusqua': False, 'sept_zero': False})
+        self.assertEqual(
+            regles.nettoyer_regles({'sept_zero': 1, 'inconnue': True}),
+            {'pioche_jusqua': False, 'sept_zero': True})
+
+    def test_pioche_jusqu_a_pouvoir_jouer(self) -> None:
+        p = partie_regles(pioche_jusqua=True)
+        j = p.courant
+        p.defausse.append(Carte(200, 'rouge', '5'))
+        p.couleur = 'rouge'
+        p.mains[j] = [Carte(201, 'bleu', '1')]
+        # De dessus en dessous : la pioche se vide par la fin.
+        p.pioche[-3:] = [Carte(204, 'rouge', '9'), Carte(203, 'bleu', '2'),
+                         Carte(202, 'vert', '3')]
+        jouable_tiree = p.piocher(j)
+        self.assertEqual(jouable_tiree.id, 204)
+        self.assertEqual(len(p.mains[j]), 4)
+        self.assertEqual(p.pioche_jouable, 204)
+        self.assertEqual(p.evenements[-1]['cartes'], 3)
+        self.assertEqual(p.courant, j)       # il peut poser ou passer
+
+    def test_sans_la_regle_une_seule_carte(self) -> None:
+        p = partie_regles()
+        j = p.courant
+        p.defausse.append(Carte(200, 'rouge', '5'))
+        p.couleur = 'rouge'
+        p.pioche[-2:] = [Carte(203, 'rouge', '9'), Carte(202, 'vert', '3')]
+        self.assertIsNone(p.piocher(j))
+        self.assertEqual(len(p.mains[j]), 8)
+
+    def test_sept_echange_les_mains(self) -> None:
+        p = partie_regles(sept_zero=True)
+        j, autre = p.courant, p.ordre[p._rang(1)]
+        avant = list(p.mains[autre])
+        p.defausse.append(Carte(200, 'rouge', '5'))
+        p.couleur = 'rouge'
+        sept = Carte(201, 'rouge', '7')
+        p.mains[j].append(sept)
+        reste = [c for c in p.mains[j] if c is not sept]
+        with self.assertRaises(CoupInvalide):
+            p.jouer(j, 201)                      # sans cible
+        with self.assertRaises(CoupInvalide):
+            p.jouer(j, 201, cible=j)             # soi-même
+        p.jouer(j, 201, cible=autre)
+        self.assertEqual(p.mains[j], avant)
+        self.assertEqual(p.mains[autre], reste)
+        self.assertEqual(p.evenements[-1]['type'], 'echange')
+
+    def test_sept_sans_la_regle_ne_change_rien(self) -> None:
+        p = partie_regles()
+        j = p.courant
+        p.defausse.append(Carte(200, 'rouge', '5'))
+        p.couleur = 'rouge'
+        p.mains[j].append(Carte(201, 'rouge', '7'))
+        n = len(p.mains[j]) - 1
+        p.jouer(j, 201)
+        self.assertEqual(len(p.mains[j]), n)
+
+    def test_zero_fait_tourner_les_mains(self) -> None:
+        p = partie_regles(sept_zero=True)
+        j = p.courant
+        suivant = p.ordre[p._rang(1)]
+        dernier = p.ordre[p._rang(2)]
+        p.defausse.append(Carte(200, 'rouge', '5'))
+        p.couleur = 'rouge'
+        main_j = list(p.mains[j])
+        main_suivant = list(p.mains[suivant])
+        p.mains[j].append(Carte(201, 'rouge', '0'))
+        p.jouer(j, 201)
+        # Dans le sens du jeu : la main de j va au suivant, et ainsi de suite.
+        self.assertEqual(p.mains[suivant], main_j)
+        self.assertEqual(p.mains[dernier], main_suivant)
+        self.assertEqual(sum(len(m) for m in p.mains.values()), 21)
+        self.assertEqual(p.evenements[-1]['type'], 'rotation')
+
+    def test_derniere_carte_sept_gagne_sans_echange(self) -> None:
+        p = partie_regles(sept_zero=True)
+        j = p.courant
+        p.defausse.append(Carte(200, 'rouge', '5'))
+        p.couleur = 'rouge'
+        p.mains[j] = [Carte(201, 'rouge', '7')]
+        p.jouer(j, 201)
+        self.assertEqual(p.gagnant, j)
+        self.assertEqual(p.mains[j], [])
+
+    def test_l_echange_efface_les_uno(self) -> None:
+        p = partie_regles(sept_zero=True)
+        j, autre = p.courant, p.ordre[p._rang(1)]
+        p.defausse.append(Carte(200, 'rouge', '5'))
+        p.couleur = 'rouge'
+        p.mains[j] = [Carte(201, 'rouge', '7'), Carte(202, 'bleu', '1')]
+        p.jouer(j, 201, cible=autre)          # il lui reste une carte
+        self.assertIsNone(p.expose)
+        self.assertNotIn(j, p.uno_dit)
+
+
+class ReglesDuSalon(unittest.TestCase):
+
+    def setUp(self) -> None:
+        self.salons = salons.Salons(random.Random(3))
+
+    def test_choisies_a_la_creation_puis_changees_par_l_hote(self) -> None:
+        code = self.salons.creer('ana', 'T', True, {'sept_zero': True})
+        self.salons.rejoindre(code, 'bob')
+        self.assertEqual(self.salons.vue(code, 'bob')['regles'],
+                         {'pioche_jusqua': False, 'sept_zero': True})
+        with self.assertRaises(salons.ErreurSalon):
+            self.salons.regler(code, 'bob', {'pioche_jusqua': True})
+        self.salons.regler(code, 'ana', {'pioche_jusqua': True})
+        self.assertEqual(self.salons.vue(code, 'ana')['regles'],
+                         {'pioche_jusqua': True, 'sept_zero': True})
+        self.assertEqual(self.salons.lister('eve')['ouvertes'][0]['regles'],
+                         {'pioche_jusqua': True, 'sept_zero': True})
+
+    def test_la_manche_reprend_les_regles_et_les_fige(self) -> None:
+        code = self.salons.creer('ana', 'T', True, {'sept_zero': True})
+        self.salons.rejoindre(code, 'bob')
+        self.salons.lancer(code, 'ana')
+        self.assertTrue(self.salons.vue(code, 'ana')['partie']['regles']
+                        ['sept_zero'])
+        with self.assertRaises(salons.ErreurSalon):
+            self.salons.regler(code, 'ana', {'sept_zero': False})
+
+
 class Presences(unittest.TestCase):
 
     def test_en_ligne_puis_hors_ligne(self) -> None:
@@ -461,7 +593,8 @@ class Routes(unittest.TestCase):
 
     def test_routes_enregistrees_et_role_declare(self) -> None:
         self.assertEqual(api.ROLES['uno'], ('joueur',))
-        for chemin in ('creer', 'rejoindre', 'quitter', 'exclure', 'lancer',
+        for chemin in ('creer', 'rejoindre', 'quitter', 'exclure', 'regler',
+                       'lancer',
                        'jouer', 'piocher', 'passer', 'uno', 'contrer'):
             self.assertIn(('POST', '/api/uno/%s' % chemin), api.TABLE)
         self.assertIn(('GET', '/api/uno/salon'), api.TABLE)

@@ -131,7 +131,7 @@ const TABLE_UNO = {
   code: 'K7Q2M', nom: 'Soirée', hote: 'ana', moi: 'ana', public: true,
   membre: true, version: 3, manches: 1, min_joueurs: 2, max_joueurs: 10,
   joueurs: ['ana', 'bob', 'cyd'], scores: { ana: 0, bob: 12, cyd: 0 },
-  etat: 'partie',
+  etat: 'partie', regles: { pioche_jusqua: true, sept_zero: true },
 };
 const MANCHE_UNO = {
   joueurs: [
@@ -146,6 +146,7 @@ const MANCHE_UNO = {
   ],
   jouables: [1, 2], uno_annonce: false,
   evenements: [{ n: 1, joueur: 'bob', type: 'pose', cartes: 1 }],
+  regles: { pioche_jusqua: true, sept_zero: true },
   dessus: { id: 9, couleur: 'noir', valeur: 'joker' }, couleur: 'rouge',
   sens: -1, tour: 'ana', pioche: 70, pioche_jouable: null,
   journal: ['La partie commence.', 'bob pose Joker et annonce rouge.'],

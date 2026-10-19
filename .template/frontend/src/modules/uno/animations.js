@@ -1,5 +1,7 @@
 import { useLayoutEffect, useRef } from 'react';
 
+import { musique } from './ambiance';
+
 // Glissement des cartes sur le tapis : une carte posée glisse de la main (ou
 // du siège) du joueur vers la défausse, une carte piochée glisse de la pioche
 // vers la main (le même geste, à l'envers). Très bref : de quoi donner du
@@ -91,10 +93,25 @@ export function useGlissements(racine, partie, manche, moi, origine) {
     if (origine) origine.current = null;
     // Première lecture de la manche : on montre l'état, sans rejouer.
     if (avant.manche !== manche || n <= avant.n) return;
+    const nouveaux = evenements.filter((e) => e.n > avant.n);
+
+    // Bruitages : une carte posée claque quand elle arrive sur le tapis ; une
+    // carte piochée se détache de la pioche, chacune un peu après la
+    // précédente.
+    let retard = 0;
+    nouveaux.forEach((e) => {
+      if (e.type === 'pose') {
+        musique.effet('pose', DUREE / 1000 * 0.6);
+      } else if (e.type === 'pioche') {
+        for (let i = 0; i < Math.min(e.cartes, 6); i += 1) {
+          musique.effet('pioche', retard);
+          retard += PAS / 1000;
+        }
+      }
+    });
+
     const el = racine.current;
     if (!el || mouvementReduit()) return;
-
-    const nouveaux = evenements.filter((e) => e.n > avant.n);
     const siege = (nom) => [...el.querySelectorAll('[data-uno-joueur]')]
       .find((s) => s.dataset.unoJoueur === nom);
     const pioche = el.querySelector('[data-uno="pioche"]');
