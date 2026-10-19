@@ -1,65 +1,111 @@
-/* Jetons de design : couleurs, espacements, tailles et rayons. Le thème
- * sombre redéfinit les variables sous `[data-theme="sombre"]`. */
+/* Jetons de design : couleurs, espacements, tailles et rayons.
+ * Direction artistique « Thiercelieux » : un village la nuit, inspiré du jeu
+ * des Loups-Garous. Le thème sombre (nuit, par défaut) est redéfini sous
+ * `[data-theme="sombre"]` ; le thème clair est le jour, sur parchemin.
+ * Rouge sang pour l'action, or de chandelle pour l'interaction, argent de lune
+ * pour les touches froides. */
 
 :root {
   color-scheme: light;
 
   /* -- marque --- */
-  --marque:        #339cee;
-  --marque-fonce:  #144d9d;
+  --marque:        #9b1c1c;
+  --marque-fonce:  #4a0b0b;
 
   /* -- statuts (pastilles ; identiques dans les deux thèmes) --- */
-  --statut-ok:        #1c9c58;   /* ok */
-  --statut-programme: #339cee;   /* information */
-  --statut-inactif:   #d03b3b;   /* en échec */
-  --statut-dialogue:  #faa834;   /* dégradé */
-  --statut-arrete:    #5b6674;   /* arrêté */
+  --statut-ok:        #4d8b4a;   /* ok */
+  --statut-programme: #5b7fb8;   /* information */
+  --statut-inactif:   #b3261e;   /* en échec */
+  --statut-dialogue:  #dd7a24;   /* dégradé */
+  --statut-arrete:    #5f6b7a;   /* arrêté */
 
-  /* -- accent interactif --- */
-  --accent:        #1a73c8;
-  --accent-survol: #155fa6;
-  --accent-doux:   #eaf3fd;
-  --accent-doux-2: #f4f9fe;
-  --accent-bord:   #b8d6f4;
-  --accent-txt:    #11589f;
-  --sur-accent:    #ffffff;   /* texte posé sur --accent */
-  --selection:     #9cc8f2;   /* sélection de texte */
+  /* -- accent interactif : or de chandelle --- */
+  --accent:        #8a5a12;
+  --accent-survol: #6f480d;
+  --accent-doux:   #f1e2bf;
+  --accent-doux-2: #f7eed8;
+  --accent-bord:   #d9bd83;
+  --accent-txt:    #74490b;
+  --sur-accent:    #fff8e8;   /* texte posé sur --accent */
+  --selection:     #e6cf9b;   /* sélection de texte */
 
-  /* -- neutres --- */
-  --fond:       #f3f5f8;
-  --surface:    #ffffff;
-  --surface-2:  #f8f9fb;
-  --surface-3:  #eef1f5;
-  --bord:       #e2e6ec;
-  --bord-fort:  #cdd4de;
-  --txt:        #0f1a29;
-  --txt-2:      #384558;
-  --dim:        #5e6a7b;
-  --num:        #97a1b1;
+  /* -- teintes nommées de la DA ---
+     Chaque famille : aplat, survol, fonds doux, bord, texte, texte posé
+     dessus. `or` est l'accent ci-dessus (--accent-*). Les composants qui
+     prennent une `couleur` (Bouton, Badge) les désignent par ces noms :
+     sang, or, bleu (lune), plus rouge (danger), vert (succès), orange
+     (attention). */
+  --sang:          #8a1616;
+  --sang-survol:   #701111;
+  --sang-doux:     #f0d9d3;
+  --sang-doux-2:   #f6e7e2;
+  --sang-bord:     #d9a597;
+  --sang-txt:      #7f1515;
+  --sur-sang:      #fff8e8;
+
+  --lune:          #4a6390;
+  --lune-survol:   #3d5379;
+  --lune-doux:     #dfe6f0;
+  --lune-doux-2:   #ebf0f6;
+  --lune-bord:     #a9b8cf;
+  --lune-txt:      #354b70;
+  --sur-lune:      #ffffff;
+  --anneau-lune:   0 0 0 3px rgba(74, 99, 144, .35);
+
+  --or:            #b07a1c;
+  --degrade:       linear-gradient(160deg, #b3261e 0%, #7a1414 60%, #4a0b0b 100%);
+  --degrade-nuit:  linear-gradient(160deg, #2b3550 0%, #151a28 100%);
+  --lueur:         0 0 0 1px rgba(155, 28, 28, .25), 0 6px 20px rgba(122, 20, 20, .28);
+
+  /* -- cartes de UNO : palette du site, identique dans les deux thèmes ---
+     rouge = sang, jaune = or de chandelle, vert = forêt, bleu = nuit ; les
+     jokers sont noirs ; papier parchemin et encre de nuit. */
+  --uno-rouge:  #a3261e;
+  --uno-jaune:  #d4a54a;
+  --uno-vert:   #3e7d4a;
+  --uno-bleu:   #3a5a8c;
+  --uno-noir:   #0d0f16;
+  --uno-papier: #ece4d2;
+  --uno-encre:  #0a0c11;
+  --uno-filet:  rgba(236, 228, 210, .35);
+
+  /* -- neutres : parchemin --- */
+  --fond:       #ebe1cb;
+  --surface:    #f8f1e1;
+  --surface-2:  #f2e8d3;
+  --surface-3:  #e8dbc0;
+  --bord:       #d8c7a3;
+  --bord-fort:  #bfa878;
+  --txt:        #2a1f14;
+  --txt-2:      #4a3b28;
+  --dim:        #75644c;
+  --num:        #a39277;
 
   /* -- sémantique --- */
-  --succes:        #16794a;
-  --succes-doux:   #e5f4ec;
-  --succes-bord:   #b3dcc5;
+  --succes:        #3f6f3b;
+  --succes-doux:   #e2ead3;
+  --succes-bord:   #b5c99d;
 
-  --attn:          #d9961a;
-  --attn-txt:      #875700;
-  --attn-doux:     #fdf4e2;
-  --attn-doux-2:   #fef9ef;
-  --attn-bord:     #eed29a;
+  /* orange franc, distinct de l'or de l'accent */
+  --attn:          #c4600f;
+  --attn-txt:      #8a4006;
+  --attn-doux:     #f7dcc2;
+  --attn-doux-2:   #fae9d8;
+  --attn-bord:     #e6ae7a;
 
-  --danger:        #c73a36;
-  --danger-survol: #a92f2c;
-  --danger-txt:    #b1302c;
-  --danger-doux:   #fdecea;
-  --danger-doux-2: #fff8f7;
-  --danger-bord:   #f1c2be;
+  /* rouge vif (danger), distinct du rouge sang de la marque */
+  --danger:        #c62828;
+  --danger-survol: #a61f1f;
+  --danger-txt:    #a81f1f;
+  --danger-doux:   #f7d9d4;
+  --danger-doux-2: #fae8e4;
+  --danger-bord:   #eba79d;
 
   /* -- menu latéral --- */
-  --menu-fond:      #ffffff;
+  --menu-fond:      #f3ead6;
   --menu-bord:      var(--bord);
-  --menu-txt:       #4a5669;
-  --menu-survol:    #f1f4f8;
+  --menu-txt:       #5a4931;
+  --menu-survol:    #eadcbe;
   --menu-actif:     var(--accent-doux);
   --menu-actif-txt: var(--accent-txt);
 
@@ -74,99 +120,128 @@
   --e8: 40px;
 
   /* -- typographie --- */
-  /* piles de polices : Inter si présente, sinon police système */
-  --police: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui,
+  /* piles de polices, chargées par `index.html` ; à défaut, police
+     système. Texte : Alegreya Sans. Titres et cartes : Grenze Gotisch, une
+     gothique ronde et lisible, l'écriture d'un vieux grimoire de village.
+     Illisible en capitales : un libellé en majuscules prend --police. */
+  --police: "Alegreya Sans", "Segoe UI Variable Text", "Segoe UI", system-ui,
             -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --police-titre: "Grenze Gotisch", "Palatino Linotype", Georgia, serif;
+  --police-carte: "Grenze Gotisch", "Alegreya Sans", Georgia, serif;
   --police-mono: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas,
                  "Liberation Mono", monospace;
-  --t-2xs: 10.5px;
-  --t-xs:  11.5px;
-  --t-s:   12.5px;
-  --t-m:   13.5px;
-  --t-l:   15px;
-  --t-xl:  18px;
-  --t-2xl: 23px;
+  --t-2xs: 11px;
+  --t-xs:  12.5px;
+  --t-s:   13.5px;
+  --t-m:   15px;
+  --t-l:   16px;
+  --t-xl:  19px;
+  --t-2xl: 27px;
 
-  /* -- formes --- */
-  --r-s: 6px;
-  --r-m: 8px;
-  --r-l: 12px;
-  --r-xl: 16px;
+  /* -- formes : angles plus vifs, comme des cartes à jouer --- */
+  --r-s: 4px;
+  --r-m: 6px;
+  --r-l: 10px;
+  --r-xl: 14px;
   --r-plein: 999px;
 
-  --ombre-1: 0 1px 2px rgba(15, 26, 41, .05);
-  --ombre-2: 0 1px 2px rgba(15, 26, 41, .04), 0 4px 14px rgba(15, 26, 41, .06);
-  --ombre-3: 0 4px 10px rgba(15, 26, 41, .06), 0 16px 40px rgba(15, 26, 41, .14);
-  --ombre-btn: 0 1px 1px rgba(15, 26, 41, .05);
+  --ombre-1: 0 1px 2px rgba(42, 31, 20, .10);
+  --ombre-2: 0 1px 2px rgba(42, 31, 20, .08), 0 6px 18px rgba(42, 31, 20, .14);
+  --ombre-3: 0 4px 10px rgba(42, 31, 20, .14), 0 20px 48px rgba(42, 31, 20, .28);
+  --ombre-btn: 0 1px 0 rgba(42, 31, 20, .14);
 
-  --anneau: 0 0 0 3px rgba(26, 115, 200, .28);
-  --anneau-danger: 0 0 0 3px rgba(199, 58, 54, .25);
-  --duree: .08s;
+  --anneau: 0 0 0 3px rgba(176, 122, 28, .40);
+  --anneau-danger: 0 0 0 3px rgba(163, 34, 27, .32);
+  --duree: .16s;
+  --courbe: cubic-bezier(.2, .7, .2, 1);
 
   /* -- hauteurs de contrôle --- */
-  --h-s: 28px;
-  --h-m: 34px;
-  --h-l: 40px;
+  --h-s: 30px;
+  --h-m: 36px;
+  --h-l: 44px;
 
-  --voile: rgba(10, 18, 30, .46);
-  --halo: rgba(51, 156, 238, .12);
+  --voile: rgba(12, 8, 4, .62);
+  --halo: rgba(176, 122, 28, .14);
 }
 
-/* -- thème sombre --- */
+/* -- thème sombre : la nuit tombe sur le village --- */
 /* `color-scheme` bascule aussi les contrôles natifs. */
 [data-theme="sombre"] {
   color-scheme: dark;
 
-  --accent:        #58a9f0;
-  --accent-survol: #78baf4;
-  --accent-doux:   #15314d;
-  --accent-doux-2: #132438;
-  --accent-bord:   #2b5480;
-  --accent-txt:    #93cbf7;
-  --sur-accent:    #051321;
-  --selection:     #2f6aa6;
+  --accent:        #d4a54a;
+  --accent-survol: #e4bb68;
+  --accent-doux:   #2a2215;
+  --accent-doux-2: #1f1a12;
+  --accent-bord:   #5a4624;
+  --accent-txt:    #e8c27a;
+  --sur-accent:    #1a1206;
+  --selection:     #6b1a1a;
 
-  --fond:       #0e1520;
-  --surface:    #161f2c;
-  --surface-2:  #1b2534;
-  --surface-3:  #232f41;
-  --bord:       #28364a;
-  --bord-fort:  #3a4b63;
-  --txt:        #e7edf5;
-  --txt-2:      #c1ccda;
-  --dim:        #95a3b6;
-  --num:        #6b7a90;
+  --sang:          #a3261e;
+  --sang-survol:   #b8332a;
+  --sang-doux:     #2c1414;
+  --sang-doux-2:   #211010;
+  --sang-bord:     #6b2420;
+  --sang-txt:      #e8877d;
+  --sur-sang:      #f6ead2;
 
-  --succes:        #52c48a;
-  --succes-doux:   #143424;
-  --succes-bord:   #25583d;
+  --lune:          #a9bcd8;
+  --lune-survol:   #c3d2e8;
+  --lune-doux:     #1a2233;
+  --lune-doux-2:   #141a27;
+  --lune-bord:     #34425e;
+  --lune-txt:      #bccbe3;
+  --sur-lune:      #0c1220;
+  --anneau-lune:   0 0 0 3px rgba(169, 188, 216, .40);
 
-  --attn:          #ebb659;
-  --attn-txt:      #f0cc85;
-  --attn-doux:     #33290f;
-  --attn-doux-2:   #2a2311;
-  --attn-bord:     #62501f;
+  --or:            #d4a54a;
+  --degrade:       linear-gradient(160deg, #a3261e 0%, #6e1212 60%, #3a0808 100%);
+  --degrade-nuit:  linear-gradient(160deg, #1c2438 0%, #0c0f18 100%);
+  --lueur:         0 0 0 1px rgba(184, 51, 42, .45), 0 0 24px rgba(184, 51, 42, .35);
 
-  --danger:        #e05a55;
-  --danger-survol: #ea7873;
-  --danger-txt:    #f4a39f;
-  --danger-doux:   #3a1d1e;
-  --danger-doux-2: #2c1b1d;
-  --danger-bord:   #733535;
+  --fond:       #0a0c11;
+  --surface:    #12151d;
+  --surface-2:  #161a23;
+  --surface-3:  #1e2330;
+  --bord:       #262b38;
+  --bord-fort:  #3a4152;
+  --txt:        #ece4d2;
+  --txt-2:      #cfc5b0;
+  --dim:        #968c7a;
+  --num:        #645d50;
 
-  --menu-fond:      #0a1019;
-  --menu-bord:      #1f2a3a;
-  --menu-txt:       #a3b0c2;
-  --menu-survol:    #152031;
-  --menu-actif:     #16304b;
-  --menu-actif-txt: #a5d3f8;
+  --succes:        #7fb377;
+  --succes-doux:   #142116;
+  --succes-bord:   #2f4a2d;
 
-  --ombre-1: 0 1px 2px rgba(0, 0, 0, .3);
-  --ombre-2: 0 1px 2px rgba(0, 0, 0, .3), 0 4px 16px rgba(0, 0, 0, .24);
-  --ombre-3: 0 4px 12px rgba(0, 0, 0, .35), 0 18px 44px rgba(0, 0, 0, .42);
-  --ombre-btn: none;
+  --attn:          #e08a3c;
+  --attn-txt:      #f2a865;
+  --attn-doux:     #2e1d0f;
+  --attn-doux-2:   #24170c;
+  --attn-bord:     #6b4220;
 
-  --anneau: 0 0 0 3px rgba(88, 169, 240, .35);
-  --voile: rgba(2, 6, 12, .62);
-  --halo: rgba(88, 169, 240, .10);
+  --danger:        #e5534b;
+  --danger-survol: #ee6f68;
+  --danger-txt:    #f6a39c;
+  --danger-doux:   #2e1312;
+  --danger-doux-2: #231010;
+  --danger-bord:   #6b2420;
+
+  --menu-fond:      #07090d;
+  --menu-bord:      #1b1f29;
+  --menu-txt:       #a59b88;
+  --menu-survol:    #141821;
+  --menu-actif:     #241c12;
+  --menu-actif-txt: #edc982;
+
+  --ombre-1: 0 1px 2px rgba(0, 0, 0, .5);
+  --ombre-2: 0 1px 2px rgba(0, 0, 0, .5), 0 8px 22px rgba(0, 0, 0, .45);
+  --ombre-3: 0 4px 12px rgba(0, 0, 0, .55), 0 22px 56px rgba(0, 0, 0, .7);
+  --ombre-btn: 0 1px 0 rgba(0, 0, 0, .5);
+
+  --anneau: 0 0 0 3px rgba(212, 165, 74, .40);
+  --anneau-danger: 0 0 0 3px rgba(208, 69, 58, .40);
+  --voile: rgba(2, 3, 6, .78);
+  --halo: rgba(169, 188, 216, .08);
 }

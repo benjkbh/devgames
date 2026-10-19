@@ -119,8 +119,13 @@ export function SaisieDate({
                 </tr>
               </thead>
               <tbody>
-                {semaines(vue.a, vue.m).map((sem) => (
-                  <tr key={sem.find(Boolean)}>
+                {/* Clés : rang de la semaine et du jour dans la semaine,
+                    jamais le numéro du jour (une case vide d'index 1 et le
+                    jour 1 auraient la même clé, et les cellules
+                    s'empileraient au changement de mois). */}
+                {semaines(vue.a, vue.m).map((sem, s) => (
+                  // eslint-disable-next-line react/no-array-index-key
+                  <tr key={s}>
                     {sem.map((j, i) => {
                       // eslint-disable-next-line react/no-array-index-key
                       if (!j) return <td key={i} />;
@@ -128,7 +133,8 @@ export function SaisieDate({
                       const choisi = courante
                         && v === valeur.slice(0, 10);
                       return (
-                        <td key={j}>
+                        // eslint-disable-next-line react/no-array-index-key
+                        <td key={i}>
                           <button type="button"
                                   className={cx('calendrier-jour',
                                     choisi && 'choisi',

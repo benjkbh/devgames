@@ -80,11 +80,11 @@
   flex: 0 0 32px;
   height: 32px;
   border-radius: 9px;
-  background: linear-gradient(145deg, var(--marque), var(--marque-fonce));
+  background: var(--degrade);
   color: #fff;
 }
 .menu-logo .ico { width: 19px; height: 19px; }
-.menu-appli { flex: 1; font-size: var(--t-l); font-weight: 700; letter-spacing: -.01em; color: var(--txt); }
+.menu-appli { flex: 1; font-family: var(--police-titre); font-size: var(--t-l); font-weight: 700; color: var(--txt); }
 
 /* Épingle visible seulement menu déployé. */
 .menu-epingle { opacity: 0; pointer-events: none; transition: opacity .1s ease-out; }
@@ -138,7 +138,7 @@
   transition: background var(--duree), color var(--duree);
 }
 .menu-lien:hover { background: var(--menu-survol); color: var(--txt); }
-.menu-lien.actif { background: var(--menu-actif); color: var(--menu-actif-txt); font-weight: 650; }
+.menu-lien.actif { background: var(--menu-actif); color: var(--menu-actif-txt); font-weight: 700; box-shadow: inset 3px 0 0 var(--sang); }
 .menu-lien:focus-visible { outline: none; box-shadow: var(--anneau); }
 .menu-lien-ico { display: inline-flex; flex: 0 0 20px; }
 .menu-lien-ico .ico { width: 20px; height: 20px; }
@@ -172,7 +172,7 @@
   flex: 0 0 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(145deg, var(--marque), var(--accent));
+  background: var(--degrade-nuit);
   color: #fff;
   font-size: var(--t-xs);
   font-weight: 700;
@@ -259,4 +259,24 @@
 /* Mouvement réduit : le menu se déploie sans transition. */
 @media (prefers-reduced-motion: reduce) {
   .menu-panneau, .menu-texte, .menu-epingle { transition: none; }
+}
+
+/* -- santé du serveur et présence -- */
+.menu-presence { font-size: var(--t-s); }
+.menu-presence-ico { position: relative; }
+/* Pastille d'état posée sur l'icône : visible menu replié. */
+.menu-presence-pastille { position: absolute; right: -3px; bottom: -2px; width: 9px; height: 9px; box-shadow: 0 0 0 2px var(--menu-fond); }
+.presence-sante { display: flex; align-items: center; gap: var(--e2); margin-bottom: var(--e3); font-weight: 700; }
+.presence-titre { margin: var(--e3) 0 var(--e1); color: var(--dim); font-size: var(--t-2xs); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.presence-liste { display: flex; flex-direction: column; gap: 2px; max-height: 240px; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
+.presence-ligne { display: flex; align-items: center; gap: var(--e2); padding: 3px 0; }
+.presence-nom { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.presence-depuis { color: var(--dim); font-size: var(--t-xs); white-space: nowrap; }
+
+/* Bandeau de santé en tête de zone. */
+.bandeau-sante { position: sticky; top: 0; z-index: 30; padding: var(--e3) var(--e8) 0; }
+.bandeau-sante .alerte { box-shadow: var(--ombre-2); }
+@media (max-width: 720px) {
+  .bandeau-sante { padding: var(--e3) var(--e4) 0; }
+  .menu-presence .menu-texte { display: none; }
 }

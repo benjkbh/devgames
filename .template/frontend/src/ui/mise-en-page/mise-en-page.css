@@ -39,6 +39,7 @@
   margin-bottom: 10px;
 }
 .section-titre {
+  font-family: var(--police-titre);
   display: flex;
   align-items: center;
   gap: var(--e2);
@@ -65,13 +66,13 @@
   flex: 0 0 auto;
   width: 38px; height: 38px;
   border-radius: 11px;
-  background: linear-gradient(145deg, var(--marque), var(--marque-fonce));
+  background: var(--degrade);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(20, 77, 157, .28);
+  box-shadow: var(--lueur);
 }
 .marque-logo .ico { width: 22px; height: 22px; }
 .marque-noms { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
-.marque-nom { font-size: var(--t-l); font-weight: 700; letter-spacing: -.01em; color: var(--txt); }
+.marque-nom { font-family: var(--police-titre); font-size: var(--t-l); font-weight: 700; color: var(--txt); }
 .marque-sous-nom { font-size: var(--t-xs); color: var(--dim); }
 
 /* -- écrans pleine fenêtre --- */

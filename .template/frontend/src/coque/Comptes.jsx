@@ -294,7 +294,7 @@ export default function Comptes({ session, onChange }) {
           {c.superadmin && !c.fondateur && (
             <Badge couleur="vert" titre="super" />
           )}
-          {c.nom === moi && <Badge couleur="bleu" titre="vous" />}
+          {c.nom === moi && <Badge couleur="or" titre="vous" />}
         </span>
       ),
     },

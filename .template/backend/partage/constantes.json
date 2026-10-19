@@ -1,6 +1,7 @@
 {
   "modules": {
     "accueil": ["acces"],
+    "uno": ["joueur"],
     "storybook": ["acces"]
   }
 }

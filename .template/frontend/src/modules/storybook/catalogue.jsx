@@ -5,6 +5,7 @@ import { BACS } from './fiches/bacs';
 import { FICHES as DONNEES } from './fiches/donnees';
 import { FICHES as FORMULAIRE } from './fiches/formulaire';
 import { FICHES as HOOKS } from './fiches/hooks';
+import { FICHES as JEUX } from './fiches/jeux';
 import { FICHES as NOUVEAUX } from './fiches/nouveaux';
 import { FICHES as PRIMITIVES } from './fiches/primitives';
 import { FICHES as RETOUR } from './fiches/retour';
@@ -25,7 +26,8 @@ import { FICHES as RETOUR } from './fiches/retour';
 // catégorie et ses dépendances dans `arbre.js`, et si possible un bac dans
 // `bacs.jsx`.
 const FICHES = [
-  ...PRIMITIVES, ...NOUVEAUX, ...FORMULAIRE, ...RETOUR, ...DONNEES, ...HOOKS,
+  ...PRIMITIVES, ...NOUVEAUX, ...FORMULAIRE, ...RETOUR, ...DONNEES, ...JEUX,
+  ...HOOKS,
 ].map((f) => {
   const groupe = CATEGORIES[f.cle];
   // Une fiche sans catégorie sortirait du menu sans bruit : on s'arrête.

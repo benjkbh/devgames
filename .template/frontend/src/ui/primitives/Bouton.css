@@ -9,15 +9,27 @@
   border-radius: var(--r-m);
   font: inherit;
   font-size: var(--t-m);
-  font-weight: 560;
+  font-weight: 700;
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
   transition: background var(--duree), border-color var(--duree),
-              color var(--duree), box-shadow var(--duree);
+              color var(--duree), box-shadow var(--duree),
+              translate var(--duree) var(--courbe), filter var(--duree);
 }
 .btn:focus-visible { outline: none; box-shadow: var(--c-anneau); }
+/* Principal et secondaire se soulèvent d'1 px au survol et s'enfoncent au
+   clic ; le fantôme (barre d'outils, icône posée dans un champ) reste en
+   place. `translate` s'ajoute au `transform` d'un bouton positionné (centré
+   par translateY(-50%)) au lieu de le remplacer. */
+.btn-principal:hover:not(:disabled),
+.btn-secondaire:hover:not(:disabled) { translate: 0 -1px; }
+.btn-principal:active:not(:disabled),
+.btn-secondaire:active:not(:disabled) { translate: 0 1px; }
+@media (prefers-reduced-motion: reduce) {
+  .btn, .btn:hover:not(:disabled), .btn:active:not(:disabled) { translate: none; }
+}
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 
 .btn-s { height: var(--h-s); padding: 0 10px; gap: 6px; font-size: var(--t-s);
@@ -42,33 +54,54 @@
 .btn-chevron { width: 14px; height: 14px; margin-right: -4px; opacity: .8; }
 
 /* -- couleurs ---------------------------------------------------------------
-   Chaque couleur pose les variables lues par les trois variantes. */
-.btn-bleu {
+   Chaque couleur pose les variables lues par les trois variantes ; son nom
+   dit la teinte affichée (jetons de `styles/tokens.css`). */
+.btn-sang {
+  --c: var(--sang); --c-survol: var(--sang-survol);
+  --c-doux: var(--sang-doux); --c-doux-2: var(--sang-doux-2);
+  --c-bord: var(--sang-bord); --c-txt: var(--sang-txt);
+  --c-sur: var(--sur-sang); --c-anneau: var(--anneau);
+}
+.btn-or {
   --c: var(--accent); --c-survol: var(--accent-survol);
   --c-doux: var(--accent-doux); --c-doux-2: var(--accent-doux-2);
   --c-bord: var(--accent-bord); --c-txt: var(--accent-txt);
-  --c-anneau: var(--anneau);
+  --c-sur: var(--sur-accent); --c-anneau: var(--anneau);
+}
+.btn-bleu {
+  --c: var(--lune); --c-survol: var(--lune-survol);
+  --c-doux: var(--lune-doux); --c-doux-2: var(--lune-doux-2);
+  --c-bord: var(--lune-bord); --c-txt: var(--lune-txt);
+  --c-sur: var(--sur-lune); --c-anneau: var(--anneau-lune);
 }
 .btn-rouge {
   --c: var(--danger); --c-survol: var(--danger-survol);
   --c-doux: var(--danger-doux); --c-doux-2: var(--danger-doux-2);
   --c-bord: var(--danger-bord); --c-txt: var(--danger-txt);
-  --c-anneau: var(--anneau-danger);
+  --c-sur: #fff; --c-anneau: var(--anneau-danger);
 }
 .btn-vert {
   --c: var(--succes); --c-survol: var(--succes);
   --c-doux: var(--succes-doux); --c-doux-2: var(--succes-doux);
   --c-bord: var(--succes-bord); --c-txt: var(--succes);
-  --c-anneau: 0 0 0 3px var(--succes-bord);
+  --c-sur: var(--sur-accent); --c-anneau: 0 0 0 3px var(--succes-bord);
 }
 
 /* -- variantes --------------------------------------------------------------- */
 .btn-principal {
   background: var(--c);
-  color: var(--sur-accent);
+  color: var(--c-sur);
   box-shadow: var(--ombre-btn);
 }
 .btn-principal:hover:not(:disabled) { background: var(--c-survol); }
+/* Sang (couleur par défaut) : dégradé de la marque et lueur au survol. */
+.btn-sang.btn-principal { background: var(--degrade); letter-spacing: .02em; }
+.btn-sang.btn-principal:hover:not(:disabled) {
+  background: var(--degrade);
+  filter: brightness(1.08) saturate(1.1);
+  box-shadow: var(--lueur);
+}
+.btn-sang.btn-principal:focus-visible { box-shadow: var(--anneau), var(--lueur); }
 .btn-vert.btn-principal:hover:not(:disabled) { filter: brightness(.9); }
 
 .btn-secondaire {
@@ -82,23 +115,20 @@
   border-color: var(--c-bord);
   color: var(--c-txt);
 }
-/* Couleur explicite : le bouton est teinté dès le repos. */
-.btn-secondaire.btn-rouge,
-.btn-secondaire.btn-vert {
+/* Couleur explicite (autre que sang, le défaut) : teinté dès le repos. */
+.btn-secondaire:not(.btn-sang) {
   background: var(--c-doux-2);
   border-color: var(--c-bord);
   color: var(--c-txt);
 }
-.btn-secondaire.btn-rouge:hover:not(:disabled),
-.btn-secondaire.btn-vert:hover:not(:disabled) {
+.btn-secondaire:not(.btn-sang):hover:not(:disabled) {
   background: var(--c-doux);
   border-color: var(--c);
 }
 
 .btn-fantome { background: transparent; color: var(--txt-2); }
 .btn-fantome:hover:not(:disabled) { background: var(--surface-3); color: var(--txt); }
-.btn-fantome.btn-rouge:hover:not(:disabled),
-.btn-fantome.btn-vert:hover:not(:disabled) {
+.btn-fantome:not(.btn-sang):hover:not(:disabled) {
   background: var(--c-doux-2);
   color: var(--c-txt);
 }

@@ -33,7 +33,7 @@ function graduations(debut, fin) {
 // temps et une infobulle au survol ou au focus de chaque segment.
 // `debut` / `fin` : bornes en epoch (s).
 // `segments` : `[{ cle, debut, fin, couleur, libelle, infobulle }]`, contigus ;
-//   couleur    vert, bleu, rouge, orange, ardoise, gris (les couleurs de
+//   couleur    vert, bleu, rouge, orange, sang, or, ardoise, gris (celles de
 //              `Pastille`) ou hachures (état inconnu) ;
 //   libelle    nom accessible du segment ;
 //   infobulle  contenu affiché au survol.

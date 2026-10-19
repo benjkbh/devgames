@@ -3,7 +3,8 @@ import './Badge.css';
 
 // Étiquette courte (statut, rôle, compte).
 // `titre` : le texte (à défaut, les enfants, pour un contenu riche) ;
-// `couleur` : gris, bleu, vert, orange, rouge ; `majuscules` : variante en
+// `couleur` : gris, sang, or, bleu, vert, orange, rouge (le nom dit la
+// teinte) ; `majuscules` : variante en
 // capitales pour annoter une valeur voisine ; `suffixe` : valeur chiffrée
 // affichée après le texte (« figé 3 j »), en chiffres tabulaires.
 export function Badge({
@@ -31,9 +32,9 @@ export function BadgeBooleen({
 }
 
 // Pastille d'état : rond coloré, masqué aux lecteurs d'écran.
-// `couleur` : vert, bleu, rouge, orange, ardoise, gris ou vide (anneau sans
-// remplissage). `compact` : petit point sans halo, pour signaler quelque chose
-// à côté d'un texte.
+// `couleur` : vert, bleu, rouge, orange, sang, or, ardoise, gris ou vide
+// (anneau sans remplissage). `compact` : petit point sans halo, pour signaler
+// quelque chose à côté d'un texte.
 export function Pastille({ couleur, compact, className }) {
   return (
     <span className={cx('pastille', couleur && `pastille-${couleur}`,

@@ -67,6 +67,33 @@ préfixe `PUBLIC` dans `frontend/src/App.jsx`.
 | GET | `/api/compte` ; POST `/api/compte/mot-de-passe`, `/api/compte/sessions/fermer` | tout compte actif |
 | GET | `/api/comptes` ; POST `/api/comptes/{creer,modifier,supprimer}` | superadmin |
 | GET | `/api/sante` | libre : 200 si la base répond |
+| GET | `/api/presence` | tout compte actif : santé vue de l'interface (sondée toutes les 10 s) et comptes en ligne |
+| GET | `/api/uno/salons`, `/api/uno/salon?code=` | rôle `uno:joueur` |
+| POST | `/api/uno/{creer,rejoindre,quitter,lancer}` | rôle `uno:joueur` |
+| POST | `/api/uno/{jouer,piocher,passer,uno,contrer}` | rôle `uno:joueur` |
+
+## Module UNO
+
+Tables de UNO en mémoire (`backend/metier/uno/`) : règles de base dans
+`regles.py` (le détail en tête de fichier), salons dans `salons.py`. Une table
+se partage par son code de 5 caractères ou par le lien `/uno/<code>` ; le
+créateur en est l'hôte et lance les manches (2 à 10 joueurs). Comme les
+sessions, les tables disparaissent au redémarrage, ou après 2 h sans
+activité. L'interface (`frontend/src/modules/uno/`) relit la table chaque
+seconde, ce qui permet aussi de montrer qui est encore à la table ; les
+cartes sont dessinées par le composant `CarteJeu` de `ui/`, dans la palette
+du site (jetons `--uno-*`). Une musique d'ambiance, synthétisée dans le
+navigateur (`modules/uno/ambiance.js`, aucun fichier audio), accompagne le
+module, avec volume et silence mémorisés sur le poste.
+
+## Santé et présence
+
+L'interface relit `GET /api/presence` toutes les 10 s
+(`frontend/src/coque/presence.jsx`) : un bandeau prévient quand le serveur ne
+répond plus, que sa base est illisible ou que la session a expiré, et le pied
+du menu montre l'état du serveur et les comptes en ligne (popup : en ligne,
+puis hors ligne avec la dernière activité). Toute requête authentifiée vaut
+signe de vie ; un compte est en ligne pendant 30 s après le dernier.
 
 ## Ce qui n'est pas inclus
 

@@ -1,7 +1,7 @@
 .carte {
   min-width: 0;
   background: var(--surface);
-  border: 1px solid var(--bord);
+  border: 1.5px solid var(--bord);
   border-radius: var(--r-l);
   box-shadow: var(--ombre-1);
 }
@@ -16,7 +16,8 @@
 .carte-titres { min-width: 0; }
 .carte-titre {
   font-size: var(--t-xs);
-  font-weight: 650;
+  font-family: var(--police);
+  font-weight: 600;
   letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--dim);
@@ -30,4 +31,4 @@
 
 .carte-attention { border-color: var(--attn-bord); }
 .carte-attention .carte-tete { background: var(--attn-doux-2); border-bottom-color: var(--attn-bord); }
-.carte-accent { box-shadow: inset 3px 0 0 var(--accent), var(--ombre-1); }
+.carte-accent { box-shadow: inset 4px 0 0 var(--sang), var(--ombre-1); }

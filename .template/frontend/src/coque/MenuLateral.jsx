@@ -1,9 +1,14 @@
+import { useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 
 import { NOM_APPLI } from '../commun/appli';
 import { MODULES, modulesVisibles } from './modules';
+import { depuisQuand, usePresence } from './presence';
 import { deconnexion, estSuperadmin } from './session';
-import { Bouton, IcoComptes, IcoEpingle, IcoLune, IcoSoleil, IcoSortie, Marque, cx, usePreference, useTheme } from '../ui';
+import {
+  Bouton, IcoComptes, IcoEpingle, IcoLune, IcoSoleil, IcoSortie, Marque,
+  Pastille, Popup, cx, usePreference, useTheme,
+} from '../ui';
 import './coque.css';
 
 // Menu latéral : liste les modules du registre `coque/modules.jsx` que la
@@ -52,6 +57,67 @@ function Lien({ chemin, libelle, Ico }) {
         <span className="menu-texte">{libelle}</span>
       </NavLink>
     </li>
+  );
+}
+
+// État du serveur, en clair et en couleur de pastille.
+const SANTE = {
+  inconnu: ['gris', 'Vérification du serveur…'],
+  ok: ['vert', 'Serveur en ligne'],
+  degrade: ['orange', 'Service dégradé'],
+  injoignable: ['rouge', 'Serveur injoignable'],
+  session: ['orange', 'Session expirée'],
+};
+
+// Santé du serveur et comptes en ligne ; la liste complète (en ligne, puis
+// hors ligne avec la dernière activité) s'ouvre dans une popup.
+function Presences() {
+  const { statut, comptes, moi } = usePresence();
+  const [ouvert, setOuvert] = useState(false);
+  const ancre = useRef(null);
+  const [couleur, sante] = SANTE[statut] || SANTE.inconnu;
+  const enLigne = comptes.filter((c) => c.en_ligne);
+  const horsLigne = comptes.filter((c) => !c.en_ligne);
+  const resume = statut === 'ok' || statut === 'degrade'
+    ? `${enLigne.length} en ligne` : sante;
+  const ligne = (c) => (
+    <li key={c.nom} className="presence-ligne">
+      <Pastille couleur={c.en_ligne ? 'vert' : 'gris'} compact />
+      <span className="presence-nom">
+        {c.nom}
+        {c.nom === moi && <span className="dim"> (vous)</span>}
+      </span>
+      {!c.en_ligne && <span className="presence-depuis">{depuisQuand(c.depuis)}</span>}
+    </li>
+  );
+  return (
+    <>
+      <button ref={ancre} type="button" className="menu-lien menu-presence"
+              aria-haspopup="dialog" aria-expanded={ouvert}
+              title={`${sante} · ${enLigne.length} compte(s) en ligne`}
+              onClick={() => setOuvert(!ouvert)}>
+        <span className="menu-lien-ico menu-presence-ico">
+          <IcoComptes />
+          <Pastille couleur={couleur} className="menu-presence-pastille" />
+        </span>
+        <span className="menu-texte">{resume}</span>
+      </button>
+      <Popup ouvert={ouvert} onFermer={() => setOuvert(false)} ancre={ancre}
+             titre="Qui est là ?">
+        <p className="presence-sante">
+          <Pastille couleur={couleur} />
+          {sante}
+        </p>
+        <p className="presence-titre">{`En ligne (${enLigne.length})`}</p>
+        <ul className="presence-liste">{enLigne.map(ligne)}</ul>
+        {horsLigne.length > 0 && (
+          <>
+            <p className="presence-titre">{`Hors ligne (${horsLigne.length})`}</p>
+            <ul className="presence-liste">{horsLigne.map(ligne)}</ul>
+          </>
+        )}
+      </Popup>
+    </>
   );
 }
 
@@ -131,8 +197,9 @@ export default function MenuLateral({ session, onDeconnecte }) {
           )}
         </div>
 
-        {/* Thème, en pied de menu. */}
+        {/* Santé et présence, thème, puis compte, en pied de menu. */}
         <div className="menu-pied">
+          <Presences />
           <button
             type="button"
             className="menu-lien menu-theme"

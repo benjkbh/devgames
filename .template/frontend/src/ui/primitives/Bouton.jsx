@@ -10,7 +10,9 @@ import './Bouton.css';
 //   variante  principal   action principale de la zone (aplat)
 //             secondaire  action ordinaire (contour) - défaut
 //             fantome     action discrète (barre d'outils)
-//   couleur   bleu (défaut) · rouge (geste destructif) · vert (étape suivante)
+//   couleur   sang (défaut : rouge sang de la marque) · or · bleu (bleu de
+//             lune) · rouge (rouge vif : geste destructif) · vert (étape
+//             suivante) ; le nom dit la teinte affichée
 // `titre` : le texte (à défaut, les enfants, pour un contenu riche). Sans
 // texte, avec une `icone`, le bouton est carré : `libelle` en est alors
 // l'infobulle et le nom accessible (obligatoire).
@@ -19,7 +21,7 @@ import './Bouton.css';
 // `type` : button (défaut), submit ou reset ; `href` : rend un lien, ouvert
 // dans un nouvel onglet.
 export const Bouton = forwardRef(function Bouton({
-  variante = 'secondaire', couleur = 'bleu', taille = 'm', titre, libelle,
+  variante = 'secondaire', couleur = 'sang', taille = 'm', titre, libelle,
   icone, iconeFin, waiting, bloc, type = 'button', disabled, href, className,
   children, ...reste
 }, ref) {

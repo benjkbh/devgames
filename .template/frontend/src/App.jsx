@@ -5,6 +5,7 @@ import FormulaireConnexion from './coque/FormulaireConnexion';
 import MenuLateral from './coque/MenuLateral';
 import MonCompte from './coque/MonCompte';
 import { moduleDefaut, modulesVisibles } from './coque/modules';
+import { BandeauSante, FournisseurPresence } from './coque/presence';
 import { estSuperadmin, useSession } from './coque/session';
 import {
   Chargement, EtatVide, IcoComptes, IcoFiltre, Page,
@@ -52,10 +53,13 @@ export default function App() {
   const defaut = moduleDefaut(session);
   const superadmin = estSuperadmin(session);
 
+  // Contrôle de santé et présence (`coque/presence.jsx`), partagés par le
+  // menu et les modules.
   return (
-    <>
+    <FournisseurPresence>
       <MenuLateral session={session} onDeconnecte={rafraichir} />
       <div id="zone">
+        <BandeauSante />
         <Routes>
           <Route
             path="/"
@@ -105,6 +109,6 @@ export default function App() {
           />
         </Routes>
       </div>
-    </>
+    </FournisseurPresence>
   );
 }

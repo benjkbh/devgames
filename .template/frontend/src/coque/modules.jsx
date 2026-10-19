@@ -1,6 +1,7 @@
 import Accueil from '../modules/accueil/Accueil';
 import Storybook from '../modules/storybook/Storybook';
-import { IcoDashboard, IcoPanneau } from '../ui';
+import Uno from '../modules/uno/Uno';
+import { IcoCarteRole, IcoDashboard, IcoPanneau } from '../ui';
 
 // Registre des modules, lu par le menu latéral (entrées) et par `App`
 // (routes). Ajouter un module : une entrée ici et un dossier dans `modules/`.
@@ -51,6 +52,22 @@ export const MODULES = [
   //     { cle: 'admin', libelle: 'Administration', resume: '…' },
   //   ],
   // },
+  {
+    cle: 'uno',
+    categorie: 'Jeux',
+    chemin: '/uno',
+    libelle: 'UNO',
+    Ico: IcoCarteRole,
+    Composant: Uno,
+    roles: [
+      {
+        cle: 'joueur',
+        libelle: 'Joueur',
+        resume: 'Crée des tables de UNO, en rejoint par code ou par lien, '
+          + 'et y joue.',
+      },
+    ],
+  },
   {
     cle: 'storybook',
     categorie: 'Développement',

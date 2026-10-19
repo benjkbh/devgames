@@ -2,7 +2,8 @@
 from .commun.acces import (DROITS, MODULE_COMPTES, MODULES, ROLES, Fichier,
                            Texte, exige, exige_superadmin)
 from .commun import sante
-from .comptes import gestion, moncompte, session
+from .comptes import gestion, moncompte, presence, session
+from .uno import salons as uno
 
 # Toutes les routes exposées : (méthode, chemin exact) -> fonction.
 # Une route de module commence par `exige(req, module, role)`.
@@ -27,6 +28,21 @@ TABLE = {
 
     # Sonde de santé, sans session.
     ('GET', '/api/sante'): sante.sante,
+    # Santé vue de l'interface et présence des comptes : tout compte actif.
+    ('GET', '/api/presence'): presence.presence,
+
+    # == uno : tables de jeu (rôle joueur) ===================================
+    ('GET', '/api/uno/salons'): uno.lister,
+    ('GET', '/api/uno/salon'): uno.salon,
+    ('POST', '/api/uno/creer'): uno.creer,
+    ('POST', '/api/uno/rejoindre'): uno.rejoindre,
+    ('POST', '/api/uno/quitter'): uno.quitter,
+    ('POST', '/api/uno/lancer'): uno.lancer,
+    ('POST', '/api/uno/jouer'): uno.jouer,
+    ('POST', '/api/uno/piocher'): uno.piocher,
+    ('POST', '/api/uno/passer'): uno.passer,
+    ('POST', '/api/uno/uno'): uno.dire_uno,
+    ('POST', '/api/uno/contrer'): uno.contrer,
 }
 
 # Taille maximale du corps d'une requête, en octets, quand elle dépasse la

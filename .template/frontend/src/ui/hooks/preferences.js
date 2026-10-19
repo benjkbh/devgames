@@ -46,17 +46,14 @@ export function usePreference(cle, defaut, valides) {
   return [valeur, setValeur];
 }
 
-// Thème par défaut : celui du système (`sombre` ou `clair`).
-function themeSysteme() {
-  return window.matchMedia
-    && window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'sombre' : 'clair';
-}
+// Thème par défaut : `sombre` (la nuit est l'identité de l'application),
+// quel que soit le réglage du système.
+const themeParDefaut = () => 'sombre';
 
 // Thème `sombre` / `clair`, mémorisé ; rend `[theme, basculer]`. Il est posé
 // dans l'attribut `data-theme` de `<html>`.
 export function useTheme() {
-  const [theme, setTheme] = usePreference('theme', themeSysteme,
+  const [theme, setTheme] = usePreference('theme', themeParDefaut,
     ['sombre', 'clair']);
   useEffect(() => { document.documentElement.dataset.theme = theme; }, [theme]);
   const basculer = () => setTheme((t) => (t === 'sombre' ? 'clair' : 'sombre'));

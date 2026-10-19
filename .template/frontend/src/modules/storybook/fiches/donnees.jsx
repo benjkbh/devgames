@@ -2,8 +2,10 @@ import { useState } from 'react';
 
 import { P } from './aide';
 import {
-  Badge, BadgeBooleen, Bouton, BoutonCopier, BoutonOuvrir, BoutonPopup,
-  Cellule, IcoAlerte, IcoFiltre, IcoPlus, Ligne, MarqueAppli, Mosaique, Page,
+  Badge, BadgeBooleen, Banniere, Bouton, BoutonCopier, BoutonOuvrir,
+  BoutonPopup, CarteJeu, Cellule, Eventail, IcoAlerte, IcoCalques,
+  IcoCarteRole, IcoComptes, IcoFiltre, IcoPlus, Ligne, MarqueAppli, Mosaique,
+  Page,
   PageGarde, Pastille, Section, Tableau, TableauDonnees, Valeur, useEnsemble,
 } from '../../../ui';
 
@@ -568,6 +570,63 @@ export const FICHES = [
       Rendu: () => <MarqueAppli sousNom="Supervision" />,
       code: '<MarqueAppli nom="Pointeuse" sousNom="Supervision" />',
     }],
+  },
+  {
+    cle: 'banniere', nom: 'Banniere',
+    resume: 'Bandeau de présentation en tête de page, toujours de nuit : '
+      + 'scène dessinée du village (lune, forêt, maisons éclairées, yeux dans '
+      + 'les sous-bois), surtitre, titre, texte, actions, compteurs et une '
+      + 'illustration à droite. Sert d’accroche aux modules (Storybook, UNO).',
+    props: [
+      P('surtitre', 'string', 'Petite étiquette au-dessus du titre.'),
+      P('titre', 'string', 'Titre principal.'),
+      P('niveau', '1 · 2', 'Balise du titre : `<h1>` ou `<h2>`.', '1'),
+      P('description', 'élément', 'Texte sous le titre.'),
+      P('actions', 'éléments', 'Boutons sous le texte.'),
+      P('compteurs', '[{ icone, valeur, libelle }]', 'Chiffres clés, à '
+        + 'droite.'),
+      P('illustration', 'élément', 'À droite, au-dessus des compteurs.'),
+      P('decor', 'booléen', 'false : fond de nuit sans la scène dessinée.',
+        'true'),
+      P('className', 'string', 'Classe ajoutée au bandeau.'),
+      P('children', 'éléments', 'Contenu libre, sous la description.'),
+    ],
+    exemples: [
+      {
+        titre: 'Accroche de module, avec compteurs et illustration',
+        Rendu: () => (
+          <Banniere
+            surtitre="Jeux" titre="UNO"
+            description="Ouvrez une table et partagez son code."
+            actions={<Bouton variante="principal" icone={<IcoPlus />} titre="Créer une table" />}
+            illustration={(
+              <Eventail arc chevauchement={0.5}>
+                <CarteJeu taille="s" couleur="rouge" valeur="7" />
+                <CarteJeu taille="s" valeur="+4" />
+                <CarteJeu taille="s" couleur="bleu" valeur="inversion" />
+              </Eventail>
+            )}
+            compteurs={[
+              { icone: <IcoCarteRole />, valeur: 3, libelle: 'tables' },
+              { icone: <IcoComptes />, valeur: 12, libelle: 'en ligne' },
+            ]} />
+        ),
+        code: '<Banniere\n  surtitre="Jeux" titre="UNO"\n'
+          + '  description="Ouvrez une table et partagez son code."\n'
+          + '  actions={<Bouton variante="principal" titre="Créer une table" />}\n'
+          + '  compteurs={[{ icone: <IcoComptes />, valeur: 12, libelle: '
+          + '\'en ligne\' }]} />',
+      },
+      {
+        titre: 'Sans décor',
+        Rendu: () => (
+          <Banniere decor={false} niveau={2} surtitre="Storybook"
+                    titre="Fond de nuit seul"
+                    compteurs={[{ icone: <IcoCalques />, valeur: 16, libelle: 'catégories' }]} />
+        ),
+        code: '<Banniere decor={false} niveau={2} titre="Fond de nuit seul" />',
+      },
+    ],
   },
   {
     cle: 'page-garde', nom: 'PageGarde',

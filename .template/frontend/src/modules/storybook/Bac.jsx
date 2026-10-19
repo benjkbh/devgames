@@ -1,6 +1,8 @@
 import { Component, Fragment, useState } from 'react';
 
-import { Alerte, Bouton, BoutonCopier, QuestionBool, Saisie, Selecteur } from '../../ui';
+import {
+  Alerte, Bouton, BoutonCopier, IcoRecharger, QuestionBool, Saisie, Selecteur,
+} from '../../ui';
 
 // Isole le composant essayé : une erreur de rendu reste dans le bac et
 // n'emporte pas le catalogue.
@@ -85,7 +87,8 @@ export default function Bac({ bac }) {
                       onChange={(v) => setValeurs((prec) => ({ ...prec, [cleDe(c)]: v }))} />
           </Fragment>
         ))}
-        <Bouton taille="s" variante="fantome" onClick={() => {
+        <Bouton taille="s" variante="fantome"
+                icone={<IcoRecharger />} onClick={() => {
           setValeurs(defauts);
           setEssai((n) => n + 1);
         }}

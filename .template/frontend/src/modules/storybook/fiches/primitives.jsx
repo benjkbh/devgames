@@ -7,7 +7,7 @@ import * as ui from '../../../ui';
 
 const MAINTENANT = Math.floor(Date.now() / 1000);
 const VARIANTES = ['principal', 'secondaire', 'fantome'];
-const COULEURS_BOUTON = ['bleu', 'rouge', 'vert'];
+const COULEURS_BOUTON = ['sang', 'or', 'bleu', 'rouge', 'vert'];
 const PARCOURS = [{ cle: 'a', libelle: 'Création' },
   { cle: 'b', libelle: 'Transmise' },
   { cle: 'c', libelle: 'Livrée' }];
@@ -37,8 +37,11 @@ export const FICHES = [
         + 'l’action de la zone (aplat) ; secondaire : action ordinaire '
         + '(contour) ; fantome : action discrète (barre d’outils).',
       'secondaire'),
-      P('couleur', 'bleu · rouge · vert', 'Teinte. rouge : geste '
-        + 'destructif ; vert : passage à l’étape suivante.', 'bleu'),
+      P('couleur', 'sang · or · bleu · rouge · vert', 'Teinte, nommée '
+        + 'comme elle s’affiche. sang : rouge sombre de la marque, l’action '
+        + 'courante ; or : accent doré ; bleu : bleu de lune ; rouge : rouge '
+        + 'vif, geste destructif ; vert : passage à l’étape suivante.',
+      'sang'),
       P('taille', 's · m · l', 'Hauteur du bouton.', 'm'),
       P('icone', 'élément', 'Affiché avant le texte.'),
       P('iconeFin', 'élément', 'Affiché après le texte.'),
@@ -166,7 +169,7 @@ export const FICHES = [
         titre: 'Couleurs',
         Rendu: () => (
           <div className="sb-ligne">
-            {['gris', 'bleu', 'vert', 'orange', 'rouge'].map((t) => (
+            {['gris', 'sang', 'or', 'bleu', 'vert', 'orange', 'rouge'].map((t) => (
               <Badge key={t} couleur={t} titre={t} />
             ))}
           </div>
@@ -210,7 +213,7 @@ export const FICHES = [
       + 'couleur vient de l’appelant : pour une pointeuse, la couleur de '
       + 'chaque statut est dans `backend/partage/constantes.json`.',
     props: [
-      P('couleur', 'string', 'vert · bleu · rouge · orange · ardoise · gris '
+      P('couleur', 'string', 'vert · bleu · rouge · orange · sang · or · ardoise · gris '
         + '· vide (anneau sans remplissage).'),
       P('compact', 'booléen', 'Point de 7 px, sans halo.'),
       P('className', 'string', 'Classe ajoutée.'),
@@ -219,7 +222,7 @@ export const FICHES = [
       titre: 'Couleurs',
       Rendu: () => (
         <div className="sb-ligne">
-          {['vert', 'bleu', 'rouge', 'orange', 'ardoise', 'gris', 'vide']
+          {['vert', 'bleu', 'rouge', 'orange', 'sang', 'or', 'ardoise', 'gris', 'vide']
             .map((s) => (
               <span key={s} className="sb-ligne">
                 <Pastille couleur={s} /> <code>{s}</code>
@@ -440,7 +443,7 @@ export const FICHES = [
     resume: 'Bande de segments colorés sur une période, avec axe du temps '
       + 'et infobulle au survol ou au focus. La couleur d’un segment vient '
       + 'de sa `couleur`, choisie par son nom parmi celles de `Pastille` '
-      + '(vert, bleu, rouge, orange, ardoise, gris) ; `hachures` donne des '
+      + '(vert, bleu, rouge, orange, sang, or, ardoise, gris) ; `hachures` donne des '
       + 'hachures neutres, pour un état inconnu.',
     props: [
       P('debut · fin', 'epoch (s)', 'Bornes de la période.'),

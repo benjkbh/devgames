@@ -13,6 +13,7 @@
 export const ORDRE = [
   'Mise en page', 'Conteneurs', 'Indicateurs', 'Parcours', 'Actions',
   'Formulaire', 'Filtres', 'Messages', 'Fenêtres', 'Navigation', 'Données',
+  'Jeux',
   'Accessibilité', 'Icônes', 'Hooks', 'Utilitaires',
 ];
 
@@ -20,7 +21,7 @@ export const ORDRE = [
 export const PREMIERES = ['page'];
 
 const PAR_CATEGORIE = {
-  'Mise en page': ['page', 'marque-appli', 'page-garde'],
+  'Mise en page': ['page', 'banniere', 'marque-appli', 'page-garde'],
   Conteneurs: ['carte', 'section'],
   Indicateurs: ['badge', 'badge-booleen', 'pastille', 'tuile', 'grille-tuiles'],
   Parcours: ['etapes', 'chronologie', 'frise-etats'],
@@ -36,6 +37,7 @@ const PAR_CATEGORIE = {
   Navigation: ['onglets'],
   Données: ['tableau', 'tableau-donnees', 'cellule', 'ligne', 'valeur',
     'bouton-ouvrir', 'mosaique', 'definitions'],
+  Jeux: ['carte-jeu', 'eventail'],
   Accessibilité: ['sr'],
   Icônes: ['icones'],
   Hooks: ['use-ensemble', 'use-recherche', 'use-tri', 'use-lecture',

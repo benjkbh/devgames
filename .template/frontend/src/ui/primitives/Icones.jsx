@@ -218,6 +218,165 @@ export const IcoFiltre = (p) => (
   <Svg {...p}><path d="M3.5 5h13M6 10h8M8.5 15h3" /></Svg>
 );
 
+// -- jeu et divertissement --
+
+export const IcoManette = (p) => (
+  <Svg {...p}>
+    <path d="M6.5 5.5h7a3.5 3.5 0 0 1 3.4 2.7l1 4.4a2 2 0 0 1-3.4 1.8l-1.9-1.9H7.4l-1.9 1.9a2 2 0 0 1-3.4-1.8l1-4.4a3.5 3.5 0 0 1 3.4-2.7Z" />
+    <path d="M6.6 8.2v2.6M5.3 9.5h2.6" />
+    <circle cx="13" cy="8.6" r=".5" fill="currentColor" />
+    <circle cx="14.6" cy="10.4" r=".5" fill="currentColor" />
+  </Svg>
+);
+
+export const IcoTrophee = (p) => (
+  <Svg {...p}>
+    <path d="M6.5 3.5h7v4a3.5 3.5 0 0 1-7 0Z" />
+    <path d="M6.5 5H4.2a2.3 2.3 0 0 0 2.6 3.4M13.5 5h2.3a2.3 2.3 0 0 1-2.6 3.4" />
+    <path d="M10 11v3.4M7 16.5h6" />
+  </Svg>
+);
+
+// Dé à jouer, face cinq : le hasard.
+export const IcoDe = (p) => (
+  <Svg {...p}>
+    <rect x="3.2" y="3.2" width="13.6" height="13.6" rx="3" />
+    <circle cx="7" cy="7" r=".9" fill="currentColor" stroke="none" />
+    <circle cx="13" cy="7" r=".9" fill="currentColor" stroke="none" />
+    <circle cx="10" cy="10" r=".9" fill="currentColor" stroke="none" />
+    <circle cx="7" cy="13" r=".9" fill="currentColor" stroke="none" />
+    <circle cx="13" cy="13" r=".9" fill="currentColor" stroke="none" />
+  </Svg>
+);
+
+export const IcoEtoile = (p) => (
+  <Svg {...p}>
+    <path d="M10 3.2l2.1 4.3 4.7.7-3.4 3.3.8 4.7L10 14l-4.2 2.2.8-4.7-3.4-3.3 4.7-.7Z" />
+  </Svg>
+);
+
+// Étincelle : nouveauté, exemple mis en avant.
+export const IcoEtincelle = (p) => (
+  <Svg {...p}>
+    <path d="M9 3l1.4 4.2 4.2 1.4-4.2 1.4L9 14.2 7.6 10 3.4 8.6l4.2-1.4Z" />
+    <path d="M15.4 12.6v3.8M13.5 14.5h3.8" />
+  </Svg>
+);
+
+export const IcoDrapeau = (p) => (
+  <Svg {...p}><path d="M5 17V3.5M5 4h9.5l-2.2 3.5 2.2 3.5H5" /></Svg>
+);
+
+export const IcoBoussole = (p) => (
+  <Svg {...p}>
+    <circle cx="10" cy="10" r="7" />
+    <path d="M13 7l-1.8 4.2L7 13l1.8-4.2Z" />
+  </Svg>
+);
+
+// Boîte : un composant, une pièce de construction.
+export const IcoBoite = (p) => (
+  <Svg {...p}>
+    <path d="M3.5 6.5 10 3.2l6.5 3.3v7L10 16.8l-6.5-3.3Z" />
+    <path d="M3.5 6.5 10 9.8l6.5-3.3M10 9.8v7" />
+  </Svg>
+);
+
+// Conteneur : cadre à en-tête.
+export const IcoConteneur = (p) => (
+  <Svg {...p}>
+    <rect x="3" y="3.6" width="14" height="12.8" rx="2.4" />
+    <path d="M3 7.8h14M6 5.7h.01" />
+  </Svg>
+);
+
+export const IcoCalques = (p) => (
+  <Svg {...p}>
+    <path d="M10 3 17 6.5 10 10 3 6.5Z" />
+    <path d="M3 10l7 3.5 7-3.5M3 13.5 10 17l7-3.5" />
+  </Svg>
+);
+
+export const IcoCrayon = (p) => (
+  <Svg {...p}>
+    <path d="M13.2 3.8a1.8 1.8 0 0 1 2.6 2.6L7.2 15l-3.4.8.8-3.4Z" />
+    <path d="M11.8 5.2l3 3" />
+  </Svg>
+);
+
+export const IcoBulle = (p) => (
+  <Svg {...p}>
+    <path d="M4.5 4h11A1.5 1.5 0 0 1 17 5.5v7a1.5 1.5 0 0 1-1.5 1.5H9.2l-3.7 3v-3h-1A1.5 1.5 0 0 1 3 12.5v-7A1.5 1.5 0 0 1 4.5 4Z" />
+  </Svg>
+);
+
+export const IcoAccessibilite = (p) => (
+  <Svg {...p}>
+    <circle cx="10" cy="4" r="1.4" />
+    <path d="M4.5 7.4 10 8.6l5.5-1.2M10 8.6v3.6l-2.6 4.6M10 12.2l2.6 4.6" />
+  </Svg>
+);
+
+// Crochet : un hook React.
+export const IcoCrochet = (p) => (
+  <Svg {...p}>
+    <circle cx="12.5" cy="3.6" r="1.2" />
+    <path d="M12.5 4.8v6.6a3.7 3.7 0 0 1-7.4 0V9l2 2" />
+  </Svg>
+);
+
+export const IcoOutils = (p) => (
+  <Svg {...p}>
+    <path d="M12.8 3.4a3.6 3.6 0 0 0-3.3 4.9L3.8 14a1.5 1.5 0 0 0 2.2 2.2l5.7-5.7a3.6 3.6 0 0 0 4.9-3.3l-2.2 2.2-2-.4-.4-2Z" />
+  </Svg>
+);
+
+export const IcoPalette = (p) => (
+  <Svg {...p}>
+    <path d="M10 3a7 7 0 0 0 0 14c1 0 1.6-.7 1.6-1.5 0-.9-.7-1.3-.7-2.1 0-.9.7-1.5 1.6-1.5h1.8A2.8 2.8 0 0 0 17 9.1C17 5.7 13.9 3 10 3Z" />
+    <circle cx="6.6" cy="9.4" r=".9" fill="currentColor" stroke="none" />
+    <circle cx="8.6" cy="6.3" r=".9" fill="currentColor" stroke="none" />
+    <circle cx="12.2" cy="6.3" r=".9" fill="currentColor" stroke="none" />
+  </Svg>
+);
+
+// Réglages : deux curseurs.
+export const IcoReglages = (p) => (
+  <Svg {...p}>
+    <path d="M3.5 6.5h7.5M15 6.5h1.5M3.5 13.5h1.5M9 13.5h7.5" />
+    <circle cx="13" cy="6.5" r="2" />
+    <circle cx="7" cy="13.5" r="2" />
+  </Svg>
+);
+
+export const IcoRecharger = (p) => (
+  <Svg {...p}><path d="M16 10a6 6 0 1 1-1.8-4.3M16 3.4v3.2h-3.2" /></Svg>
+);
+
+// Son : haut-parleur et deux ondes.
+export const IcoSon = (p) => (
+  <Svg {...p}>
+    <path d="M3.5 7.8h2.8L10 4.6v10.8l-3.7-3.2H3.5Z" />
+    <path d="M13 7.4a3.6 3.6 0 0 1 0 5.2M15.2 5.2a6.6 6.6 0 0 1 0 9.6" />
+  </Svg>
+);
+
+// Muet : haut-parleur barré d'une croix.
+export const IcoMuet = (p) => (
+  <Svg {...p}>
+    <path d="M3.5 7.8h2.8L10 4.6v10.8l-3.7-3.2H3.5Z" />
+    <path d="M13 7.8l4 4.4M17 7.8l-4 4.4" />
+  </Svg>
+);
+
+// Carte de rôle (jeu de cartes) : un croissant de lune au centre.
+export const IcoCarteRole = (p) => (
+  <Svg {...p}>
+    <rect x="4.6" y="2.6" width="10.8" height="14.8" rx="1.6" />
+    <path d="M11.6 7.2a3 3 0 1 0 0 5.6 3.4 3.4 0 0 1 0-5.6Z" />
+  </Svg>
+);
+
 // Marque de l'application, pour les écrans sans menu.
 export const Marque = ({ className }) => (
   <svg viewBox="0 0 40 40" aria-hidden="true" focusable="false"

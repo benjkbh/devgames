@@ -9,6 +9,7 @@ import FormulaireConnexion from '../src/coque/FormulaireConnexion';
 import MenuLateral from '../src/coque/MenuLateral';
 import { MODULES } from '../src/coque/modules';
 import Storybook from '../src/modules/storybook/Storybook';
+import { Plateau, SalleAttente } from '../src/modules/uno/Table';
 import { CATALOGUE } from '../src/modules/storybook/catalogue';
 import { CATEGORIES } from '../src/modules/storybook/fiches/arbre';
 import * as ui from '../src/ui';
@@ -121,6 +122,42 @@ const ECRANS = [
 
 ECRANS.push(
   ['catalogue des composants', '/storybook', <Storybook />],
+);
+
+// Table de UNO, telle que le serveur la décrit : attente, manche, fin.
+const TABLE_UNO = {
+  code: 'K7Q2M', nom: 'Soirée', hote: 'ana', moi: 'ana', public: true,
+  membre: true, version: 3, manches: 1, min_joueurs: 2, max_joueurs: 10,
+  joueurs: ['ana', 'bob', 'cyd'], scores: { ana: 0, bob: 12, cyd: 0 },
+  etat: 'partie',
+};
+const MANCHE_UNO = {
+  joueurs: [
+    { nom: 'ana', cartes: 3, uno: false, expose: false },
+    { nom: 'bob', cartes: 1, uno: false, expose: true },
+    { nom: 'cyd', cartes: 12, uno: false, expose: false },
+  ],
+  main: [
+    { id: 1, couleur: 'rouge', valeur: '7' },
+    { id: 2, couleur: 'noir', valeur: '+4' },
+    { id: 3, couleur: 'bleu', valeur: 'inversion' },
+  ],
+  jouables: [1, 2], uno_annonce: false,
+  dessus: { id: 9, couleur: 'noir', valeur: 'joker' }, couleur: 'rouge',
+  sens: -1, tour: 'ana', pioche: 70, pioche_jouable: null,
+  journal: ['La partie commence.', 'bob pose Joker et annonce rouge.'],
+  gagnant: null, points: 0,
+};
+ECRANS.push(
+  ['uno : salle d’attente', '/uno/K7Q2M',
+    <SalleAttente table={{ ...TABLE_UNO, etat: 'attente' }} onAction={() => {}} />],
+  ['uno : manche en cours', '/uno/K7Q2M',
+    <Plateau table={{ ...TABLE_UNO, partie: MANCHE_UNO }} onAction={() => {}} />],
+  ['uno : manche finie', '/uno/K7Q2M',
+    <Plateau table={{
+      ...TABLE_UNO, etat: 'finie',
+      partie: { ...MANCHE_UNO, tour: null, gagnant: 'bob', points: 63 },
+    }} onAction={() => {}} />],
 );
 
 let echecs = 0;

@@ -90,7 +90,7 @@ export function Confirmation({
       onFermer={onAnnuler}
       actions={(
         <>
-          <Bouton variante="principal" couleur={danger ? 'rouge' : 'bleu'}
+          <Bouton variante="principal" couleur={danger ? 'rouge' : 'sang'}
                   waiting={occupe}
                   onClick={onConfirmer} titre={libelle} />
           <Bouton variante="secondaire" onClick={onAnnuler} titre="Revenir" />

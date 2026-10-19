@@ -5,4 +5,4 @@ export const P = (nom, type, description, defaut = '') => (
   { nom, type, defaut, description }
 );
 
-export const COULEURS = 'gris · bleu · vert · orange · rouge';
+export const COULEURS = 'gris · sang · or · bleu · vert · orange · rouge';

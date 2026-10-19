@@ -21,6 +21,10 @@ if TYPE_CHECKING:
 # clients   view      GET /api/clients
 #           operator  POST /api/clients/{creer,modifier}
 #           admin     POST /api/clients/supprimer
+#
+# uno       joueur    GET /api/uno/{salons,salon} ; POST /api/uno/{creer,
+#                     rejoindre,quitter,lancer,jouer,piocher,passer,uno,
+#                     contrer}
 ROLES: dict[str, tuple[str, ...]] = {
     module: tuple(roles) for module, roles in CONSTANTES['modules'].items()}
 

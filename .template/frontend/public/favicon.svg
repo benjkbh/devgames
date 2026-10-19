@@ -1,12 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
-    <linearGradient id="fond" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#339cee"/>
-      <stop offset="1" stop-color="#144d9d"/>
+    <linearGradient id="ciel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1c2438"/>
+      <stop offset="1" stop-color="#07090d"/>
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="15" fill="url(#fond)"/>
-  <rect x="12" y="15" width="40" height="28" rx="5" fill="none" stroke="#fff" stroke-width="4"/>
-  <path d="M25 51h14M32 43v8M20 24h10M20 32h16" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-  <circle cx="50" cy="15" r="8" fill="#1c9c58" stroke="#144d9d" stroke-width="3"/>
+  <rect width="64" height="64" rx="12" fill="url(#ciel)"/>
+  <!-- pleine lune -->
+  <circle cx="40" cy="22" r="13" fill="#ece4d2"/>
+  <circle cx="35" cy="18" r="2.4" fill="#cfc5b0"/>
+  <circle cx="44" cy="27" r="1.8" fill="#cfc5b0"/>
+  <!-- forêt -->
+  <path d="M0 64V46l6-10 6 10V40l6-11 6 11v6l5-8 5 8v-4l6-10 6 10v-6l6-11 6 11v8l6-9V64Z" fill="#05060a"/>
+  <!-- yeux dans la nuit -->
+  <circle cx="24" cy="52" r="1.8" fill="#c0352b"/>
+  <circle cx="30" cy="52" r="1.8" fill="#c0352b"/>
 </svg>

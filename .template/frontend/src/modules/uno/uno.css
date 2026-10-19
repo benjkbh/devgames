@@ -1,0 +1,232 @@
+/* Module UNO : accueil (tables), salle d'attente et plateau. Le plateau est
+   un tapis de table sombre, éclairé de la couleur demandée. */
+
+/* -- accueil --- */
+/* Cartes en éventail dans la bannière d’accueil. */
+.uno-banniere-cartes { padding-right: var(--e4); }
+.uno-accueil-grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--e5); }
+.uno-formulaire { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e4); }
+.uno-formulaire .champ { width: 100%; }
+.uno-saisie-code { font-family: var(--police-mono); font-size: var(--t-l); letter-spacing: .3em; text-transform: uppercase; }
+
+.uno-tables { display: flex; flex-direction: column; gap: var(--e2); margin: 0; padding: 0; list-style: none; }
+.uno-tables-ligne {
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  padding: var(--e3) var(--e4);
+  border: 1px solid var(--bord);
+  border-radius: var(--r-m);
+  background: var(--surface);
+}
+.uno-tables-ligne:hover { border-color: var(--accent-bord); }
+.uno-tables-ico { width: 22px; height: 22px; color: var(--accent); }
+.uno-tables-nom { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
+.uno-tables-nom .dim { font-size: var(--t-xs); }
+.uno-tables-joueurs { display: inline-flex; align-items: center; gap: 4px; color: var(--dim); font-variant-numeric: tabular-nums; }
+
+/* -- barre de la table --- */
+.uno-barre { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e3); margin-bottom: var(--e5); }
+.uno-retour { color: var(--accent-txt); font-family: var(--police-titre); font-weight: 700; text-decoration: none; }
+.uno-retour::after { content: " /"; color: var(--dim); }
+.uno-barre-titre { flex: 1 1 auto; min-width: 0; font-size: var(--t-xl); overflow-wrap: anywhere; }
+.uno-barre-code { padding: 2px 10px; border: 1px solid var(--accent-bord); border-radius: var(--r-s); color: var(--accent-txt); font-family: var(--police-mono); letter-spacing: .2em; }
+.uno-erreur { margin-bottom: var(--e4); }
+
+/* -- invitation et salle d'attente --- */
+.uno-invitation { max-width: 520px; }
+.uno-invitation .carte-corps { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e3); }
+.uno-invitation-nom { font-family: var(--police-titre); font-size: var(--t-2xl); }
+.uno-attente { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: var(--e5); align-items: start; }
+.uno-attente-actions { grid-column: 1 / -1; }
+.uno-partage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e4);
+  padding: var(--e5);
+  border: 1px solid var(--accent-bord);
+  border-radius: var(--r-l);
+  background:
+    radial-gradient(400px 200px at 100% 0%, color-mix(in srgb, var(--sang) 14%, transparent), transparent 70%),
+    var(--surface);
+}
+.uno-code, .uno-partage-lien { display: flex; flex-direction: column; gap: var(--e1); }
+.uno-code-libelle { color: var(--dim); font-size: var(--t-2xs); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.uno-code-valeur { color: var(--accent-txt); font-family: var(--police-mono); font-size: 40px; font-weight: 700; letter-spacing: .35em; line-height: 1.1; }
+
+.uno-scores { display: flex; flex-direction: column; gap: var(--e2); margin: 0; padding: 0; list-style: none; counter-reset: rang; }
+.uno-scores li { display: flex; align-items: center; justify-content: space-between; gap: var(--e3); padding: var(--e2) var(--e3); border-radius: var(--r-s); background: var(--surface-2); }
+.uno-scores-nom { display: inline-flex; align-items: center; gap: var(--e2); font-weight: 700; }
+.uno-scores-points { font-family: var(--police-titre); color: var(--accent-txt); font-variant-numeric: tabular-nums; }
+
+/* -- plateau --- */
+.uno-plateau { display: flex; flex-direction: column; gap: var(--e5); }
+.uno-adversaires { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--e3); margin: 0; padding: 0; list-style: none; }
+.uno-adversaire {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--e1);
+  min-width: 130px;
+  padding: var(--e2) var(--e3) var(--e3);
+  border: 1px solid var(--bord);
+  border-radius: var(--r-l);
+  background: var(--surface);
+  transition: border-color var(--duree), box-shadow var(--duree);
+}
+.uno-adversaire.actif { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 18px color-mix(in srgb, var(--accent) 35%, transparent); }
+.uno-adversaire-tete { display: flex; align-items: center; gap: var(--e2); }
+.uno-adversaire-nom { font-family: var(--police-titre); font-weight: 700; }
+.uno-adversaire-main { padding-top: 6px; }
+.uno-adversaire-compte { color: var(--dim); font-size: var(--t-xs); font-variant-numeric: tabular-nums; }
+
+/* Tapis : vert de table sous la lumière de la couleur demandée. */
+.uno-centre {
+  --uno-lumiere: #d4a54a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--e7);
+  padding: var(--e7) var(--e6);
+  border: 1px solid #2a2f3d;
+  border-radius: var(--r-xl);
+  background:
+    radial-gradient(60% 90% at 50% 50%, color-mix(in srgb, var(--uno-lumiere) 22%, transparent), transparent 70%),
+    radial-gradient(120% 120% at 50% 0%, #17321f, #0b1a10 70%);
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, .6), var(--ombre-2);
+  color: #ece4d2;
+  transition: background .4s;
+}
+.uno-centre-rouge { --uno-lumiere: var(--uno-rouge); }
+.uno-centre-jaune { --uno-lumiere: var(--uno-jaune); }
+.uno-centre-vert  { --uno-lumiere: var(--uno-vert); }
+.uno-centre-bleu  { --uno-lumiere: var(--uno-bleu); }
+.uno-pile { display: flex; flex-direction: column; align-items: center; gap: var(--e2); }
+.uno-pile-libelle { color: rgba(236, 228, 210, .7); font-size: var(--t-2xs); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.uno-etat { display: flex; flex-direction: column; gap: var(--e2); min-width: 200px; }
+.uno-message { font-family: var(--police-titre); font-size: var(--t-xl); color: #ece4d2; }
+.uno-message-tour { color: #e8c27a; text-shadow: 0 0 16px rgba(212, 165, 74, .6); }
+.uno-indic { display: flex; align-items: center; gap: var(--e2); color: rgba(236, 228, 210, .8); text-transform: capitalize; }
+.uno-sens { width: 18px; height: 18px; }
+.uno-sens-inverse { transform: scaleX(-1); }
+
+.uno-joueur {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e3);
+  padding: var(--e4) var(--e5) var(--e5);
+  border: 1px solid var(--bord);
+  border-radius: var(--r-xl);
+  background: var(--surface);
+  transition: border-color var(--duree), box-shadow var(--duree);
+}
+.uno-joueur.actif { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 26px color-mix(in srgb, var(--accent) 30%, transparent); }
+.uno-joueur-tete { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e3); }
+.uno-joueur-actions { display: flex; align-items: center; gap: var(--e2); margin-left: auto; }
+.uno-main { justify-content: safe center; overflow-x: auto; }
+
+.uno-fin .carte-corps { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e4); }
+.uno-fin-titre { font-family: var(--police-titre); font-size: var(--t-xl); color: var(--accent-txt); }
+
+.uno-journal { color: var(--dim); font-size: var(--t-s); }
+.uno-journal summary { cursor: pointer; font-weight: 700; }
+.uno-journal ol { margin: var(--e2) 0 0; padding-left: var(--e5); line-height: 1.7; }
+
+/* Choix de la couleur d'un joker. */
+.uno-couleurs { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--e3); }
+.uno-couleur {
+  height: 64px;
+  border: 0;
+  border-radius: var(--r-m);
+  color: #fff;
+  font: inherit;
+  font-family: var(--police-titre);
+  font-size: var(--t-l);
+  font-weight: 700;
+  text-transform: capitalize;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+  cursor: pointer;
+  transition: transform var(--duree), box-shadow var(--duree);
+}
+.uno-couleur:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0, 0, 0, .35); }
+.uno-couleur:focus-visible { outline: none; box-shadow: var(--anneau); }
+.uno-couleur-rouge { background: var(--uno-rouge); }
+.uno-couleur-jaune { background: var(--uno-jaune); color: var(--uno-encre); text-shadow: none; }
+.uno-couleur-vert  { background: var(--uno-vert); }
+.uno-couleur-bleu  { background: var(--uno-bleu); }
+
+@media (max-width: 760px) {
+  .uno-attente { grid-template-columns: 1fr; }
+  .uno-centre { gap: var(--e5); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .uno-centre, .uno-couleur { transition: none; }
+}
+
+/* -- présence à la table -- */
+.uno-presence { display: inline-flex; align-items: center; gap: 4px; }
+.uno-presence-texte { color: var(--dim); font-size: var(--t-2xs); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.uno-adversaire.absent { opacity: .6; border-style: dashed; }
+
+/* -- musique d'ambiance : lecteur fixe, bien visible -- */
+.uno-lecteur {
+  position: fixed;
+  right: var(--e5);
+  bottom: var(--e5);
+  z-index: 35;
+  display: flex;
+  align-items: center;
+  gap: var(--e3);
+  padding: var(--e3) var(--e4) var(--e3) var(--e3);
+  border: 1px solid rgba(212, 165, 74, .55);
+  border-radius: var(--r-plein);
+  background: linear-gradient(160deg, #18213a, #0b0e18);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5), inset 0 0 0 3px rgba(7, 9, 13, .5);
+  color: #ece4d2;
+}
+.uno-lecteur.joue { box-shadow: 0 10px 30px rgba(0, 0, 0, .5), 0 0 22px rgba(212, 165, 74, .3), inset 0 0 0 3px rgba(7, 9, 13, .5); }
+.uno-lecteur-bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--degrade);
+  color: #f6ead2;
+  cursor: pointer;
+  box-shadow: var(--lueur);
+  transition: filter var(--duree), box-shadow var(--duree);
+}
+.uno-lecteur-bouton[aria-pressed="false"] { background: #2a2f3d; box-shadow: inset 0 0 0 2px rgba(212, 165, 74, .6); color: #e8c27a; }
+.uno-lecteur-bouton:hover { filter: brightness(1.15); }
+.uno-lecteur-bouton:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(212, 165, 74, .6); }
+.uno-lecteur-bouton .ico { width: 26px; height: 26px; }
+.uno-lecteur-corps { display: flex; flex-direction: column; gap: 2px; min-width: 170px; }
+.uno-lecteur-tete { display: flex; align-items: center; gap: var(--e2); }
+.uno-lecteur-titre { font-family: var(--police-titre); font-size: var(--t-l); font-weight: 700; color: #e8c27a; }
+.uno-lecteur-etat { color: rgba(236, 228, 210, .75); font-size: var(--t-xs); }
+.uno-lecteur-volume { display: flex; align-items: center; gap: var(--e2); }
+.uno-lecteur-volume input { flex: 1 1 auto; accent-color: #d4a54a; cursor: pointer; }
+.uno-lecteur-volume input:disabled { opacity: .4; cursor: not-allowed; }
+.uno-lecteur-pourcent { min-width: 40px; color: rgba(236, 228, 210, .75); font-size: var(--t-xs); font-variant-numeric: tabular-nums; text-align: right; }
+/* Égaliseur : quatre barres qui dansent pendant la lecture. */
+.uno-lecteur-egaliseur { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
+.uno-lecteur-egaliseur i { display: block; width: 3px; height: 3px; border-radius: 1px; background: #d4a54a; }
+.uno-lecteur.joue .uno-lecteur-egaliseur i { animation: uno-egaliseur 1s ease-in-out infinite alternate; }
+.uno-lecteur.joue .uno-lecteur-egaliseur i:nth-child(2) { animation-delay: -.3s; }
+.uno-lecteur.joue .uno-lecteur-egaliseur i:nth-child(3) { animation-delay: -.6s; }
+.uno-lecteur.joue .uno-lecteur-egaliseur i:nth-child(4) { animation-delay: -.15s; }
+@keyframes uno-egaliseur { from { height: 3px; } to { height: 12px; } }
+/* Place pour le lecteur sous le contenu. */
+.uno-page, .uno-accueil { padding-bottom: 120px; }
+@media (max-width: 720px) {
+  .uno-lecteur { right: var(--e3); bottom: var(--e3); left: var(--e3); border-radius: var(--r-l); }
+  .uno-lecteur-corps { flex: 1 1 auto; min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .uno-lecteur.joue .uno-lecteur-egaliseur i { animation: none; height: 8px; }
+}

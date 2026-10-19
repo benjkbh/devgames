@@ -1,6 +1,6 @@
 // Bibliothèque de composants de l'interface.
-//   primitives/    boutons, icônes, badges, cartes, définitions, frises,
-//                  frise d'états
+//   primitives/    boutons, icônes, badges, cartes, cartes à jouer,
+//                  définitions, frises, frise d'états
 //   formulaire/    champ, saisies, choix, copie, filtres de liste
 //   tableau/       tableau, cellules, bouton d'ouverture du détail
 //   retour/        popup, dialogue, fenêtre de détail, menu déroulant,
@@ -18,6 +18,9 @@ export {
   Badge, BadgeBooleen, Pastille,
 } from './primitives/Badge';
 export { Carte } from './primitives/Carte';
+export {
+  CarteJeu, COULEURS_UNO, ENSEIGNES, Eventail, nomCarte, RANGS, VALEURS_UNO,
+} from './primitives/CarteJeu';
 export { Definitions } from './primitives/Definitions';
 export { Chronologie, Etapes } from './primitives/Etapes';
 export { FriseEtats } from './primitives/FriseEtats';
@@ -55,6 +58,7 @@ export { Popup } from './retour/Popup';
 export {
   MarqueAppli, Page, PageGarde, Section,
 } from './mise-en-page/Page';
+export { Banniere } from './mise-en-page/Banniere';
 
 export { useCopie } from './hooks/copie';
 export { basculerDans, useEnsemble } from './hooks/ensemble';

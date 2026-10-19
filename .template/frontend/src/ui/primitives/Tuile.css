@@ -10,8 +10,9 @@
   min-width: 0;
   padding: var(--e3) var(--e4);
   background: var(--surface);
-  border: 1px solid var(--bord);
+  border: 1.5px solid var(--bord);
   border-radius: var(--r-l);
+  transition: transform var(--duree) var(--courbe), box-shadow var(--duree), border-color var(--duree);
 }
 .tuile-libelle {
   font-size: var(--t-2xs);
@@ -25,8 +26,11 @@
   align-items: center;
   gap: var(--e2);
   font-size: var(--t-xl);
-  font-weight: 650;
+  font-family: var(--police-titre);
+  font-weight: 600;
   color: var(--txt);
   font-variant-numeric: tabular-nums;
 }
 .tuile-detail { font-size: var(--t-xs); color: var(--dim); }
+.tuile:hover { transform: translateY(-2px); border-color: var(--accent-bord); box-shadow: var(--ombre-2); }
+@media (prefers-reduced-motion: reduce) { .tuile:hover { transform: none; } }

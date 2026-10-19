@@ -6,7 +6,13 @@ html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
-  background: var(--fond);
+  /* Nuit sur le village : clair de lune en haut à droite, brume rougeâtre
+     au ras du sol ; fixes au défilement. */
+  background:
+    radial-gradient(700px 520px at 92% -6%, color-mix(in srgb, var(--lune) 12%, transparent), transparent 70%),
+    radial-gradient(1400px 380px at 30% 108%, color-mix(in srgb, var(--sang) 10%, transparent), transparent 70%),
+    var(--fond);
+  background-attachment: fixed;
   color: var(--txt);
   font-family: var(--police);
   font-size: var(--t-m);
@@ -19,11 +25,12 @@ body {
 h1, h2, h3, h4, h5 {
   margin: 0;
   color: var(--txt);
-  font-weight: 650;
+  font-family: var(--police-titre);
+  font-weight: 600;
   line-height: 1.25;
-  letter-spacing: -.01em;
+  letter-spacing: .02em;
 }
-h1 { font-size: var(--t-2xl); letter-spacing: -.02em; }
+h1 { font-size: var(--t-2xl); font-weight: 700; }
 h2 { font-size: var(--t-xl); }
 h3 { font-size: var(--t-l); }
 h4 { font-size: var(--t-m); }

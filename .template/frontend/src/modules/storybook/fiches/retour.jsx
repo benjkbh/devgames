@@ -52,7 +52,7 @@ function ConfirmationEtat({ danger }) {
   const [ouvert, setOuvert] = useState(false);
   return (
     <>
-      <Bouton variante="secondaire" couleur={danger ? 'rouge' : 'bleu'}
+      <Bouton variante="secondaire" couleur={danger ? 'rouge' : 'sang'}
               onClick={() => setOuvert(true)} titre={danger ? 'Supprimer…' : 'Confirmer…'} />
       <Confirmation
         ouvert={ouvert} titre={danger ? 'Supprimer ?' : 'Continuer ?'}

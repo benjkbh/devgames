@@ -1,0 +1,92 @@
+/* Carte à jouer : le dessin (SVG 100 × 150) remplit la boîte, dont la largeur
+   suit la taille ; la hauteur en découle (rapport 2:3). */
+.cj {
+  --cj-largeur: 72px;
+  --cj-inclinaison: 0deg;
+  --cj-leve: 0px;
+  position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+  width: var(--cj-largeur);
+  aspect-ratio: 2 / 3;
+  padding: 0;
+  border: 0;
+  border-radius: calc(var(--cj-largeur) * .09);
+  background: none;
+  vertical-align: middle;
+  transform: translateY(calc(-1 * var(--cj-leve))) rotate(var(--cj-inclinaison));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 4px 10px rgba(0, 0, 0, .22);
+  transition: transform var(--duree) var(--courbe), box-shadow var(--duree), filter var(--duree);
+}
+.cj-svg { display: block; width: 100%; height: 100%; }
+
+.cj-xs { --cj-largeur: 34px; }
+.cj-s  { --cj-largeur: 52px; }
+.cj-m  { --cj-largeur: 72px; }
+.cj-l  { --cj-largeur: 100px; }
+.cj-xl { --cj-largeur: 140px; }
+
+/* Textes du dessin. */
+.cj-inscription {
+  font-family: var(--police-carte);
+  font-weight: 800;
+  text-anchor: middle;
+  dominant-baseline: central;
+  stroke: #15151a;
+  stroke-width: 1.6px;
+  paint-order: stroke;
+  letter-spacing: -.02em;
+}
+.cj-logo { letter-spacing: .02em; }
+.cj-rang { font-family: var(--police-titre); font-weight: 700; text-anchor: middle; }
+.cj-figure { font-family: var(--police-titre); font-weight: 700; text-anchor: middle; dominant-baseline: central; }
+
+/* -- carte cliquable --- */
+.cj-bouton { cursor: pointer; }
+.cj-bouton:hover:not(:disabled) { --cj-leve: 8%; box-shadow: 0 2px 4px rgba(0, 0, 0, .35), 0 10px 22px rgba(0, 0, 0, .35); }
+.cj-bouton:focus-visible { outline: none; box-shadow: var(--anneau), 0 4px 10px rgba(0, 0, 0, .3); }
+.cj-bouton:disabled { cursor: default; }
+
+/* -- états --- */
+.cj-jouable { box-shadow: 0 0 0 2px var(--accent), 0 0 18px color-mix(in srgb, var(--accent) 55%, transparent); }
+.cj-jouable.cj-bouton:hover:not(:disabled) { --cj-leve: 14%; box-shadow: 0 0 0 2px var(--accent), 0 0 26px color-mix(in srgb, var(--accent) 75%, transparent); }
+.cj-selectionnee { --cj-leve: 16%; box-shadow: 0 0 0 3px var(--sang), 0 10px 22px rgba(0, 0, 0, .4); }
+.cj-desactivee { filter: grayscale(.55) brightness(.72); }
+
+/* Couleur annoncée sur un joker posé. */
+.cj-annonce { box-shadow: 0 0 0 3px var(--cj-annonce), 0 0 22px var(--cj-annonce); }
+.cj-annonce-rouge { --cj-annonce: var(--uno-rouge); }
+.cj-annonce-jaune { --cj-annonce: var(--uno-jaune); }
+.cj-annonce-vert  { --cj-annonce: var(--uno-vert); }
+.cj-annonce-bleu  { --cj-annonce: var(--uno-bleu); }
+
+/* -- éventail --- */
+.eventail {
+  display: flex;
+  align-items: flex-end;
+  margin: 0;
+  /* Place pour la carte levée (survol, sélection) et, en arc, pour les
+     cartes des bords, plus basses. */
+  padding: calc(var(--cj-largeur-place, 72px) * .3) 0 0;
+  list-style: none;
+}
+.eventail-place {
+  display: flex;
+  min-width: 0;
+  transform: translateY(var(--eventail-creux, 0)) rotate(var(--eventail-angle, 0deg));
+  transform-origin: 50% 120%;
+}
+/* La carte suivante recouvre une part de la précédente. */
+.eventail-place + .eventail-place { margin-left: calc(var(--eventail-recouvre) * -1 * var(--cj-largeur-place, 72px)); }
+.eventail:has(.cj-xs) { --cj-largeur-place: 34px; }
+.eventail:has(.cj-s)  { --cj-largeur-place: 52px; }
+.eventail:has(.cj-m)  { --cj-largeur-place: 72px; }
+.eventail:has(.cj-l)  { --cj-largeur-place: 100px; }
+.eventail:has(.cj-xl) { --cj-largeur-place: 140px; }
+.eventail-arc { padding-bottom: calc(var(--cj-largeur-place, 72px) * .5); }
+/* La carte survolée passe devant ses voisines. */
+.eventail-place:hover, .eventail-place:focus-within { z-index: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cj { transition: none; }
+}

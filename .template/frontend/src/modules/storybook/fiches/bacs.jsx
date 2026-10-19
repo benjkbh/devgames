@@ -2,8 +2,9 @@ import { useCallback, useRef, useState } from 'react';
 
 import {
   Alerte, Badge, BadgeBooleen, BarreActions, BarreFiltres, Bouton, BoutonAide,
-  BoutonCopier, BoutonOuvrir, BoutonPopup, Carte, Champ, ChampCopiable,
-  ChampSaisie, Chargement, ChoixLimite, Chronologie, Confirmation, Definitions,
+  BoutonCopier, BoutonOuvrir, BoutonPopup, Carte, CarteJeu, Champ, ChampCopiable,
+  ChampSaisie, Chargement, ChoixLimite, Chronologie, Confirmation,
+  COULEURS_UNO, Definitions, ENSEIGNES, Eventail, RANGS, VALEURS_UNO,
   Dialogue, DialogueFormulaire, EtatVide, Etapes, FenetreDetail, Filtre,
   FILTRE_DATE_VIDE, FiltrePeriode, FiltreSelection, FriseEtats, GrilleTuiles,
   IcoPlus, MarqueAppli, MenuDeroulant, Mosaique, Onglets, Page, PageGarde,
@@ -209,9 +210,41 @@ function bac(nom, controles, rendu, avecEnfants = true) {
   };
 }
 
-const COULEURS_BADGE = ['gris', 'bleu', 'vert', 'orange', 'rouge'];
-const COULEURS_PASTILLE = ['vert', 'bleu', 'rouge', 'orange', 'ardoise', 'gris',
-  'vide'];
+// Carte à jouer : les contrôles d'un jeu n'apparaissent dans le code que si
+// ce jeu est choisi.
+const UNO = 'Carte de UNO';
+const CLASSIQUE = 'Jeu de 52 cartes';
+const ETAT = 'Aspect et état';
+const CONTROLES_CARTE = [
+  choix('jeu', ['uno', 'classique'], 'uno'),
+  choix('face', ['recto', 'verso'], 'recto'),
+  { ...choix('couleur', [...COULEURS_UNO, 'noir'], 'rouge'), groupe: UNO },
+  { ...choix('valeur', VALEURS_UNO, '7'), groupe: UNO },
+  { ...choix('couleurChoisie', ['', ...COULEURS_UNO], '', ''), groupe: UNO },
+  { ...choix('enseigne', ENSEIGNES, 'coeur'), groupe: CLASSIQUE },
+  { ...choix('rang', [...RANGS, 'joker'], 'A'), groupe: CLASSIQUE },
+  { ...choix('taille', ['xs', 's', 'm', 'l', 'xl'], 'l', 'm'), groupe: ETAT },
+  { ...nombre('inclinaison', 0, 0), groupe: ETAT },
+  { ...booleen('jouable'), groupe: ETAT },
+  { ...booleen('selectionnee'), groupe: ETAT },
+  { ...booleen('desactivee'), groupe: ETAT },
+  { ...booleen('cliquable', true), hors: true, groupe: ETAT },
+];
+const controlesCarte = (v) => CONTROLES_CARTE.filter((c) => !c.hors
+  && (c.groupe !== UNO || v.jeu === 'uno')
+  && (c.groupe !== CLASSIQUE || v.jeu === 'classique'));
+
+const CONTROLES_EVENTAIL = [
+  { ...nombre('cartes', 7), hors: true },
+  nombre('chevauchement', 0.45, 0.45),
+  booleen('arc', true),
+  texte('libelle', 'Ma main', ''),
+  { ...choix('taille', ['xs', 's', 'm', 'l'], 'm'), hors: true },
+];
+
+const COULEURS_BADGE = ['gris', 'sang', 'or', 'bleu', 'vert', 'orange', 'rouge'];
+const COULEURS_PASTILLE = ['vert', 'bleu', 'rouge', 'orange', 'sang', 'or',
+  'ardoise', 'gris', 'vide'];
 const COULEURS_FRISE = [...COULEURS_PASTILLE, 'hachures'];
 
 function OngletsBac({ v }) {
@@ -665,7 +698,7 @@ function ConfirmationBac({ v }) {
   const fermer = () => setOuvert(false);
   return (
     <>
-      <Bouton couleur={v.danger ? 'rouge' : 'bleu'} titre="Ouvrir la confirmation"
+      <Bouton couleur={v.danger ? 'rouge' : 'sang'} titre="Ouvrir la confirmation"
               onClick={() => setOuvert(true)} />
       <Confirmation {...propsDe(CONTROLES_CONFIRMATION, v)} ouvert={ouvert}
                     onConfirmer={fermer} onAnnuler={fermer} />
@@ -822,7 +855,7 @@ const boutonsBarre = (v) => BOUTONS_BARRE.slice(0, borne(v.boutons, 1, 3));
 export const BACS = {
   bouton: bacAuto(Bouton, 'Bouton', [
     choix('variante', ['principal', 'secondaire', 'fantome'], 'secondaire'),
-    choix('couleur', ['bleu', 'rouge', 'vert'], 'bleu'),
+    choix('couleur', ['sang', 'or', 'bleu', 'rouge', 'vert'], 'sang'),
     choix('taille', ['s', 'm', 'l'], 'm'),
     texte('titre', 'Enregistrer', ''),
     texte('libelle', '', ''),
@@ -1142,12 +1175,35 @@ ${tuilesDe(v.nombre).map((t) => `    { libelle: '${t.libelle}', valeur: '${t.val
   'bouton-popup': bacAuto(BoutonPopup, 'BoutonPopup', [
     texte('titre', 'Détail', ''), texte('libelle', 'Infos', ''),
     icone('icone', 'IcoInfo'),
-    choix('className', ['', 'btn btn-fantome btn-bleu btn-m btn-carre',
-      'btn btn-secondaire btn-bleu btn-m btn-carre',
-      'btn btn-principal btn-bleu btn-m btn-carre'],
-    'btn btn-fantome btn-bleu btn-m btn-carre', ''),
+    choix('className', ['', 'btn btn-fantome btn-sang btn-m btn-carre',
+      'btn btn-secondaire btn-sang btn-m btn-carre',
+      'btn btn-principal btn-sang btn-m btn-carre'],
+    'btn btn-fantome btn-sang btn-m btn-carre', ''),
     texte('title', 'Plus d’informations', ''),
   ], true),
+  'carte-jeu': {
+    controles: CONTROLES_CARTE,
+    Rendu: ({ v }) => (
+      <CarteJeu {...propsDe(controlesCarte(v), v)}
+                onClick={v.cliquable ? () => {} : undefined} />
+    ),
+    code: (v) => jsx('CarteJeu', controlesCarte(v), v, '', [],
+      [v.cliquable && 'onClick={() => jouer(carte)}']),
+  },
+  eventail: {
+    controles: CONTROLES_EVENTAIL,
+    Rendu: ({ v }) => (
+      <Eventail {...propsDe(CONTROLES_EVENTAIL, v)}>
+        {Array.from({ length: borne(v.cartes, 1, 15) }, (_, i) => (
+          <CarteJeu key={i} taille={v.taille} couleur={COULEURS_UNO[i % 4]}
+                    valeur={VALEURS_UNO[(i * 7) % VALEURS_UNO.length]}
+                    onClick={() => {}} />
+        ))}
+      </Eventail>
+    ),
+    code: (v) => jsx('Eventail', CONTROLES_EVENTAIL, v,
+      `{main.map((c) => <CarteJeu key={c.id} taille="${v.taille}" {...c} />)}`),
+  },
   'bouton-aide': bacAuto(BoutonAide, 'BoutonAide', [
     texte('titre', 'Aide', ''), texte('symbole', '?', '?'),
     texte('libelle', 'En savoir plus', 'En savoir plus'),

@@ -11,7 +11,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
 from . import api
-from .metier.comptes import sessions, utilisateurs
+from .metier.comptes import presence, sessions, utilisateurs
+from .metier.uno import salons
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
@@ -72,6 +73,9 @@ class Requete:
         self._h = handler
         self.config = handler.server.config
         self.sessions = handler.server.sessions
+        # Tables de UNO, en mémoire comme les sessions.
+        self.uno = handler.server.uno
+        self.presence = handler.server.presence
         self.url = url
         self.corps = corps
         self.brut = getattr(handler, 'corps_brut', b'')
@@ -81,6 +85,9 @@ class Requete:
         self.jeton: str | None = handler.jeton()
         # Nom du compte seulement : les droits sont relus en base par `compte`.
         self.utilisateur: str | None = self.sessions.utilisateur(self.jeton)
+        # Toute requête authentifiée vaut signe de vie du compte.
+        if self.utilisateur:
+            self.presence.signaler(self.utilisateur)
         self.cookie: str | None = None
         self._compte: CompteDetail | None = None
 
@@ -118,10 +125,13 @@ class Requete:
                                              self.config.cookie_secure)
         self.utilisateur = nom
         self._compte = None
+        self.presence.signaler(nom)
 
     def fermer_session(self) -> None:
         if self.jeton:
             self.sessions.fermer(self.jeton)
+        if self.utilisateur:
+            self.presence.oublier(self.utilisateur)
         self.cookie = sessions.entete_cookie('', 0, self.config.cookie_secure)
         self.utilisateur = None
         self._compte = None
@@ -347,7 +357,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Content-Length', '0')
         self.end_headers()
 class Serveur(ThreadingHTTPServer):
-    """Porte ce que les routes partagent : configuration, logger, sessions."""
+    """Porte ce que les routes partagent : configuration, logger, sessions,
+    présence des comptes et état en mémoire des modules (tables de UNO)."""
 
     def __init__(self, config: Config,
                  logger: Callable[[str, str], None]) -> None:
@@ -355,6 +366,8 @@ class Serveur(ThreadingHTTPServer):
         self.config = config
         self.logger = logger
         self.sessions = sessions.Sessions(config.session_ttl)
+        self.presence = presence.Presence()
+        self.uno = salons.Salons()
 
 
 def creer(config: Config, logger: Callable[[str, str], None]) -> Serveur:

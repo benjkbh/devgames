@@ -501,7 +501,7 @@ export const FICHES = [
   {
     cle: 'use-theme', nom: 'useTheme',
     resume: 'Thème `sombre` ou `clair`, mémorisé, posé dans l’attribut '
-      + '`data-theme` de `<html>` ; défaut : celui du système.',
+      + '`data-theme` de `<html>` ; défaut : `sombre`.',
     props: [P('→', '[theme, basculer]', '`theme` : `sombre` ou `clair` ; '
       + '`basculer()` passe de l’un à l’autre.')],
     exemples: [{ titre: 'Bascule', Rendu: ThemeEtat,
