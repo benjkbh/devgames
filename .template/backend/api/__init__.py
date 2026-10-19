@@ -34,9 +34,12 @@ TABLE = {
     # == uno : tables de jeu (rôle joueur) ===================================
     ('GET', '/api/uno/salons'): uno.lister,
     ('GET', '/api/uno/salon'): uno.salon,
+    # Sans session : regarder une table, par son code, sans voir les mains.
+    ('GET', '/api/uno/spectateur'): uno.spectateur,
     ('POST', '/api/uno/creer'): uno.creer,
     ('POST', '/api/uno/rejoindre'): uno.rejoindre,
     ('POST', '/api/uno/quitter'): uno.quitter,
+    ('POST', '/api/uno/exclure'): uno.exclure,
     ('POST', '/api/uno/lancer'): uno.lancer,
     ('POST', '/api/uno/jouer'): uno.jouer,
     ('POST', '/api/uno/piocher'): uno.piocher,

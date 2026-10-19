@@ -36,6 +36,8 @@ ACTIONS = ('passe', 'inversion', '+2')
 NOIRES = ('joker', '+4')
 TAILLE_MAIN = 7
 JOURNAL_MAX = 30
+# Événements de la manche gardés pour les interfaces (animations).
+EVENEMENTS_MAX = 12
 
 
 class CoupInvalide(Exception):
@@ -122,6 +124,9 @@ class Partie:
         self.gagnant: str | None = None
         self.points = 0
         self.journal: list[str] = []
+        # Pose et pioche, numérotées : l'interface rejoue ceux qu'elle n'a pas
+        # encore vus (glissement des cartes). `{n, joueur, type, cartes}`.
+        self.evenements: list[dict[str, Any]] = []
         self._noter('La partie commence avec %s. %s ouvre le jeu.'
                     % (premiere.nom, self.courant))
 
@@ -152,6 +157,12 @@ class Partie:
         self.journal.append(ligne)
         del self.journal[:-JOURNAL_MAX]
 
+    def _evenement(self, joueur: str, type_: str, cartes: int = 1) -> None:
+        n = self.evenements[-1]['n'] + 1 if self.evenements else 1
+        self.evenements.append({'n': n, 'joueur': joueur, 'type': type_,
+                                'cartes': cartes})
+        del self.evenements[:-EVENEMENTS_MAX]
+
     def _rang(self, pas: int) -> int:
         return (self.tour + pas * self.sens) % len(self.ordre)
 
@@ -171,6 +182,8 @@ class Partie:
                     break
             tirees.append(self.pioche.pop())
         self.mains[joueur] += tirees
+        if tirees:
+            self._evenement(joueur, 'pioche', len(tirees))
         if len(self.mains[joueur]) > 1:
             self.uno_dit.discard(joueur)
             if self.expose == joueur:
@@ -212,6 +225,7 @@ class Partie:
         self._fin_de_fenetre(joueur)
         main.remove(carte)
         self.defausse.append(carte)
+        self._evenement(joueur, 'pose')
         self.couleur = carte.couleur or str(couleur)
         if uno:
             self.uno_dit.add(joueur)
@@ -332,9 +346,9 @@ class Partie:
                     % (joueur, self.points))
 
     # -- vue -----------------------------------------------------------------
-    def vue(self, joueur: str) -> dict[str, Any]:
-        """Ce que `joueur` voit : sa main, le nombre de cartes des autres."""
-        main = self.mains.get(joueur, [])
+    def _vue_commune(self) -> dict[str, Any]:
+        """Ce que tout le monde voit, joueur ou spectateur : le nombre de
+        cartes de chacun, la défausse, le tour."""
         return {
             'joueurs': [{
                 'nom': j,
@@ -342,17 +356,29 @@ class Partie:
                 'uno': j in self.uno_dit and len(self.mains[j]) == 1,
                 'expose': self.expose == j,
             } for j in self.ordre],
-            'main': [c.vue() for c in main],
-            'jouables': self.jouables(joueur),
-            'uno_annonce': joueur in self.uno_dit,
             'dessus': self.dessus.vue(),
             'couleur': self.couleur,
             'sens': self.sens,
             'tour': None if self.finie else self.courant,
             'pioche': len(self.pioche),
-            'pioche_jouable': (self.pioche_jouable
-                               if joueur == self.courant else None),
             'journal': list(self.journal[-12:]),
+            'evenements': list(self.evenements),
             'gagnant': self.gagnant,
             'points': self.points,
         }
+
+    def vue(self, joueur: str) -> dict[str, Any]:
+        """Ce que `joueur` voit : sa main, le nombre de cartes des autres."""
+        main = self.mains.get(joueur, [])
+        return {
+            **self._vue_commune(),
+            'main': [c.vue() for c in main],
+            'jouables': self.jouables(joueur),
+            'uno_annonce': joueur in self.uno_dit,
+            'pioche_jouable': (self.pioche_jouable
+                               if joueur == self.courant else None),
+        }
+
+    def vue_spectateur(self) -> dict[str, Any]:
+        """Ce que voit un spectateur : le jeu, sans aucune main."""
+        return self._vue_commune()

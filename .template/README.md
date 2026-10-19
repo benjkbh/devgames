@@ -69,22 +69,46 @@ préfixe `PUBLIC` dans `frontend/src/App.jsx`.
 | GET | `/api/sante` | libre : 200 si la base répond |
 | GET | `/api/presence` | tout compte actif : santé vue de l'interface (sondée toutes les 10 s) et comptes en ligne |
 | GET | `/api/uno/salons`, `/api/uno/salon?code=` | rôle `uno:joueur` |
-| POST | `/api/uno/{creer,rejoindre,quitter,lancer}` | rôle `uno:joueur` |
+| POST | `/api/uno/{creer,rejoindre,quitter,exclure,lancer}` | rôle `uno:joueur` |
 | POST | `/api/uno/{jouer,piocher,passer,uno,contrer}` | rôle `uno:joueur` |
+| GET | `/api/uno/spectateur?code=` | libre : une table vue sans compte, sans aucune main |
 
 ## Module UNO
 
 Tables de UNO en mémoire (`backend/metier/uno/`) : règles de base dans
 `regles.py` (le détail en tête de fichier), salons dans `salons.py`. Une table
 se partage par son code de 5 caractères ou par le lien `/uno/<code>` ; le
-créateur en est l'hôte et lance les manches (2 à 10 joueurs). Comme les
-sessions, les tables disparaissent au redémarrage, ou après 2 h sans
-activité. L'interface (`frontend/src/modules/uno/`) relit la table chaque
-seconde, ce qui permet aussi de montrer qui est encore à la table ; les
-cartes sont dessinées par le composant `CarteJeu` de `ui/`, dans la palette
-du site (jetons `--uno-*`). Une musique d'ambiance, synthétisée dans le
-navigateur (`modules/uno/ambiance.js`, aucun fichier audio), accompagne le
-module, avec volume et silence mémorisés sur le poste.
+créateur en est l'hôte, lance les manches (2 à 10 joueurs) et peut exclure un
+joueur (qui ne peut plus s'y asseoir). Comme les sessions, les tables
+disparaissent au redémarrage, après 2 h sans activité, ou dès que plus aucun
+joueur ne la regarde depuis 2 minutes.
+
+**Spectateurs** : le lien `/spectateur/<code>` montre la table (joueurs, nombre
+de leurs cartes, défausse, tour, journal, jamais une main) à qui n'a pas de
+compte. C'est la seule page publique de l'application : route `PUBLIC` de
+`frontend/src/App.jsx` et `GET /api/uno/spectateur`, sans `exige` ; le code de
+la table en est le secret, comme pour s'y asseoir. Un spectateur ne garde pas
+la table en vie.
+
+**Interface** (`frontend/src/modules/uno/`) : elle relit la table chaque
+seconde, ce qui permet aussi de montrer qui est encore à la table. Le tapis
+(`Tapis.jsx`) est commun au joueur et au spectateur : plateau de bois et de
+feutre, joueurs assis autour, pioche et défausse dans l'anneau de la couleur
+demandée que parcourent les flèches du sens du jeu. Le bouton UNO n'apparaît
+qu'avec une carte à venir. Les poses et les pioches glissent (`animations.js`) :
+le serveur numérote ces événements dans la vue de la manche (`evenements`), et
+l'interface rejoue ceux qu'elle n'a pas vus. Pendant une manche, quitter la
+table par le menu, un lien ou le bouton « précédent » demande confirmation
+(`useBlocker`, d'où le routeur de données de `main.jsx`). Les cartes sont
+dessinées par le composant `CarteJeu` de `ui/`, dans la palette du site
+(jetons `--uno-*`) ; leur dos est une pleine lune et une patte de loup. La page
+tient sur téléphone (cartes et tapis resserrés sous 720 px).
+
+**Musique** : une musique d'ambiance, synthétisée dans le navigateur
+(`modules/uno/ambiance.js`, aucun fichier audio), accompagne le module. Elle
+part au clic sur UNO dans le menu (`auClic` du registre `modules.jsx`), monte
+et descend en fondu à l'entrée et à la sortie du module ; volume et silence
+sont mémorisés sur le poste.
 
 ## Santé et présence
 

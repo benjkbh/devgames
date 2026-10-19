@@ -23,8 +23,9 @@ if TYPE_CHECKING:
 #           admin     POST /api/clients/supprimer
 #
 # uno       joueur    GET /api/uno/{salons,salon} ; POST /api/uno/{creer,
-#                     rejoindre,quitter,lancer,jouer,piocher,passer,uno,
-#                     contrer}
+#                     rejoindre,quitter,exclure,lancer,jouer,piocher,passer,
+#                     uno,contrer} ; GET /api/uno/spectateur est sans compte
+#                     (une table vue sans aucune main)
 ROLES: dict[str, tuple[str, ...]] = {
     module: tuple(roles) for module, roles in CONSTANTES['modules'].items()}
 

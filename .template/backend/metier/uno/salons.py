@@ -3,10 +3,13 @@
 Un salon est désigné par un code de 5 caractères, à partager (le lien
 `/uno/<code>` l'ouvre). Le créateur en est l'hôte : il lance les manches. Les
 joueurs sont des comptes de l'application. Un salon `public` est listé aux
-autres joueurs tant qu'aucune manche n'est en cours.
+autres joueurs tant qu'aucune manche n'est en cours. L'hôte peut exclure
+un joueur (il ne peut plus s'asseoir). N'importe qui, connecté ou non, peut
+regarder une table dont il a le code, sans voir aucune main.
 
 Comme les sessions, les salons vivent en mémoire : un redémarrage du service
-les efface. Un salon sans activité depuis `INACTIVITE` secondes est retiré.
+les efface. Un salon sans activité depuis `INACTIVITE` secondes est retiré, comme un
+salon dont aucun joueur n'a relu la table depuis `ABSENCE_TABLE` secondes.
 Un verrou unique sérialise les accès (les requêtes arrivent sur des fils
 distincts).
 """
@@ -37,6 +40,8 @@ INACTIVITE = 2 * 3600
 # montré absent : onglet fermé, réseau coupé (l'interface relit chaque
 # seconde).
 PRESENCE_TABLE = 8
+# Une table que plus aucun joueur ne regarde depuis ce délai (s) est supprimée.
+ABSENCE_TABLE = 120
 
 
 class SalonIntrouvable(Exception):
@@ -64,6 +69,14 @@ class Salon:
     vus: dict[str, float] = field(default_factory=dict)
     # Augmente à chaque changement : l'interface sait si elle doit relire.
     version: int = 0
+    # Joueurs exclus par l'hôte : ils ne peuvent plus s'asseoir.
+    exclus: set[str] = field(default_factory=set)
+
+    @property
+    def derniere_presence(self) -> float:
+        """Dernière lecture de la table par l'un des joueurs assis."""
+        return max((self.vus.get(j, float('-inf')) for j in self.joueurs),
+                   default=self.touche)
 
     @property
     def etat(self) -> str:
@@ -94,8 +107,10 @@ class Salons:
 
     # -- outils internes (sous verrou) ---------------------------------------
     def _purger(self) -> None:
-        limite = self._horloge() - INACTIVITE
-        for code in [c for c, s in self._salons.items() if s.touche < limite]:
+        maintenant = self._horloge()
+        for code in [c for c, s in self._salons.items()
+                     if s.touche < maintenant - INACTIVITE
+                     or s.derniere_presence < maintenant - ABSENCE_TABLE]:
             del self._salons[code]
 
     def _salon(self, code: object) -> Salon:
@@ -150,6 +165,8 @@ class Salons:
             salon = self._salon(code)
             if joueur in salon.joueurs:
                 return salon.code
+            if joueur in salon.exclus:
+                raise ErreurSalon('Vous avez été exclu de cette table.')
             if salon.etat == 'partie':
                 raise ErreurSalon('Une manche est en cours : attendez la '
                                   'fin pour vous asseoir.')
@@ -161,21 +178,40 @@ class Salons:
             self._toucher(salon)
             return salon.code
 
+    def _retirer(self, salon: Salon, joueur: str) -> None:
+        """`joueur` n'est plus à la table : cartes rendues, hôte suivant."""
+        salon.joueurs.remove(joueur)
+        salon.scores.pop(joueur, None)
+        salon.vus.pop(joueur, None)
+        if salon.partie is not None:
+            salon.partie.retirer(joueur)
+            self._compter(salon)
+        if not salon.joueurs:
+            del self._salons[salon.code]
+            return
+        if salon.hote == joueur:
+            salon.hote = salon.joueurs[0]
+        self._toucher(salon)
+
     def quitter(self, code: object, joueur: str) -> None:
         with self._verrou:
+            self._retirer(self._membre(code, joueur), joueur)
+
+    def exclure(self, code: object, joueur: str, cible: object) -> None:
+        """L'hôte exclut `cible` : il quitte la table, et ne peut plus s'y
+        asseoir."""
+        with self._verrou:
             salon = self._membre(code, joueur)
-            salon.joueurs.remove(joueur)
-            salon.scores.pop(joueur, None)
-            salon.vus.pop(joueur, None)
-            if salon.partie is not None:
-                salon.partie.retirer(joueur)
-                self._compter(salon)
-            if not salon.joueurs:
-                del self._salons[salon.code]
-                return
-            if salon.hote == joueur:
-                salon.hote = salon.joueurs[0]
-            self._toucher(salon)
+            if salon.hote != joueur:
+                raise ErreurSalon("Seul l'hôte exclut un joueur.")
+            cible = str(cible or '')
+            if cible == joueur:
+                raise ErreurSalon('Vous ne pouvez pas vous exclure : '
+                                  'quittez la table.')
+            if cible not in salon.joueurs:
+                raise ErreurSalon("Ce joueur n'est pas à la table.")
+            salon.exclus.add(cible)
+            self._retirer(salon, cible)
 
     def lancer(self, code: object, joueur: str) -> None:
         """Nouvelle manche, par l'hôte, avec tous les joueurs assis."""
@@ -235,6 +271,7 @@ class Salons:
             vue: dict[str, Any] = {
                 **salon.resume(),
                 'membre': joueur in salon.joueurs,
+                'exclu': joueur in salon.exclus,
                 'moi': joueur,
                 'version': salon.version,
                 'manches': salon.manches,
@@ -249,6 +286,25 @@ class Salons:
             if vue['membre'] and salon.partie is not None:
                 vue['partie'] = salon.partie.vue(joueur)
             return vue
+
+    def regarder(self, code: object) -> dict[str, Any]:
+        """La table vue d'un spectateur (sans compte) : le jeu, sans aucune
+        main. Regarder ne vaut pas présence : seuls les joueurs gardent la
+        table en vie."""
+        with self._verrou:
+            salon = self._salon(code)
+            maintenant = self._horloge()
+            return {
+                **salon.resume(),
+                'version': salon.version,
+                'manches': salon.manches,
+                'scores': {j: salon.scores.get(j, 0) for j in salon.joueurs},
+                'presents': {
+                    j: maintenant - salon.vus.get(j, float('-inf'))
+                    < PRESENCE_TABLE for j in salon.joueurs},
+                'partie': (salon.partie.vue_spectateur()
+                           if salon.partie is not None else None),
+            }
 
     def lister(self, joueur: str) -> dict[str, list[dict[str, Any]]]:
         """Tables publiques en attente d'une manche, et tables du joueur."""

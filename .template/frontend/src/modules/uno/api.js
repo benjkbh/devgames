@@ -5,11 +5,15 @@ import { lire, poster } from '../../commun/requete';
 
 export const lireTables = () => lire('/api/uno/salons');
 export const lireTable = ({ code }) => lire('/api/uno/salon', { code });
+// Une table vue d'un spectateur : sans session, sans aucune main.
+export const lireSpectateur = ({ code }) => lire('/api/uno/spectateur', { code });
 
 export const creerTable = (nom, publique) => poster('/api/uno/creer',
   { nom, public: publique });
 export const rejoindre = (code) => poster('/api/uno/rejoindre', { code });
 export const quitter = (code) => poster('/api/uno/quitter', { code });
+export const exclure = (code, joueur) => poster('/api/uno/exclure',
+  { code, joueur });
 export const lancer = (code) => poster('/api/uno/lancer', { code });
 
 export const jouer = (code, carte, couleur, uno) => poster('/api/uno/jouer',
@@ -20,5 +24,8 @@ export const direUno = (code) => poster('/api/uno/uno', { code });
 export const contrer = (code, cible) => poster('/api/uno/contrer',
   { code, cible });
 
-// Lien à partager pour s'asseoir à une table.
+// Liens à partager : s'asseoir à une table (compte requis) ou la regarder
+// (sans compte).
 export const lienTable = (code) => `${window.location.origin}/uno/${code}`;
+export const cheminSpectateur = (code) => `/spectateur/${code}`;
+export const lienSpectateur = (code) => `${window.location.origin}${cheminSpectateur(code)}`;

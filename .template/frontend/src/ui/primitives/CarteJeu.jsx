@@ -11,7 +11,8 @@ import './CarteJeu.css';
 //   enseigne        52 cartes : pique · coeur · carreau · trefle
 //   rang            52 cartes : A · 2…10 · V · D · R · joker
 //   face            recto · verso (carte retournée : seul le dos est montré)
-//   taille          xs · s · m · l · xl
+//   taille          xs · s · m · l · xl (un parent peut réduire une taille
+//                   avec `--cj-taille-<taille>`)
 //   couleurChoisie  UNO, joker ou +4 posé : couleur annoncée (liseré)
 //   jouable · selectionnee · desactivee   états d'une carte en main
 //   inclinaison     rotation en degrés (éventail, pile en désordre)
@@ -58,15 +59,41 @@ const TEINTES = {
   vert: 'var(--uno-vert, #3e7d4a)',
   bleu: 'var(--uno-bleu, #3a5a8c)',
   noir: 'var(--uno-noir, #0d0f16)',
+  jaune_fonce: 'var(--uno-jaune-fonce, #9c6a0c)',
 };
 const PAPIER = 'var(--uno-papier, #ece4d2)';
 const ENCRE = 'var(--uno-encre, #0a0c11)';
+const OR = 'var(--uno-or, #d4a54a)';
 const peint = (fill, stroke) => (stroke ? { fill, stroke } : { fill });
 
-// Texte contouré d'encre, à la manière des cartes imprimées.
-function Inscription({ x, y, taille, couleur, children, retourne }) {
+// Emblème de chaque couleur, sur une grille 20 × 20 centrée en (0, 0) : une
+// goutte de sang, une étoile de chandelle, un sapin de la forêt, un croissant
+// de lune. Il distingue aussi les couleurs sans les voir.
+const EMBLEMES = {
+  rouge: 'M0-10C6-2 9 2 9 5.5A9 9 0 0 1-9 5.5C-9 2-6-2 0-10Z',
+  jaune: 'M0-10 2.6-2.6 10 0 2.6 2.6 0 10-2.6 2.6-10 0-2.6-2.6Z',
+  vert: 'M0-10 5.5-2H2.5l5 6H1.8V10H-1.8V4h-5.7l5-6h-3Z',
+  bleu: 'M2-9.5A9.5 9.5 0 0 0 2 9.5 14 14 0 0 1 2-9.5Z',
+};
+
+function Embleme({
+  couleur, x, y, taille, retourne, teinte = PAPIER,
+}) {
+  const d = EMBLEMES[couleur];
+  if (!d) return null;
   return (
-    <text x={x} y={y} fontSize={taille} style={peint(couleur, ENCRE)}
+    <path d={d} style={peint(teinte)}
+          transform={`translate(${x} ${y})${retourne ? ' rotate(180)' : ''} scale(${taille / 20})`} />
+  );
+}
+
+// Texte contouré d'encre, à la manière des cartes imprimées.
+function Inscription({
+  x, y, taille, couleur, children, retourne, contour = 1.6,
+}) {
+  return (
+    <text x={x} y={y} fontSize={taille}
+          style={{ ...peint(couleur, ENCRE), strokeWidth: contour }}
           className="cj-inscription"
           transform={retourne ? `rotate(180 ${x} ${y})` : undefined}>
       {children}
@@ -87,19 +114,19 @@ function SymbolePasse({ couleur, epaisseur = 7, r = 17 }) {
 function SymboleInversion({ couleur, echelle = 1 }) {
   return (
     <g transform={`rotate(-45) scale(${echelle})`} style={peint(couleur, ENCRE)}
-       strokeWidth="1.4" strokeLinejoin="round">
+       strokeWidth="1.2" strokeLinejoin="round">
       <path d="M-18 -11h22v-7l13 11-13 11v-7h-22Z" />
       <path d="M18 11h-22v7l-13-11 13-11v7h22Z" />
     </g>
   );
 }
 
-// Ovale aux quatre couleurs des jokers.
-function OvaleQuatre({ id, rx, ry }) {
+// Disque aux quatre couleurs des jokers : quatre quartiers, bague de papier.
+function DisqueQuatre({ id, r }) {
   return (
     <g>
       <clipPath id={id}>
-        <ellipse rx={rx} ry={ry} transform="rotate(30)" />
+        <circle r={r} />
       </clipPath>
       <g clipPath={`url(#${id})`}>
         <rect x={-60} y={-60} width={60} height={60} style={peint(TEINTES.rouge)} />
@@ -107,13 +134,12 @@ function OvaleQuatre({ id, rx, ry }) {
         <rect x={-60} y={0} width={60} height={60} style={peint(TEINTES.jaune)} />
         <rect x={0} y={0} width={60} height={60} style={peint(TEINTES.vert)} />
       </g>
-      <ellipse rx={rx} ry={ry} transform="rotate(30)" style={{ fill: 'none', stroke: PAPIER }}
-               strokeWidth="2.5" />
+      <circle r={r} style={{ fill: 'none', stroke: PAPIER }} strokeWidth="2.5" />
     </g>
   );
 }
 
-// Petites cartes en éventail au centre du +4 (ou du +2 : deux cartes).
+// Petites cartes en éventail (le +2 en montre deux, le +4 quatre).
 function MiniCartes({ couleurs }) {
   const n = couleurs.length;
   return (
@@ -127,35 +153,70 @@ function MiniCartes({ couleurs }) {
   );
 }
 
-function CoinUno({ valeur, retourne }) {
+// Coin de la carte : valeur (ou symbole d'action) et emblème de couleur.
+function CoinUno({ valeur, couleur, retourne }) {
   const pos = retourne ? 'translate(85 132) rotate(180)' : 'translate(15 18)';
+  let signe;
   if (valeur === 'passe') {
-    return <g transform={pos}><SymbolePasse couleur={PAPIER} epaisseur={2.6} r={6} /></g>;
-  }
-  if (valeur === 'inversion') {
-    return <g transform={pos}><SymboleInversion couleur={PAPIER} echelle={0.34} /></g>;
-  }
-  if (valeur === 'joker') {
-    return (
+    signe = <g transform={pos}><SymbolePasse couleur={PAPIER} epaisseur={2.6} r={6} /></g>;
+  } else if (valeur === 'inversion') {
+    signe = <g transform={pos}><SymboleInversion couleur={PAPIER} echelle={0.34} /></g>;
+  } else if (valeur === 'joker') {
+    signe = (
       <g transform={`${pos} scale(.2)`}>
         <MiniCartes couleurs={['rouge', 'bleu', 'jaune', 'vert']} />
       </g>
     );
+  } else {
+    signe = (
+      <Inscription x={retourne ? 85 : 15} y={retourne ? 132 : 18}
+                   taille={valeur.length > 1 ? 14 : 18}
+                   couleur={PAPIER} retourne={retourne}>
+        {valeur}
+      </Inscription>
+    );
   }
   return (
-    <Inscription x={retourne ? 85 : 15} y={retourne ? 132 : 18} taille={18}
-                 couleur={PAPIER} retourne={retourne}>
-      {valeur}
-    </Inscription>
+    <>
+      {signe}
+      <Embleme couleur={couleur} x={retourne ? 85 : 15} y={retourne ? 119 : 31}
+               taille={8} retourne={retourne} />
+    </>
   );
 }
 
-// Filet doré intérieur, commun aux faces et au dos.
+// Filet doré intérieur, commun aux faces et au dos, avec un losange à chaque
+// angle.
 function Cadre() {
   return (
-    <rect x="8.5" y="8.5" width="83" height="133" rx="4"
-          style={{ fill: 'none', stroke: 'var(--uno-filet, rgba(236, 228, 210, .35))' }}
-          strokeWidth="1" />
+    <g>
+      <rect x="8.5" y="8.5" width="83" height="133" rx="4"
+            style={{ fill: 'none', stroke: OR }} strokeWidth="0.9" opacity=".7" />
+      {[[8.5, 8.5], [91.5, 8.5], [8.5, 141.5], [91.5, 141.5]].map(([x, y]) => (
+        <path key={`${x}-${y}`} d="M0-3.2 3.2 0 0 3.2-3.2 0Z" style={peint(OR)}
+              transform={`translate(${x} ${y})`} />
+      ))}
+    </g>
+  );
+}
+
+// Fond de la carte : papier sur le bord, aplat de couleur, éclairé au centre
+// et assombri vers les bords, comme une carte de grimoire.
+function Fond({ id, fond }) {
+  return (
+    <>
+      <defs>
+        <radialGradient id={`${id}-l`} cx="50%" cy="42%" r="70%">
+          <stop offset="0" stopColor="#fff" stopOpacity=".26" />
+          <stop offset=".6" stopColor="#fff" stopOpacity="0" />
+          <stop offset="1" stopColor="#000" stopOpacity=".4" />
+        </radialGradient>
+      </defs>
+      <rect width="100" height="150" rx="9" style={peint(PAPIER)} />
+      <rect x="5" y="5" width="90" height="140" rx="6" style={peint(fond)} />
+      <rect x="5" y="5" width="90" height="140" rx="6" fill={`url(#${id}-l)`} />
+      <Cadre />
+    </>
   );
 }
 
@@ -163,58 +224,139 @@ function FaceUno({ couleur, valeur }) {
   const id = useId().replace(/:/g, '');
   const noire = NOIRES.includes(valeur);
   const fond = TEINTES[noire ? 'noir' : couleur] || TEINTES.noir;
+  const teinte = noire ? undefined : couleur;
+  // Sur le papier clair, l'or du jaune se lit mal : le centre prend un ambre
+  // plus foncé.
+  const encre = couleur === 'jaune' && !noire ? TEINTES.jaune_fonce : fond;
   let centre;
-  if (valeur === 'passe') centre = <SymbolePasse couleur={fond} />;
-  else if (valeur === 'inversion') centre = <SymboleInversion couleur={fond} />;
-  else if (valeur === '+2') {
-    centre = <g transform="scale(1.7)"><MiniCartes couleurs={[fond, fond]} /></g>;
-  } else if (valeur === '+4') {
+  if (valeur === 'passe') centre = <SymbolePasse couleur={encre} />;
+  else if (valeur === 'inversion') centre = <SymboleInversion couleur={encre} />;
+  else if (valeur === '+2' || valeur === '+4') {
+    const cartes = valeur === '+2' ? [fond, fond] : ['vert', 'bleu', 'rouge', 'jaune'];
     centre = (
-      <g transform="scale(1.5)">
-        <MiniCartes couleurs={['vert', 'bleu', 'rouge', 'jaune']} />
-      </g>
+      <>
+        <Inscription x={0} y={-8} taille={34} couleur={encre} contour={1}>
+          {valeur}
+        </Inscription>
+        <g transform={`translate(0 17) scale(${valeur === '+2' ? 0.8 : 0.62})`}>
+          <MiniCartes couleurs={cartes} />
+        </g>
+      </>
     );
   } else if (valeur === 'joker') {
     centre = null;
   } else {
     centre = (
-      <Inscription x={0} y={2} taille={60} couleur={fond}>
+      <Inscription x={0} y={3} taille={56} couleur={encre} contour={1.2}>
         {valeur}
       </Inscription>
     );
   }
-  const souligne = valeur === '6' || valeur === '9';
   return (
     <>
-      <rect width="100" height="150" rx="9" style={peint(PAPIER)} />
-      <rect x="5" y="5" width="90" height="140" rx="6" style={peint(fond)} />
-      <Cadre />
+      <Fond id={id} fond={fond} />
+      {/* Emblème de la couleur en haut et en bas, de part et d'autre du
+          médaillon. */}
+      {teinte && (
+        <>
+          <Embleme couleur={teinte} x={50} y={23} taille={13} />
+          <Embleme couleur={teinte} x={50} y={127} taille={13} retourne />
+        </>
+      )}
       <g transform="translate(50 75)">
-        {valeur === 'joker'
-          ? <OvaleQuatre id={`${id}-o`} rx={34} ry={56} />
-          : <ellipse rx="34" ry="56" transform="rotate(30)" style={peint(PAPIER)} />}
+        {/* Médaillon : bague d'or, papier, filet de la couleur. */}
+        {valeur === 'joker' ? (
+          <>
+            <circle r="35" style={peint(OR)} />
+            <DisqueQuatre id={`${id}-o`} r={32} />
+            <circle r="11" style={peint(PAPIER, ENCRE)} strokeWidth="1.4" />
+            <path d={EMBLEMES.jaune} style={peint(TEINTES.noir)} transform="scale(.8)" />
+          </>
+        ) : (
+          <>
+            <circle r="35" style={peint(OR)} />
+            <circle r="33" style={peint(PAPIER)} />
+            <circle r="29.5" style={{ fill: 'none', stroke: encre }}
+                    strokeWidth="1.2" opacity=".55" />
+          </>
+        )}
         {centre}
-        {souligne && <rect x={-12} y={26} width={24} height={4} rx={2} style={peint(fond)} />}
       </g>
-      <CoinUno valeur={valeur} />
-      <CoinUno valeur={valeur} retourne />
+      <CoinUno valeur={valeur} couleur={teinte} />
+      <CoinUno valeur={valeur} couleur={teinte} retourne />
     </>
   );
 }
 
-// Dos : nuit, ovale rouge sang, croissant de lune et nom du jeu doré.
+// Patte de loup (coussinet et quatre doigts), centrée en (0, 0).
+const PATTE_COUSSINET = 'M0-1c6 0 12 5.5 12 11 0 3.6-3.2 4.8-6 3.7-2-.8-4-1.6-6-1.6s-4 .8-6 1.6c-2.8 1.1-6 0-6-3.7C-12 4.5-6-1 0-1Z';
+const PATTE_DOIGTS = [
+  [-11.5, -8.5, -22], [-4.2, -15, -7], [4.2, -15, 7], [11.5, -8.5, 22],
+];
+
+// Étoiles du ciel du dos : positions fixes (le rendu serveur et le client
+// concordent).
+const ETOILES_DOS = [
+  [17, 22, 1], [80, 19, 1.3], [26, 44, 0.8], [74, 41, 0.9], [13, 70, 1],
+  [88, 76, 0.9], [20, 108, 1.2], [78, 104, 0.8], [31, 128, 1], [70, 126, 1.2],
+  [12, 133, 0.7], [90, 38, 0.7],
+];
+
+// Dos : ciel de nuit, pleine lune cerclée d'or et patte du loup. Rien d'écrit :
+// il se reconnaît à l'ambiance de l'application.
 function DosUno() {
+  const id = useId().replace(/:/g, '');
+  const nuit = 'var(--uno-nuit, #0f1730)';
   return (
     <>
+      <defs>
+        <radialGradient id={`${id}-c`} cx="50%" cy="46%" r="75%">
+          <stop offset="0" stopColor="#3b4b82" stopOpacity=".55" />
+          <stop offset=".55" stopColor="#3b4b82" stopOpacity="0" />
+          <stop offset="1" stopColor="#000" stopOpacity=".45" />
+        </radialGradient>
+        <radialGradient id={`${id}-l`} cx="42%" cy="38%" r="70%">
+          <stop offset="0" stopColor="#fbf4df" />
+          <stop offset="1" stopColor="#d9cfb4" />
+        </radialGradient>
+      </defs>
       <rect width="100" height="150" rx="9" style={peint(PAPIER)} />
-      <rect x="5" y="5" width="90" height="140" rx="6" style={peint(TEINTES.noir)} />
+      <rect x="5" y="5" width="90" height="140" rx="6" style={peint(nuit)} />
+      <rect x="5" y="5" width="90" height="140" rx="6" fill={`url(#${id}-c)`} />
+      {ETOILES_DOS.map(([x, y, r]) => (
+        <circle key={`${x}-${y}`} cx={x} cy={y} r={r} style={peint(PAPIER)}
+                opacity=".8" />
+      ))}
       <Cadre />
-      <ellipse cx="50" cy="75" rx="34" ry="56" transform="rotate(30 50 75)"
-               style={peint(TEINTES.rouge)} />
-      <path d="M57 36a9 9 0 1 0 0 16 10 10 0 0 1 0-16Z" style={peint(PAPIER)} />
-      <Inscription x={50} y={80} taille={32} couleur={TEINTES.jaune}>
-        <tspan className="cj-logo">UNO</tspan>
-      </Inscription>
+      <g transform="translate(50 75)">
+        {/* Graduations du cadran lunaire. */}
+        {Array.from({ length: 24 }, (_, i) => (
+          <path key={i} d={i % 6 === 0 ? 'M0-35v-6' : 'M0-35v-3.5'}
+                style={{ fill: 'none', stroke: OR }}
+                strokeWidth={i % 6 === 0 ? 1.6 : 0.9}
+                transform={`rotate(${i * 15})`} />
+        ))}
+        <g transform="scale(.82)">
+          <circle r="40" style={{ fill: 'none', stroke: OR }} strokeWidth="1.1" />
+          <circle r="35" style={peint(OR)} />
+          <circle r="33" fill={`url(#${id}-l)`} />
+          {/* Mers de la lune. */}
+          <circle cx="-14" cy="-15" r="5" style={peint('#c9bd9d')} opacity=".7" />
+          <circle cx="16" cy="-4" r="3.4" style={peint('#c9bd9d')} opacity=".7" />
+          <circle cx="-17" cy="14" r="3" style={peint('#c9bd9d')} opacity=".6" />
+          <circle cx="12" cy="22" r="4.2" style={peint('#c9bd9d')} opacity=".6" />
+          {/* Patte de loup, rouge sang. */}
+          <g style={peint(TEINTES.rouge)} transform="translate(0 4) scale(.95)">
+            <path d={PATTE_COUSSINET} />
+            {PATTE_DOIGTS.map(([x, y, a]) => (
+              <ellipse key={x} cx={x} cy={y} rx="3.7" ry="5.2"
+                       transform={`rotate(${a} ${x} ${y})`} />
+            ))}
+          </g>
+        </g>
+      </g>
+      <Embleme couleur="bleu" x={50} y={21} taille={10} teinte={OR} />
+      <Embleme couleur="bleu" x={50} y={129} taille={10} teinte={OR} retourne />
     </>
   );
 }

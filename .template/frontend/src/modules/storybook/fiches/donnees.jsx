@@ -527,8 +527,9 @@ export const FICHES = [
     props: [
       P('titre', 'string', 'Titre de la section (`<h2>`) ; sans titre ni '
         + 'actions, pas d’en-tête.'),
-      P('suffixe', 'string', 'À côté du titre, en retrait (un compte, '
-        + 'un état).'),
+      P('suffixe', 'string · nombre', 'À côté du titre, en retrait (un '
+        + 'compte, un état). 0 est affiché ; seuls le vide et `false` '
+        + 'l’omettent.'),
       P('icone · actions', 'élément', 'Avant le titre ; à droite.'),
       P('niveau', 'string', '`attention` colore le titre.'),
       P('className', 'string', 'Classe ajoutée au `<section>`.'),

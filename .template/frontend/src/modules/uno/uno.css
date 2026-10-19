@@ -1,10 +1,12 @@
-/* Module UNO : accueil (tables), salle d'attente et plateau. Le plateau est
-   un tapis de table sombre, éclairé de la couleur demandée. */
+/* Module UNO : accueil (tables), salle d'attente et tapis de jeu. Le tapis est
+   un vrai plateau : cadre de bois, feutre vert, anneau de la couleur
+   demandée. Il reste sombre dans les deux thèmes, comme un objet posé sur la
+   table. Tout ce qui bouge respecte « mouvement réduit ». */
 
 /* -- accueil --- */
 /* Cartes en éventail dans la bannière d’accueil. */
 .uno-banniere-cartes { padding-right: var(--e4); }
-.uno-accueil-grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--e5); }
+.uno-accueil-grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: var(--e5); }
 .uno-formulaire { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e4); }
 .uno-formulaire .champ { width: 100%; }
 .uno-saisie-code { font-family: var(--police-mono); font-size: var(--t-l); letter-spacing: .3em; text-transform: uppercase; }
@@ -13,6 +15,7 @@
 .uno-tables-ligne {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--e3);
   padding: var(--e3) var(--e4);
   border: 1px solid var(--bord);
@@ -21,14 +24,15 @@
 }
 .uno-tables-ligne:hover { border-color: var(--accent-bord); }
 .uno-tables-ico { width: 22px; height: 22px; color: var(--accent); }
-.uno-tables-nom { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
-.uno-tables-nom .dim { font-size: var(--t-xs); }
+.uno-tables-nom { display: flex; flex-direction: column; flex: 1 1 160px; min-width: 0; }
+.uno-tables-nom .dim { font-size: var(--t-xs); overflow-wrap: anywhere; }
 .uno-tables-joueurs { display: inline-flex; align-items: center; gap: 4px; color: var(--dim); font-variant-numeric: tabular-nums; }
 
 /* -- barre de la table --- */
 .uno-barre { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e3); margin-bottom: var(--e5); }
 .uno-retour { color: var(--accent-txt); font-family: var(--police-titre); font-weight: 700; text-decoration: none; }
 .uno-retour::after { content: " /"; color: var(--dim); }
+.uno-retour.uno-jouer::after { content: " →"; }
 .uno-barre-titre { flex: 1 1 auto; min-width: 0; font-size: var(--t-xl); overflow-wrap: anywhere; }
 .uno-barre-code { padding: 2px 10px; border: 1px solid var(--accent-bord); border-radius: var(--r-s); color: var(--accent-txt); font-family: var(--police-mono); letter-spacing: .2em; }
 .uno-erreur { margin-bottom: var(--e4); }
@@ -37,6 +41,7 @@
 .uno-invitation { max-width: 520px; }
 .uno-invitation .carte-corps { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e3); }
 .uno-invitation-nom { font-family: var(--police-titre); font-size: var(--t-2xl); }
+.uno-invitation-actions { display: flex; flex-wrap: wrap; gap: var(--e3); }
 .uno-attente { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: var(--e5); align-items: start; }
 .uno-attente-actions { grid-column: 1 / -1; }
 .uno-partage {
@@ -56,77 +61,233 @@
 
 .uno-scores { display: flex; flex-direction: column; gap: var(--e2); margin: 0; padding: 0; list-style: none; counter-reset: rang; }
 .uno-scores li { display: flex; align-items: center; justify-content: space-between; gap: var(--e3); padding: var(--e2) var(--e3); border-radius: var(--r-s); background: var(--surface-2); }
-.uno-scores-nom { display: inline-flex; align-items: center; gap: var(--e2); font-weight: 700; }
+.uno-scores-nom { display: inline-flex; align-items: center; flex-wrap: wrap; gap: var(--e2); min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
+.uno-scores-droite { display: inline-flex; align-items: center; gap: var(--e2); }
 .uno-scores-points { font-family: var(--police-titre); color: var(--accent-txt); font-variant-numeric: tabular-nums; }
 
-/* -- plateau --- */
+/* -- tapis de jeu --- */
 .uno-plateau { display: flex; flex-direction: column; gap: var(--e5); }
-.uno-adversaires { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--e3); margin: 0; padding: 0; list-style: none; }
-.uno-adversaire {
+
+/* Cadre de bois, veiné, filet d'or et ombre portée. */
+.uno-tapis {
+  --rayon: clamp(26px, 5vw, 84px);
+  --cadre: clamp(8px, 1.4vw, 16px);
+  --uno-lumiere: #d4a54a;
+  /* Quartiers de l'anneau : éteints, sauf la couleur demandée. */
+  --a-rouge: color-mix(in srgb, var(--uno-rouge) 26%, transparent);
+  --a-bleu: color-mix(in srgb, var(--uno-bleu) 26%, transparent);
+  --a-vert: color-mix(in srgb, var(--uno-vert) 26%, transparent);
+  --a-jaune: color-mix(in srgb, var(--uno-jaune) 26%, transparent);
+  position: relative;
+  width: 100%;
+  max-width: 1180px;
+  margin-inline: auto;
+  padding: var(--cadre);
+  border-radius: var(--rayon);
+  background:
+    repeating-linear-gradient(94deg, rgba(0, 0, 0, .1) 0 2px, transparent 2px 9px),
+    repeating-linear-gradient(88deg, rgba(255, 228, 176, .05) 0 1px, transparent 1px 13px),
+    linear-gradient(165deg, #7a4f2a, #4a2c15 45%, #653f20 72%, #3b2210);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 225, 170, .28),
+    inset 0 -3px 6px rgba(0, 0, 0, .45),
+    0 4px 10px rgba(0, 0, 0, .35),
+    0 26px 54px rgba(0, 0, 0, .42);
+}
+.uno-centre-rouge { --uno-lumiere: var(--uno-rouge); --a-rouge: var(--uno-rouge); }
+.uno-centre-bleu  { --uno-lumiere: var(--uno-bleu);  --a-bleu: var(--uno-bleu); }
+.uno-centre-vert  { --uno-lumiere: var(--uno-vert);  --a-vert: var(--uno-vert); }
+.uno-centre-jaune { --uno-lumiere: var(--uno-jaune); --a-jaune: var(--uno-jaune); }
+
+/* Feutre : vert de table, grain fin, éclairé de la couleur demandée. */
+.uno-feutre {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e5);
+  padding: var(--e6) var(--e6) var(--e5);
+  border-radius: calc(var(--rayon) - var(--cadre));
+  background:
+    radial-gradient(60% 55% at 50% 50%, color-mix(in srgb, var(--uno-lumiere) 22%, transparent), transparent 75%),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, .02) 0 1px, transparent 1px 4px),
+    radial-gradient(120% 110% at 50% 30%, #22572f, #153b22 55%, #0b2214);
+  box-shadow:
+    inset 0 0 0 2px rgba(212, 165, 74, .55),
+    inset 0 0 0 5px rgba(0, 0, 0, .35),
+    inset 0 12px 70px rgba(0, 0, 0, .6);
+  color: #ece4d2;
+}
+
+/* Joueurs assis autour. */
+.uno-sieges { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--e3); margin: 0; padding: 0; list-style: none; }
+.uno-siege {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--e1);
-  min-width: 130px;
+  gap: 2px;
+  min-width: 128px;
   padding: var(--e2) var(--e3) var(--e3);
-  border: 1px solid var(--bord);
+  border: 1px solid rgba(236, 228, 210, .2);
   border-radius: var(--r-l);
-  background: var(--surface);
-  transition: border-color var(--duree), box-shadow var(--duree);
+  background: rgba(6, 14, 9, .5);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, .3);
+  transition: border-color var(--duree), opacity var(--duree);
 }
-.uno-adversaire.actif { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 18px color-mix(in srgb, var(--accent) 35%, transparent); }
-.uno-adversaire-tete { display: flex; align-items: center; gap: var(--e2); }
-.uno-adversaire-nom { font-family: var(--police-titre); font-weight: 700; }
-.uno-adversaire-main { padding-top: 6px; }
-.uno-adversaire-compte { color: var(--dim); font-size: var(--t-xs); font-variant-numeric: tabular-nums; }
-
-/* Tapis : vert de table sous la lumière de la couleur demandée. */
-.uno-centre {
-  --uno-lumiere: #d4a54a;
-  display: flex;
+.uno-siege.actif { border-color: #e8c27a; animation: uno-pulse 1.5s ease-in-out infinite; }
+.uno-siege.absent { opacity: .6; border-style: dashed; }
+.uno-siege-tete { display: flex; align-items: center; gap: var(--e2); max-width: 100%; }
+.uno-siege-nom { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--police-titre); font-weight: 700; }
+.uno-siege-main { padding-top: 6px; }
+.uno-siege-compte { color: rgba(236, 228, 210, .7); font-size: var(--t-xs); font-variant-numeric: tabular-nums; }
+.uno-siege-tour { color: #f0cd7b; font-size: var(--t-xs); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; animation: uno-clignote 1.5s ease-in-out infinite; }
+.uno-siege-exclure {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: var(--e7);
-  padding: var(--e7) var(--e6);
-  border: 1px solid #2a2f3d;
-  border-radius: var(--r-xl);
-  background:
-    radial-gradient(60% 90% at 50% 50%, color-mix(in srgb, var(--uno-lumiere) 22%, transparent), transparent 70%),
-    radial-gradient(120% 120% at 50% 0%, #17321f, #0b1a10 70%);
-  box-shadow: inset 0 0 60px rgba(0, 0, 0, .6), var(--ombre-2);
-  color: #ece4d2;
-  transition: background .4s;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(236, 228, 210, .12);
+  color: rgba(236, 228, 210, .75);
+  cursor: pointer;
 }
-.uno-centre-rouge { --uno-lumiere: var(--uno-rouge); }
-.uno-centre-jaune { --uno-lumiere: var(--uno-jaune); }
-.uno-centre-vert  { --uno-lumiere: var(--uno-vert); }
-.uno-centre-bleu  { --uno-lumiere: var(--uno-bleu); }
-.uno-pile { display: flex; flex-direction: column; align-items: center; gap: var(--e2); }
-.uno-pile-libelle { color: rgba(236, 228, 210, .7); font-size: var(--t-2xs); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
-.uno-etat { display: flex; flex-direction: column; gap: var(--e2); min-width: 200px; }
-.uno-message { font-family: var(--police-titre); font-size: var(--t-xl); color: #ece4d2; }
-.uno-message-tour { color: #e8c27a; text-shadow: 0 0 16px rgba(212, 165, 74, .6); }
-.uno-indic { display: flex; align-items: center; gap: var(--e2); color: rgba(236, 228, 210, .8); text-transform: capitalize; }
-.uno-sens { width: 18px; height: 18px; }
-.uno-sens-inverse { transform: scaleX(-1); }
+.uno-siege-exclure:hover { background: var(--danger); color: #fff; }
+.uno-siege-exclure:focus-visible { outline: none; box-shadow: var(--anneau-danger); }
+.uno-siege-exclure .ico { width: 12px; height: 12px; }
+.uno-contre { margin-top: var(--e1); animation: uno-secoue .6s ease-in-out infinite; }
+.uno-presence { display: inline-flex; align-items: center; gap: 4px; }
+.uno-presence-texte { color: var(--dim); font-size: var(--t-2xs); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.uno-feutre .uno-presence-texte { color: rgba(236, 228, 210, .65); }
 
+/* Centre : pioche et défausse dans l'anneau de la couleur demandée. */
+.uno-centre {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: var(--e3);
+}
+.uno-anneau, .uno-piles { grid-area: 1 / 1; align-self: center; }
+.uno-anneau {
+  position: relative;
+  width: min(330px, 100%);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.uno-anneau::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--a-rouge) 0 24.4%, transparent 24.4% 25%,
+    var(--a-bleu) 25% 49.4%, transparent 49.4% 50%,
+    var(--a-vert) 50% 74.4%, transparent 74.4% 75%,
+    var(--a-jaune) 75% 99.4%, transparent 99.4% 100%);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 13px), #000 calc(100% - 12px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 13px), #000 calc(100% - 12px));
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--uno-lumiere) 70%, transparent));
+}
+/* Sens du jeu : trois flèches qui tournent, dans le sens de la partie. */
+.uno-sens { position: absolute; inset: 3%; width: 94%; height: 94%; animation: uno-orbite 18s linear infinite; }
+.uno-sens.inverse { animation-direction: reverse; }
+.uno-sens-trait { fill: none; stroke: rgba(236, 228, 210, .3); stroke-width: .6; stroke-dasharray: 1.5 3; }
+.uno-sens path { fill: #e8c27a; }
+.uno-piles { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: var(--e6); }
+.uno-pile { display: flex; flex-direction: column; align-items: center; gap: var(--e2); }
+/* La défausse est un tas : deux cartes dessous, de travers. */
+.uno-defausse .cj { position: relative; z-index: 1; }
+.uno-defausse::before,
+.uno-defausse::after {
+  content: "";
+  position: absolute;
+  width: var(--cj-taille-l, 100px);
+  aspect-ratio: 2 / 3;
+  border-radius: calc(var(--cj-taille-l, 100px) * .09);
+  background: #e7dcc4;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .45);
+  opacity: .55;
+}
+.uno-defausse { position: relative; }
+.uno-defausse::before { transform: rotate(-7deg) translate(-4px, 2px); }
+.uno-defausse::after { transform: rotate(6deg) translate(5px, 1px); }
+.uno-pile-libelle { position: relative; z-index: 1; color: rgba(236, 228, 210, .75); font-size: var(--t-2xs); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.uno-etat { grid-row: 2; display: flex; flex-direction: column; align-items: center; gap: var(--e2); }
+.uno-tour {
+  max-width: 100%;
+  padding: 5px var(--e5);
+  border: 1px solid rgba(236, 228, 210, .28);
+  border-radius: var(--r-plein);
+  background: rgba(6, 14, 9, .55);
+  color: #ece4d2;
+  font-family: var(--police-titre);
+  font-size: var(--t-xl);
+  text-align: center;
+}
+/* À vous de jouer : l'encadré s'allume, doré, et bat doucement. */
+.uno-tour.moi {
+  border-color: #f6e2a4;
+  background: linear-gradient(180deg, #f0cd7b, #d4a54a);
+  color: #1a1206;
+  font-weight: 700;
+  animation: uno-pulse 1.4s ease-in-out infinite;
+}
+.uno-tour.fin { border-color: #f6e2a4; color: #f0cd7b; }
+.uno-indic { display: flex; align-items: center; flex-wrap: wrap; justify-content: center; gap: var(--e2); color: rgba(236, 228, 210, .8); font-size: var(--t-s); }
+.uno-indic-couleur { text-transform: capitalize; }
+.uno-indic-sep { opacity: .5; }
+
+/* Le bouton UNO n'existe que lorsqu'il sert (une carte à venir) : rond, rouge,
+   au centre du jeu, il bat jusqu'à ce qu'on l'ait pressé. */
+.uno-bouton-uno {
+  position: absolute;
+  z-index: 3;
+  left: calc(50% + 178px);
+  top: 165px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 92px;
+  height: 92px;
+  padding: 0;
+  border: 3px solid #f6ead2;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ea5246, #a3261e 55%, #5a0e0b);
+  color: #fff7e6;
+  box-shadow: 0 0 0 4px #d4a54a, 0 8px 24px rgba(0, 0, 0, .6), 0 0 30px rgba(232, 194, 122, .6);
+  cursor: pointer;
+  transform: translateY(-50%);
+  animation: uno-surgit .35s cubic-bezier(.3, 1.6, .5, 1) both, uno-bat 1.1s ease-in-out .35s infinite;
+}
+.uno-bouton-uno:hover { filter: brightness(1.12); }
+.uno-bouton-uno:focus-visible { outline: none; box-shadow: 0 0 0 4px #fff, 0 0 0 7px var(--accent); }
+/* En capitales : la gothique y est illisible (cf. `--police-titre`). */
+.uno-bouton-uno-texte { font-family: var(--police); font-size: 28px; font-weight: 800; letter-spacing: .04em; text-shadow: 0 2px 3px rgba(0, 0, 0, .6); }
+
+/* Votre main, sur le tapis. */
 .uno-joueur {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--e3);
-  padding: var(--e4) var(--e5) var(--e5);
-  border: 1px solid var(--bord);
+  gap: var(--e2);
+  padding: var(--e3) var(--e4) var(--e4);
+  border: 1px solid rgba(236, 228, 210, .16);
   border-radius: var(--r-xl);
-  background: var(--surface);
-  transition: border-color var(--duree), box-shadow var(--duree);
+  background: rgba(4, 12, 7, .4);
+  transition: border-color var(--duree);
 }
-.uno-joueur.actif { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 26px color-mix(in srgb, var(--accent) 30%, transparent); }
+.uno-joueur.actif { border-color: #e8c27a; animation: uno-pulse 1.5s ease-in-out infinite; }
 .uno-joueur-tete { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e3); }
+.uno-joueur-tour { padding: 1px var(--e3); border-radius: var(--r-plein); background: #e8c27a; color: #1a1206; font-size: var(--t-xs); font-weight: 800; letter-spacing: .06em; text-transform: uppercase; animation: uno-clignote 1.5s ease-in-out infinite; }
 .uno-joueur-actions { display: flex; align-items: center; gap: var(--e2); margin-left: auto; }
 .uno-main { justify-content: safe center; overflow-x: auto; }
 
 .uno-fin .carte-corps { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e4); }
+.uno-fin .uno-scores { align-self: stretch; }
 .uno-fin-titre { font-family: var(--police-titre); font-size: var(--t-xl); color: var(--accent-txt); }
 
 .uno-journal { color: var(--dim); font-size: var(--t-s); }
@@ -156,18 +317,62 @@
 .uno-couleur-vert  { background: var(--uno-vert); }
 .uno-couleur-bleu  { background: var(--uno-bleu); }
 
-@media (max-width: 760px) {
-  .uno-attente { grid-template-columns: 1fr; }
-  .uno-centre { gap: var(--e5); }
+/* -- animations --- */
+@keyframes uno-pulse {
+  0%, 100% { box-shadow: 0 0 0 1px #e8c27a, 0 0 8px rgba(232, 194, 122, .35); }
+  50% { box-shadow: 0 0 0 3px #f6e2a4, 0 0 26px rgba(240, 205, 123, .85); }
 }
-@media (prefers-reduced-motion: reduce) {
-  .uno-centre, .uno-couleur { transition: none; }
+@keyframes uno-clignote { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+@keyframes uno-orbite { to { transform: rotate(360deg); } }
+@keyframes uno-surgit {
+  from { transform: translateY(-50%) scale(.2) rotate(-25deg); opacity: 0; }
+  to { transform: translateY(-50%) scale(1) rotate(0); opacity: 1; }
+}
+@keyframes uno-bat {
+  0%, 100% { transform: translateY(-50%) scale(1); }
+  50% { transform: translateY(-50%) scale(1.1); }
+}
+@keyframes uno-secoue {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
 }
 
-/* -- présence à la table -- */
-.uno-presence { display: inline-flex; align-items: center; gap: 4px; }
-.uno-presence-texte { color: var(--dim); font-size: var(--t-2xs); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-.uno-adversaire.absent { opacity: .6; border-style: dashed; }
+/* -- écrans étroits : le tapis se resserre, les cartes rapetissent --- */
+@media (max-width: 760px) {
+  .uno-attente { grid-template-columns: 1fr; }
+  .uno-code-valeur { font-size: 30px; letter-spacing: .25em; }
+}
+@media (max-width: 720px) {
+  .uno-tapis {
+    /* Les cartes « l » (main, pioche, défausse) passent à 68 px. */
+    --cj-taille-l: 68px;
+    --rayon: 30px;
+    --cadre: 8px;
+  }
+  .uno-feutre { gap: var(--e3); padding: var(--e4) var(--e2) var(--e3); }
+  .uno-sieges { gap: var(--e2); }
+  .uno-siege { flex: 1 1 96px; min-width: 96px; max-width: 150px; padding: 6px 8px 8px; }
+  .uno-siege-main { --cj-taille-xs: 28px; }
+  .uno-anneau { width: min(240px, 100%); }
+  .uno-anneau::before {
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 10px), #000 calc(100% - 9px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 10px), #000 calc(100% - 9px));
+  }
+  .uno-piles { gap: var(--e4); }
+  .uno-tour { font-size: var(--t-l); padding: 4px var(--e4); }
+  .uno-bouton-uno { left: auto; right: 2px; top: 120px; width: 76px; height: 76px; }
+  .uno-bouton-uno-texte { font-size: 24px; }
+  .uno-joueur { padding: var(--e2) var(--e2) var(--e3); }
+  .uno-joueur-actions { margin-left: 0; }
+  .uno-tables-ligne { padding: var(--e3); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .uno-sens, .uno-siege.actif, .uno-joueur.actif, .uno-tour.moi, .uno-siege-tour,
+  .uno-joueur-tour, .uno-bouton-uno, .uno-contre { animation: none; }
+  .uno-couleur { transition: none; }
+  .uno-bouton-uno { transform: translateY(-50%); }
+}
 
 /* -- musique d'ambiance : lecteur fixe, bien visible -- */
 .uno-lecteur {
@@ -230,3 +435,5 @@
 @media (prefers-reduced-motion: reduce) {
   .uno-lecteur.joue .uno-lecteur-egaliseur i { animation: none; height: 8px; }
 }
+/* Le spectateur n'a pas de lecteur : pas de place à lui réserver. */
+.uno-spectateur { padding-bottom: var(--e8); }

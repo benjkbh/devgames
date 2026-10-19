@@ -59,18 +59,23 @@
 
   /* -- cartes de UNO : palette du site, identique dans les deux thèmes ---
      rouge = sang, jaune = or de chandelle, vert = forêt, bleu = nuit ; les
-     jokers sont noirs ; papier parchemin et encre de nuit. */
+     jokers sont noirs ; papier parchemin et encre de nuit ; or des filets ;
+     ciel de nuit du dos des cartes. */
   --uno-rouge:  #a3261e;
   --uno-jaune:  #d4a54a;
   --uno-vert:   #3e7d4a;
   --uno-bleu:   #3a5a8c;
   --uno-noir:   #0d0f16;
+  --uno-or:     #d4a54a;
+  --uno-nuit:   #0f1730;
   --uno-papier: #ece4d2;
   --uno-encre:  #0a0c11;
   --uno-filet:  rgba(236, 228, 210, .35);
 
   /* -- neutres : parchemin --- */
-  --fond:       #ebe1cb;
+  /* Le fond de page est plus sombre que les surfaces : sur le thème clair,
+     cartes et panneaux (parchemin clair) se détachent d'un fond de cuir. */
+  --fond:       #d5c7a5;
   --surface:    #f8f1e1;
   --surface-2:  #f2e8d3;
   --surface-3:  #e8dbc0;
@@ -78,8 +83,8 @@
   --bord-fort:  #bfa878;
   --txt:        #2a1f14;
   --txt-2:      #4a3b28;
-  --dim:        #75644c;
-  --num:        #a39277;
+  --dim:        #685740;
+  --num:        #8c7a5d;
 
   /* -- sémantique --- */
   --succes:        #3f6f3b;
@@ -200,7 +205,9 @@
   --degrade-nuit:  linear-gradient(160deg, #1c2438 0%, #0c0f18 100%);
   --lueur:         0 0 0 1px rgba(184, 51, 42, .45), 0 0 24px rgba(184, 51, 42, .35);
 
-  --fond:       #0a0c11;
+  /* Le fond de page est plus clair que les surfaces : sur la nuit, cartes et
+     panneaux se creusent dans un ciel bleu-gris au lieu de s'y fondre. */
+  --fond:       #202838;
   --surface:    #12151d;
   --surface-2:  #161a23;
   --surface-3:  #1e2330;

@@ -5,6 +5,7 @@ import FormulaireConnexion from './coque/FormulaireConnexion';
 import MenuLateral from './coque/MenuLateral';
 import MonCompte from './coque/MonCompte';
 import { moduleDefaut, modulesVisibles } from './coque/modules';
+import Spectateur from './modules/uno/Spectateur';
 import { BandeauSante, FournisseurPresence } from './coque/presence';
 import { estSuperadmin, useSession } from './coque/session';
 import {
@@ -20,8 +21,9 @@ import './coque/coque.css';
 // authentifiée n'affiche que le formulaire de connexion.
 //
 // Pages publiques (hors authentification) : ajouter ici un préfixe et sa route
-// pour une page remise à un tiers, traitée avant le contrôle d'accès.
-const PUBLIC = null;
+// pour une page remise à un tiers, traitée avant le contrôle d'accès. Ici,
+// regarder une table de UNO sans compte (`/spectateur/<code>`).
+const PUBLIC = '/spectateur/';
 
 export default function App() {
   const [session, rafraichir] = useSession();
@@ -30,7 +32,7 @@ export default function App() {
   if (PUBLIC && emplacement.pathname.startsWith(PUBLIC)) {
     return (
       <Routes>
-        {/* <Route path={`${PUBLIC}:jeton`} element={<PagePublique />} /> */}
+        <Route path={`${PUBLIC}:code`} element={<Spectateur />} />
       </Routes>
     );
   }

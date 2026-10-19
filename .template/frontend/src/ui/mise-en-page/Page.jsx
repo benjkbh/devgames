@@ -28,8 +28,8 @@ export function Page({
 }
 
 // Conteneur titré à l'intérieur d'une page : il reçoit n'importe quels
-// éléments. `suffixe` s'affiche à côté du
-// titre, en retrait ; `icone` le précède ; `niveau="attention"` colore le titre.
+// éléments. `suffixe` (un compteur, 0 compris) s'affiche à côté du titre, en
+// retrait ; `icone` le précède ; `niveau="attention"` colore le titre.
 export function Section({
   titre, suffixe, icone, actions, niveau, className, children, ...reste
 }) {
@@ -42,7 +42,9 @@ export function Section({
             <h2 className="section-titre">
               {icone}
               {titre}
-              {suffixe && <span className="section-compte">{suffixe}</span>}
+              {/* 0 est un suffixe valide (un compteur) : seul le vide est omis. */}
+              {suffixe != null && suffixe !== false && suffixe !== ''
+                && <span className="section-compte">{suffixe}</span>}
             </h2>
           )}
           {actions && <div className="section-actions">{actions}</div>}

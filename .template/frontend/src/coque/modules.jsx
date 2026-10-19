@@ -1,5 +1,6 @@
 import Accueil from '../modules/accueil/Accueil';
 import Storybook from '../modules/storybook/Storybook';
+import { amorcerMusique } from '../modules/uno/ambiance';
 import Uno from '../modules/uno/Uno';
 import { IcoCarteRole, IcoDashboard, IcoPanneau } from '../ui';
 
@@ -18,6 +19,10 @@ import { IcoCarteRole, IcoDashboard, IcoPanneau } from '../ui';
 
 // `categorie` range le module sous une rubrique du menu latéral ; les
 // rubriques suivent l'ordre de première apparition dans ce registre.
+//
+// `auClic` (facultatif) est appelé au clic sur l'entrée du menu, dans le geste
+// de l'utilisateur : le module peut y amorcer ce que le navigateur n'autorise
+// qu'après un geste (le son du UNO).
 //
 // `cle` est l'identifiant partagé avec le serveur (`routes.ROLES`), stocké dans
 // la table des droits ; un test vérifie l'accord des modules et des rôles, dans
@@ -59,6 +64,7 @@ export const MODULES = [
     libelle: 'UNO',
     Ico: IcoCarteRole,
     Composant: Uno,
+    auClic: amorcerMusique,
     roles: [
       {
         cle: 'joueur',

@@ -11,6 +11,7 @@
   font-size: var(--t-m);
   font-weight: 700;
   line-height: 1;
+  text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
   user-select: none;

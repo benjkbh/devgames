@@ -3,6 +3,9 @@
 Le joueur est toujours le compte de la session, jamais un nom reçu. Les
 actions rendent la table à jour, vue par le joueur : l'interface n'attend
 pas le sondage suivant.
+
+Seule route sans compte : `spectateur`, qui montre une table (par son code)
+sans aucune main.
 """
 from __future__ import annotations
 
@@ -50,6 +53,14 @@ def salon(req: Requete) -> Reponse:
         HTTPStatus.OK, req.uno.vue(req.parametre('code'), j)))
 
 
+def spectateur(req: Requete) -> Reponse:
+    """Une table vue d'un spectateur, sans session ni droit (`?code=`)."""
+    try:
+        return HTTPStatus.OK, req.uno.regarder(req.parametre('code'))
+    except SalonIntrouvable as e:
+        return HTTPStatus.NOT_FOUND, {'erreur': str(e)}
+
+
 # -- table -------------------------------------------------------------------
 def creer(req: Requete) -> Reponse:
     corps = corps_objet(req)
@@ -76,6 +87,15 @@ def quitter(req: Requete) -> Reponse:
     def action(j: str) -> Reponse:
         req.uno.quitter(corps.get('code'), j)
         return HTTPStatus.OK, {'ok': True}
+    return _proteger(req, action)
+
+
+def exclure(req: Requete) -> Reponse:
+    corps = corps_objet(req)
+
+    def action(j: str) -> Reponse:
+        req.uno.exclure(corps.get('code'), j, corps.get('joueur'))
+        return HTTPStatus.OK, req.uno.vue(corps.get('code'), j)
     return _proteger(req, action)
 
 

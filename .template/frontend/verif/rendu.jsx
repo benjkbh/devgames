@@ -9,7 +9,9 @@ import FormulaireConnexion from '../src/coque/FormulaireConnexion';
 import MenuLateral from '../src/coque/MenuLateral';
 import { MODULES } from '../src/coque/modules';
 import Storybook from '../src/modules/storybook/Storybook';
+import Spectateur from '../src/modules/uno/Spectateur';
 import { Plateau, SalleAttente } from '../src/modules/uno/Table';
+import { Tapis } from '../src/modules/uno/Tapis';
 import { CATALOGUE } from '../src/modules/storybook/catalogue';
 import { CATEGORIES } from '../src/modules/storybook/fiches/arbre';
 import * as ui from '../src/ui';
@@ -143,11 +145,14 @@ const MANCHE_UNO = {
     { id: 3, couleur: 'bleu', valeur: 'inversion' },
   ],
   jouables: [1, 2], uno_annonce: false,
+  evenements: [{ n: 1, joueur: 'bob', type: 'pose', cartes: 1 }],
   dessus: { id: 9, couleur: 'noir', valeur: 'joker' }, couleur: 'rouge',
   sens: -1, tour: 'ana', pioche: 70, pioche_jouable: null,
   journal: ['La partie commence.', 'bob pose Joker et annonce rouge.'],
   gagnant: null, points: 0,
 };
+// Vue d'un spectateur : le jeu, sans main.
+const { main: _main, jouables: _jouables, ...MANCHE_SPECTATEUR } = MANCHE_UNO;
 ECRANS.push(
   ['uno : salle d’attente', '/uno/K7Q2M',
     <SalleAttente table={{ ...TABLE_UNO, etat: 'attente' }} onAction={() => {}} />],
@@ -158,6 +163,16 @@ ECRANS.push(
       ...TABLE_UNO, etat: 'finie',
       partie: { ...MANCHE_UNO, tour: null, gagnant: 'bob', points: 63 },
     }} onAction={() => {}} />],
+  ['uno : bouton UNO (une carte à venir)', '/uno/K7Q2M',
+    <Plateau table={{
+      ...TABLE_UNO,
+      partie: { ...MANCHE_UNO, main: MANCHE_UNO.main.slice(0, 2) },
+    }} onAction={() => {}} onExclure={() => {}} />],
+  ['uno : tapis du spectateur', '/spectateur/K7Q2M',
+    <Tapis table={{ ...TABLE_UNO, moi: undefined }} partie={MANCHE_SPECTATEUR}
+           moi={null} message="ana joue…" />],
+  ['uno : page du spectateur', '/spectateur/K7Q2M',
+    <Routes><Route path="/spectateur/:code" element={<Spectateur />} /></Routes>],
 );
 
 let echecs = 0;

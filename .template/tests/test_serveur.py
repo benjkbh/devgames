@@ -457,6 +457,34 @@ class RouteDeSante(ConnexionPersistante):
         self.assertTrue(base.lisible(self.cfg.db_path))
 
 
+class SpectateurUno(ConnexionPersistante):
+    """`GET /api/uno/spectateur` : la seule route du UNO sans session, et
+    sans aucune main ; le reste du module exige toujours un compte."""
+
+    def test_regarder_une_table_sans_session(self) -> None:
+        code_table = self.srv.uno.creer('ana', 'Veillée')
+        self.srv.uno.rejoindre(code_table, 'bob')
+        self.srv.uno.lancer(code_table, 'ana')
+        code, _, corps = self.demande('/api/uno/spectateur?code=%s'
+                                      % code_table.lower())
+        self.assertEqual(code, HTTPStatus.OK)
+        vue = json.loads(corps)
+        self.assertEqual(vue['nom'], 'Veillée')
+        self.assertNotIn('main', vue['partie'])
+
+    def test_table_inconnue(self) -> None:
+        code, _, _ = self.demande('/api/uno/spectateur?code=ZZZZZ')
+        self.assertEqual(code, HTTPStatus.NOT_FOUND)
+
+    def test_le_reste_du_module_exige_une_session(self) -> None:
+        code, _, _ = self.demande('/api/uno/salon?code=ZZZZZ')
+        self.assertEqual(code, HTTPStatus.UNAUTHORIZED)
+        code, _, _ = self.demande(
+            '/api/uno/exclure', 'POST', json.dumps({'code': 'ZZZZZ'}),
+            {'Content-Type': 'application/json'})
+        self.assertEqual(code, HTTPStatus.UNAUTHORIZED)
+
+
 class ParcoursDAuthentification(ConnexionPersistante):
     """Comptes, droits et installation, de bout en bout sur socket réelle.
 

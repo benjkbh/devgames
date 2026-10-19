@@ -44,13 +44,16 @@ function initiales(nom) {
   return String(nom || '?').slice(0, 2).toUpperCase();
 }
 
-function Lien({ chemin, libelle, Ico }) {
+function Lien({
+  chemin, libelle, Ico, auClic,
+}) {
   return (
     <li>
       <NavLink
         to={chemin}
         className={({ isActive }) => cx('menu-lien', isActive && 'actif')}
         title={libelle}
+        onClick={auClic}
       >
         <span className="menu-lien-ico"><Ico /></span>
         {/* Libellé masqué visuellement quand le menu est replié. */}

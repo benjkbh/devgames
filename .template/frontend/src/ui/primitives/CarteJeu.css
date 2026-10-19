@@ -20,11 +20,13 @@
 }
 .cj-svg { display: block; width: 100%; height: 100%; }
 
-.cj-xs { --cj-largeur: 34px; }
-.cj-s  { --cj-largeur: 52px; }
-.cj-m  { --cj-largeur: 72px; }
-.cj-l  { --cj-largeur: 100px; }
-.cj-xl { --cj-largeur: 140px; }
+/* Largeurs des tailles ; un parent peut les réduire (écrans étroits) en
+   posant `--cj-taille-l`, `--cj-taille-m`… */
+.cj-xs { --cj-largeur: var(--cj-taille-xs, 34px); }
+.cj-s  { --cj-largeur: var(--cj-taille-s, 52px); }
+.cj-m  { --cj-largeur: var(--cj-taille-m, 72px); }
+.cj-l  { --cj-largeur: var(--cj-taille-l, 100px); }
+.cj-xl { --cj-largeur: var(--cj-taille-xl, 140px); }
 
 /* Textes du dessin. */
 .cj-inscription {
@@ -37,7 +39,6 @@
   paint-order: stroke;
   letter-spacing: -.02em;
 }
-.cj-logo { letter-spacing: .02em; }
 .cj-rang { font-family: var(--police-titre); font-weight: 700; text-anchor: middle; }
 .cj-figure { font-family: var(--police-titre); font-weight: 700; text-anchor: middle; dominant-baseline: central; }
 
@@ -78,11 +79,11 @@
 }
 /* La carte suivante recouvre une part de la précédente. */
 .eventail-place + .eventail-place { margin-left: calc(var(--eventail-recouvre) * -1 * var(--cj-largeur-place, 72px)); }
-.eventail:has(.cj-xs) { --cj-largeur-place: 34px; }
-.eventail:has(.cj-s)  { --cj-largeur-place: 52px; }
-.eventail:has(.cj-m)  { --cj-largeur-place: 72px; }
-.eventail:has(.cj-l)  { --cj-largeur-place: 100px; }
-.eventail:has(.cj-xl) { --cj-largeur-place: 140px; }
+.eventail:has(.cj-xs) { --cj-largeur-place: var(--cj-taille-xs, 34px); }
+.eventail:has(.cj-s)  { --cj-largeur-place: var(--cj-taille-s, 52px); }
+.eventail:has(.cj-m)  { --cj-largeur-place: var(--cj-taille-m, 72px); }
+.eventail:has(.cj-l)  { --cj-largeur-place: var(--cj-taille-l, 100px); }
+.eventail:has(.cj-xl) { --cj-largeur-place: var(--cj-taille-xl, 140px); }
 .eventail-arc { padding-bottom: calc(var(--cj-largeur-place, 72px) * .5); }
 /* La carte survolée passe devant ses voisines. */
 .eventail-place:hover, .eventail-place:focus-within { z-index: 1; }

@@ -350,6 +350,91 @@ class Tables(unittest.TestCase):
         self.assertEqual(self.salons.vue(code, 'ana')['presents'],
                          {'ana': True, 'bob': False})
 
+    def test_table_abandonnee_supprimee_apres_deux_minutes(self) -> None:
+        code = self.salons.creer('ana')
+        self.salons.rejoindre(code, 'bob')
+        self.maintenant += salons.ABSENCE_TABLE - 1
+        # bob relit la table : elle reste.
+        self.salons.vue(code, 'bob')
+        self.maintenant += salons.ABSENCE_TABLE - 1
+        self.assertEqual(self.salons.vue(code, 'ana')['code'], code)
+        # Plus personne ne la relit pendant deux minutes : supprimée.
+        self.maintenant += salons.ABSENCE_TABLE + 1
+        with self.assertRaises(salons.SalonIntrouvable):
+            self.salons.vue(code, 'ana')
+        self.assertEqual(self.salons.lister('ana')['miennes'], [])
+
+    def test_un_spectateur_ne_garde_pas_la_table(self) -> None:
+        code = self.salons.creer('ana')
+        self.maintenant += salons.ABSENCE_TABLE - 1
+        self.salons.regarder(code)
+        self.maintenant += 2
+        with self.assertRaises(salons.SalonIntrouvable):
+            self.salons.regarder(code)
+
+    def test_l_hote_exclut_un_joueur(self) -> None:
+        code = self.salons.creer('ana')
+        self.salons.rejoindre(code, 'bob')
+        self.salons.rejoindre(code, 'cyd')
+        with self.assertRaises(salons.ErreurSalon):
+            self.salons.exclure(code, 'bob', 'cyd')      # pas l'hôte
+        with self.assertRaises(salons.ErreurSalon):
+            self.salons.exclure(code, 'ana', 'ana')      # soi-même
+        with self.assertRaises(salons.ErreurSalon):
+            self.salons.exclure(code, 'ana', 'zoe')      # pas à la table
+        self.salons.exclure(code, 'ana', 'bob')
+        vue = self.salons.vue(code, 'bob')
+        self.assertFalse(vue['membre'])
+        self.assertTrue(vue['exclu'])
+        self.assertEqual(vue['joueurs'], ['ana', 'cyd'])
+        with self.assertRaises(salons.ErreurSalon):
+            self.salons.rejoindre(code, 'bob')
+
+    def test_exclure_en_cours_de_manche(self) -> None:
+        code = self.salons.creer('ana')
+        self.salons.rejoindre(code, 'bob')
+        self.salons.lancer(code, 'ana')
+        self.salons.exclure(code, 'ana', 'bob')
+        vue = self.salons.vue(code, 'ana')
+        self.assertEqual(vue['etat'], 'finie')
+        self.assertEqual(vue['partie']['gagnant'], 'ana')
+
+    def test_le_spectateur_ne_voit_aucune_main(self) -> None:
+        code = self.salons.creer('ana')
+        self.salons.rejoindre(code, 'bob')
+        self.assertIsNone(self.salons.regarder(code)['partie'])
+        self.salons.lancer(code, 'ana')
+        vue = self.salons.regarder(code.lower())
+        self.assertEqual(vue['etat'], 'partie')
+        self.assertNotIn('main', vue['partie'])
+        self.assertNotIn('jouables', vue['partie'])
+        self.assertEqual([j['cartes'] for j in vue['partie']['joueurs']],
+                         [7, 7])
+        with self.assertRaises(salons.SalonIntrouvable):
+            self.salons.regarder('ZZZZZ')
+
+
+class Evenements(unittest.TestCase):
+
+    def test_pose_et_pioche_sont_numerotees(self) -> None:
+        p = partie()
+        self.assertEqual(p.vue('ana')['evenements'], [])
+        dessus = Carte(200, 'rouge', '5')
+        p.defausse.append(dessus)
+        p.couleur = 'rouge'
+        joueur = p.courant
+        suivant = p.ordre[p._rang(1)]
+        poser(p, joueur, Carte(201, 'rouge', '+2'))
+        evts = p.vue_spectateur()['evenements']
+        self.assertEqual([(e['n'], e['joueur'], e['type'], e['cartes'])
+                          for e in evts],
+                         [(1, joueur, 'pose', 1), (2, suivant, 'pioche', 2)])
+
+    def test_la_vue_spectateur_n_a_pas_de_main(self) -> None:
+        p = partie()
+        self.assertNotIn('main', p.vue_spectateur())
+        self.assertIn('main', p.vue('ana'))
+
 
 class Presences(unittest.TestCase):
 
@@ -376,10 +461,11 @@ class Routes(unittest.TestCase):
 
     def test_routes_enregistrees_et_role_declare(self) -> None:
         self.assertEqual(api.ROLES['uno'], ('joueur',))
-        for chemin in ('creer', 'rejoindre', 'quitter', 'lancer', 'jouer',
-                       'piocher', 'passer', 'uno', 'contrer'):
+        for chemin in ('creer', 'rejoindre', 'quitter', 'exclure', 'lancer',
+                       'jouer', 'piocher', 'passer', 'uno', 'contrer'):
             self.assertIn(('POST', '/api/uno/%s' % chemin), api.TABLE)
         self.assertIn(('GET', '/api/uno/salon'), api.TABLE)
+        self.assertIn(('GET', '/api/uno/spectateur'), api.TABLE)
         self.assertIn(('GET', '/api/presence'), api.TABLE)
 
 
