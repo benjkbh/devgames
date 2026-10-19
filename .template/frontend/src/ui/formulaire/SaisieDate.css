@@ -1,0 +1,35 @@
+/* Champ date : le bouton du calendrier est à gauche, dans le champ. */
+.saisie-date { position: relative; display: inline-flex; align-items: center; min-width: 0; }
+.saisie-date .saisie { padding-left: 34px; min-width: 150px; }
+.saisie-date-s .saisie { padding-left: 30px; }
+.saisie-date-bouton { position: absolute; left: 2px; top: 50%; transform: translateY(-50%); z-index: 1; height: calc(100% - 4px); width: 28px; }
+.saisie-date-s .saisie-date-bouton { width: 24px; }
+
+/* Calendrier. */
+.calendrier { display: flex; flex-direction: column; gap: var(--e2); width: 268px; }
+.calendrier-tete { display: flex; align-items: center; gap: var(--e1); }
+.calendrier-tete .selecteur { flex: 1 1 auto; }
+.calendrier-prec .ico { transform: rotate(180deg); }
+.calendrier-grille { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.calendrier-grille th { padding: 4px 0; font-size: var(--t-2xs); font-weight: 600; color: var(--dim); text-align: center; }
+.calendrier-grille td { padding: 1px; text-align: center; }
+.calendrier-jour {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid transparent;
+  border-radius: var(--r-m);
+  background: transparent;
+  color: var(--txt);
+  font: inherit;
+  font-size: var(--t-s);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.calendrier-jour:hover:not(:disabled) { background: var(--surface-3); }
+.calendrier-jour:focus-visible { outline: none; box-shadow: var(--anneau); }
+.calendrier-jour:disabled { color: var(--num); cursor: not-allowed; }
+.calendrier-jour.aujourdhui { border-color: var(--accent-bord); color: var(--accent-txt); font-weight: 650; }
+.calendrier-jour.choisi { background: var(--accent); border-color: var(--accent); color: var(--sur-accent); font-weight: 650; }
+.calendrier-heure { display: flex; align-items: center; gap: var(--e2); font-size: var(--t-s); color: var(--dim); }
+.calendrier-heure .saisie { width: 64px; padding-left: 8px; text-align: center; }
+.calendrier-pied { display: flex; align-items: center; justify-content: space-between; gap: var(--e2); padding-top: var(--e2); border-top: 1px solid var(--bord); }

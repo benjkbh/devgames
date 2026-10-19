@@ -1,0 +1,4 @@
+node_modules/
+dist/
+verif/.rendu.cjs
+verif/.rendu.css

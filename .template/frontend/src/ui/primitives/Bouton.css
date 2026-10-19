@@ -1,0 +1,116 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e2);
+  height: var(--h-m);
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: var(--r-m);
+  font: inherit;
+  font-size: var(--t-m);
+  font-weight: 560;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--duree), border-color var(--duree),
+              color var(--duree), box-shadow var(--duree);
+}
+.btn:focus-visible { outline: none; box-shadow: var(--c-anneau); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.btn-s { height: var(--h-s); padding: 0 10px; gap: 6px; font-size: var(--t-s);
+         border-radius: var(--r-s); }
+.btn-l { height: var(--h-l); padding: 0 18px; font-size: var(--t-l); }
+.btn-bloc { width: 100%; }
+
+.btn-ico { display: inline-flex; margin-left: -2px; }
+.btn-ico .ico { width: 16px; height: 16px; }
+.btn-s .btn-ico .ico { width: 14px; height: 14px; }
+
+/* Roue d'attente : remplace l'icône pendant une requête. */
+.btn-roue {
+  width: 14px; height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: btn-tourne .7s linear infinite;
+}
+@keyframes btn-tourne { to { transform: rotate(360deg); } }
+
+.btn-chevron { width: 14px; height: 14px; margin-right: -4px; opacity: .8; }
+
+/* -- couleurs ---------------------------------------------------------------
+   Chaque couleur pose les variables lues par les trois variantes. */
+.btn-bleu {
+  --c: var(--accent); --c-survol: var(--accent-survol);
+  --c-doux: var(--accent-doux); --c-doux-2: var(--accent-doux-2);
+  --c-bord: var(--accent-bord); --c-txt: var(--accent-txt);
+  --c-anneau: var(--anneau);
+}
+.btn-rouge {
+  --c: var(--danger); --c-survol: var(--danger-survol);
+  --c-doux: var(--danger-doux); --c-doux-2: var(--danger-doux-2);
+  --c-bord: var(--danger-bord); --c-txt: var(--danger-txt);
+  --c-anneau: var(--anneau-danger);
+}
+.btn-vert {
+  --c: var(--succes); --c-survol: var(--succes);
+  --c-doux: var(--succes-doux); --c-doux-2: var(--succes-doux);
+  --c-bord: var(--succes-bord); --c-txt: var(--succes);
+  --c-anneau: 0 0 0 3px var(--succes-bord);
+}
+
+/* -- variantes --------------------------------------------------------------- */
+.btn-principal {
+  background: var(--c);
+  color: var(--sur-accent);
+  box-shadow: var(--ombre-btn);
+}
+.btn-principal:hover:not(:disabled) { background: var(--c-survol); }
+.btn-vert.btn-principal:hover:not(:disabled) { filter: brightness(.9); }
+
+.btn-secondaire {
+  background: var(--surface);
+  border-color: var(--bord-fort);
+  color: var(--txt);
+  box-shadow: var(--ombre-btn);
+}
+.btn-secondaire:hover:not(:disabled) {
+  background: var(--c-doux-2);
+  border-color: var(--c-bord);
+  color: var(--c-txt);
+}
+/* Couleur explicite : le bouton est teinté dès le repos. */
+.btn-secondaire.btn-rouge,
+.btn-secondaire.btn-vert {
+  background: var(--c-doux-2);
+  border-color: var(--c-bord);
+  color: var(--c-txt);
+}
+.btn-secondaire.btn-rouge:hover:not(:disabled),
+.btn-secondaire.btn-vert:hover:not(:disabled) {
+  background: var(--c-doux);
+  border-color: var(--c);
+}
+
+.btn-fantome { background: transparent; color: var(--txt-2); }
+.btn-fantome:hover:not(:disabled) { background: var(--surface-3); color: var(--txt); }
+.btn-fantome.btn-rouge:hover:not(:disabled),
+.btn-fantome.btn-vert:hover:not(:disabled) {
+  background: var(--c-doux-2);
+  color: var(--c-txt);
+}
+
+/* -- sans texte : bouton carré, avec une icône -------------------------------- */
+.btn-carre {
+  flex: 0 0 auto;
+  width: var(--h-m);
+  padding: 0;
+}
+.btn-carre.btn-s { width: var(--h-s); }
+.btn-carre.btn-l { width: var(--h-l); }
+.btn-carre .btn-ico { margin: 0; }
+.btn-carre .btn-ico .ico { width: 18px; height: 18px; }
+.btn-carre.btn-s .btn-ico .ico { width: 15px; height: 15px; }

@@ -1,0 +1,28 @@
+# Le service n'a aucune dépendance d'exécution : ruff, mypy et coverage
+# s'installent à part (`pip install ruff mypy coverage`).
+
+[project]
+name = "mon-application"
+version = "0.1.0"
+description = "Application web : authentification, comptes et droits par module"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.ruff]
+target-version = "py312"
+line-length = 79
+extend-exclude = ["frontend"]
+
+[tool.ruff.lint]
+select = ["F", "E", "W", "B", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+"backend/base/*.py" = ["E501"]
+"backend/api/__init__.py" = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+packages = ["backend"]
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true

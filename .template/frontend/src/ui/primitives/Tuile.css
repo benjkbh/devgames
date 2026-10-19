@@ -1,0 +1,32 @@
+.tuiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--tuile-min, 200px), 1fr));
+  gap: var(--e3);
+}
+.tuile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: var(--e3) var(--e4);
+  background: var(--surface);
+  border: 1px solid var(--bord);
+  border-radius: var(--r-l);
+}
+.tuile-libelle {
+  font-size: var(--t-2xs);
+  font-weight: 650;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.tuile-valeur {
+  display: flex;
+  align-items: center;
+  gap: var(--e2);
+  font-size: var(--t-xl);
+  font-weight: 650;
+  color: var(--txt);
+  font-variant-numeric: tabular-nums;
+}
+.tuile-detail { font-size: var(--t-xs); color: var(--dim); }

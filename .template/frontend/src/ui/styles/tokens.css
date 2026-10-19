@@ -1,0 +1,172 @@
+/* Jetons de design : couleurs, espacements, tailles et rayons. Le thème
+ * sombre redéfinit les variables sous `[data-theme="sombre"]`. */
+
+:root {
+  color-scheme: light;
+
+  /* -- marque --- */
+  --marque:        #339cee;
+  --marque-fonce:  #144d9d;
+
+  /* -- statuts (pastilles ; identiques dans les deux thèmes) --- */
+  --statut-ok:        #1c9c58;   /* ok */
+  --statut-programme: #339cee;   /* information */
+  --statut-inactif:   #d03b3b;   /* en échec */
+  --statut-dialogue:  #faa834;   /* dégradé */
+  --statut-arrete:    #5b6674;   /* arrêté */
+
+  /* -- accent interactif --- */
+  --accent:        #1a73c8;
+  --accent-survol: #155fa6;
+  --accent-doux:   #eaf3fd;
+  --accent-doux-2: #f4f9fe;
+  --accent-bord:   #b8d6f4;
+  --accent-txt:    #11589f;
+  --sur-accent:    #ffffff;   /* texte posé sur --accent */
+  --selection:     #9cc8f2;   /* sélection de texte */
+
+  /* -- neutres --- */
+  --fond:       #f3f5f8;
+  --surface:    #ffffff;
+  --surface-2:  #f8f9fb;
+  --surface-3:  #eef1f5;
+  --bord:       #e2e6ec;
+  --bord-fort:  #cdd4de;
+  --txt:        #0f1a29;
+  --txt-2:      #384558;
+  --dim:        #5e6a7b;
+  --num:        #97a1b1;
+
+  /* -- sémantique --- */
+  --succes:        #16794a;
+  --succes-doux:   #e5f4ec;
+  --succes-bord:   #b3dcc5;
+
+  --attn:          #d9961a;
+  --attn-txt:      #875700;
+  --attn-doux:     #fdf4e2;
+  --attn-doux-2:   #fef9ef;
+  --attn-bord:     #eed29a;
+
+  --danger:        #c73a36;
+  --danger-survol: #a92f2c;
+  --danger-txt:    #b1302c;
+  --danger-doux:   #fdecea;
+  --danger-doux-2: #fff8f7;
+  --danger-bord:   #f1c2be;
+
+  /* -- menu latéral --- */
+  --menu-fond:      #ffffff;
+  --menu-bord:      var(--bord);
+  --menu-txt:       #4a5669;
+  --menu-survol:    #f1f4f8;
+  --menu-actif:     var(--accent-doux);
+  --menu-actif-txt: var(--accent-txt);
+
+  /* -- espacements (base 4 px) --- */
+  --e1: 4px;
+  --e2: 8px;
+  --e3: 12px;
+  --e4: 16px;
+  --e5: 20px;
+  --e6: 24px;
+  --e7: 32px;
+  --e8: 40px;
+
+  /* -- typographie --- */
+  /* piles de polices : Inter si présente, sinon police système */
+  --police: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui,
+            -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --police-mono: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas,
+                 "Liberation Mono", monospace;
+  --t-2xs: 10.5px;
+  --t-xs:  11.5px;
+  --t-s:   12.5px;
+  --t-m:   13.5px;
+  --t-l:   15px;
+  --t-xl:  18px;
+  --t-2xl: 23px;
+
+  /* -- formes --- */
+  --r-s: 6px;
+  --r-m: 8px;
+  --r-l: 12px;
+  --r-xl: 16px;
+  --r-plein: 999px;
+
+  --ombre-1: 0 1px 2px rgba(15, 26, 41, .05);
+  --ombre-2: 0 1px 2px rgba(15, 26, 41, .04), 0 4px 14px rgba(15, 26, 41, .06);
+  --ombre-3: 0 4px 10px rgba(15, 26, 41, .06), 0 16px 40px rgba(15, 26, 41, .14);
+  --ombre-btn: 0 1px 1px rgba(15, 26, 41, .05);
+
+  --anneau: 0 0 0 3px rgba(26, 115, 200, .28);
+  --anneau-danger: 0 0 0 3px rgba(199, 58, 54, .25);
+  --duree: .08s;
+
+  /* -- hauteurs de contrôle --- */
+  --h-s: 28px;
+  --h-m: 34px;
+  --h-l: 40px;
+
+  --voile: rgba(10, 18, 30, .46);
+  --halo: rgba(51, 156, 238, .12);
+}
+
+/* -- thème sombre --- */
+/* `color-scheme` bascule aussi les contrôles natifs. */
+[data-theme="sombre"] {
+  color-scheme: dark;
+
+  --accent:        #58a9f0;
+  --accent-survol: #78baf4;
+  --accent-doux:   #15314d;
+  --accent-doux-2: #132438;
+  --accent-bord:   #2b5480;
+  --accent-txt:    #93cbf7;
+  --sur-accent:    #051321;
+  --selection:     #2f6aa6;
+
+  --fond:       #0e1520;
+  --surface:    #161f2c;
+  --surface-2:  #1b2534;
+  --surface-3:  #232f41;
+  --bord:       #28364a;
+  --bord-fort:  #3a4b63;
+  --txt:        #e7edf5;
+  --txt-2:      #c1ccda;
+  --dim:        #95a3b6;
+  --num:        #6b7a90;
+
+  --succes:        #52c48a;
+  --succes-doux:   #143424;
+  --succes-bord:   #25583d;
+
+  --attn:          #ebb659;
+  --attn-txt:      #f0cc85;
+  --attn-doux:     #33290f;
+  --attn-doux-2:   #2a2311;
+  --attn-bord:     #62501f;
+
+  --danger:        #e05a55;
+  --danger-survol: #ea7873;
+  --danger-txt:    #f4a39f;
+  --danger-doux:   #3a1d1e;
+  --danger-doux-2: #2c1b1d;
+  --danger-bord:   #733535;
+
+  --menu-fond:      #0a1019;
+  --menu-bord:      #1f2a3a;
+  --menu-txt:       #a3b0c2;
+  --menu-survol:    #152031;
+  --menu-actif:     #16304b;
+  --menu-actif-txt: #a5d3f8;
+
+  --ombre-1: 0 1px 2px rgba(0, 0, 0, .3);
+  --ombre-2: 0 1px 2px rgba(0, 0, 0, .3), 0 4px 16px rgba(0, 0, 0, .24);
+  --ombre-3: 0 4px 12px rgba(0, 0, 0, .35), 0 18px 44px rgba(0, 0, 0, .42);
+  --ombre-btn: none;
+
+  --anneau: 0 0 0 3px rgba(88, 169, 240, .35);
+  --voile: rgba(2, 6, 12, .62);
+  --halo: rgba(88, 169, 240, .10);
+}

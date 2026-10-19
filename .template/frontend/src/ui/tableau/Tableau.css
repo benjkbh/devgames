@@ -1,0 +1,104 @@
+/* cadre défilant horizontalement */
+.tableau-cadre {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--bord);
+  border-radius: var(--r-l);
+  box-shadow: var(--ombre-1);
+}
+
+.tableau {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--t-m);
+}
+.tableau-fixe { table-layout: fixed; }
+
+.tableau th {
+  height: 38px;
+  padding: 0 var(--e4);
+  border-bottom: 1px solid var(--bord);
+  background: var(--surface-2);
+  color: var(--dim);
+  font-size: var(--t-2xs);
+  font-weight: 650;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  text-align: left;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.tableau thead th:first-child { border-top-left-radius: var(--r-l); }
+.tableau thead th:last-child { border-top-right-radius: var(--r-l); }
+/* en-tête fixe */
+.tableau-collant thead th { position: sticky; top: 0; z-index: 1; }
+
+.tableau td {
+  height: 46px;
+  padding: 6px var(--e4);
+  border-bottom: 1px solid var(--bord);
+  vertical-align: middle;
+}
+.tableau tbody tr:last-child > td { border-bottom: none; }
+.tableau tbody tr:hover > td { background: var(--surface-2); }
+
+.tableau .col-nombre { text-align: right; font-variant-numeric: tabular-nums; }
+.tableau td.fort { font-weight: 600; }
+.tableau td.dim { color: var(--dim); }
+.tableau td.coupe {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* colonnes d'une ligne : sélection, actions */
+.tableau td.col-selection { padding-right: 0; }
+.actions-ligne { display: inline-flex; align-items: center; gap: var(--e2); }
+
+/* ligne enfant (détail dépliable) */
+.tableau .ligne-detail:hover > td { background: var(--surface); }
+
+/* ligne choisie */
+.tableau tr.choisie > td { background: var(--accent-doux-2); }
+.tableau tr.choisie > td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+
+.valeur-vide { color: var(--num); }
+
+/* -- bouton d'ouverture du détail --- */
+.btn-ouvrir {
+  width: 34px;
+  height: 34px;
+  color: var(--accent-txt);
+  background: var(--accent-doux);
+  border: 1px solid var(--accent-bord);
+}
+.btn-ouvrir .ico { width: 18px; height: 18px; }
+.btn-ouvrir:hover:not(:disabled) { color: var(--sur-accent); background: var(--accent); border-color: var(--accent); }
+.btn-ouvrir[aria-expanded="true"] { color: var(--sur-accent); background: var(--accent); border-color: var(--accent); }
+
+/* -- ton --- */
+.tableau-attention { border-color: var(--attn-bord); }
+.tableau-attention .tableau th { background: var(--attn-doux-2); border-bottom-color: var(--attn-bord); }
+
+.th-avec-aide { display: inline-flex; align-items: center; gap: 6px; }
+
+/* En-tête triable. */
+.th-tri {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+.th-tri:hover { color: var(--accent-txt); }
+.th-tri:focus-visible { outline: none; box-shadow: var(--anneau); border-radius: 3px; }
+.th-fleche { font-size: .8em; opacity: .45; }
+th[aria-sort] .th-fleche { opacity: 1; color: var(--accent-txt); }
+th[aria-sort] .th-tri { color: var(--accent-txt); }

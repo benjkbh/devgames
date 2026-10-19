@@ -1,0 +1,33 @@
+.carte {
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--bord);
+  border-radius: var(--r-l);
+  box-shadow: var(--ombre-1);
+}
+.carte-tete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e3);
+  padding: var(--e3) var(--e4);
+  border-bottom: 1px solid var(--bord);
+}
+.carte-titres { min-width: 0; }
+.carte-titre {
+  font-size: var(--t-xs);
+  font-weight: 650;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.carte-sous-titre { margin-top: 2px; font-size: var(--t-s); color: var(--dim); }
+.carte-actions { display: flex; align-items: center; gap: var(--e2); flex: 0 0 auto; }
+.carte-corps { padding: var(--e4); }
+
+.carte-compacte .carte-tete { padding: 10px var(--e3); }
+.carte-compacte .carte-corps { padding: var(--e3); }
+
+.carte-attention { border-color: var(--attn-bord); }
+.carte-attention .carte-tete { background: var(--attn-doux-2); border-bottom-color: var(--attn-bord); }
+.carte-accent { box-shadow: inset 3px 0 0 var(--accent), var(--ombre-1); }

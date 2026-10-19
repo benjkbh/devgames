@@ -1,0 +1,15 @@
+div.barre-filtres,
+.barre-filtres .carte-corps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e2) var(--e3);
+}
+div.barre-filtres-colonne,
+.barre-filtres-colonne .carte-corps {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+}
+.barre-filtres .recherche { flex: 1 1 220px; }
+.barre-filtres-actions { display: inline-flex; gap: var(--e2); margin-left: auto; }

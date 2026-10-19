@@ -1,0 +1,31 @@
+.defs { margin: 0; }
+.defs dt { font-size: var(--t-xs); color: var(--dim); }
+.defs dd { margin: 2px 0 0; color: var(--txt); overflow-wrap: anywhere; }
+.defs-mono dd { font-family: var(--police-mono); font-size: var(--t-s); }
+
+.defs-pile .defs-item + .defs-item {
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid var(--bord);
+}
+
+.defs-grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--e4) var(--e5);
+}
+.defs-grille dt {
+  font-size: var(--t-2xs);
+  font-weight: 650;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.defs-grille dd { margin-top: 4px; font-size: var(--t-m); font-weight: 500; }
+
+.defs-ligne { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.defs-ligne dt {
+  font-size: var(--t-2xs);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.defs-ligne dd { margin-top: 1px; font-weight: 560; }

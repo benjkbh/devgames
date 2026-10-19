@@ -1,0 +1,36 @@
+/* Gestion des comptes. */
+
+.table-comptes td:first-child { padding-right: 0; }
+.compte-nom { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; white-space: nowrap; }
+.table-comptes td.nombre { white-space: nowrap; }
+
+/* Compte désactivé : atténué. */
+.table-comptes tr.inactif > td { opacity: .58; }
+.table-comptes tr.inactif > td:last-child { opacity: 1; }
+
+.actions-compte { flex-wrap: nowrap; }
+
+.grille-roles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--e4);
+  padding-top: var(--e2);
+}
+.choix-role {
+  padding: var(--e3);
+  border: 1px solid var(--bord);
+  border-radius: var(--r-l);
+  background: var(--surface);
+}
+.choix-role > legend { float: left; width: 100%; margin-bottom: 10px; }
+.choix-role > legend + * { clear: both; }
+
+.creation-champs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--e4);
+}
+.dialogue-corps > * + * { margin-top: var(--e5); }
+.dialogue-corps .grille-roles { padding-top: 0; }
+.dialogue-corps .choix-role { background: var(--surface-2); }
+.creation-super { padding-top: var(--e4); border-top: 1px solid var(--bord); }

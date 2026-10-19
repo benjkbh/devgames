@@ -1,0 +1,72 @@
+.frise-etats { position: relative; padding-bottom: 26px; transition: opacity var(--duree); }
+.frise-etats-attenue { opacity: .5; }
+
+/* Bande : 32 px ; la zone de survol couvre toute sa hauteur. */
+.frise-etats-piste {
+  position: relative;
+  height: 32px;
+  overflow: hidden;
+  border-radius: var(--r-s);
+  background: var(--surface-3);
+}
+.frise-etats-segment {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 3px;
+  background: var(--pastille, var(--num));
+  /* séparation de 2 px entre segments */
+  box-shadow: inset 2px 0 0 var(--surface);
+  cursor: default;
+  outline: none;
+  transition: filter var(--duree);
+}
+.frise-etats-segment.premier { box-shadow: none; }
+.frise-etats-segment.survole,
+.frise-etats-segment:focus-visible { filter: brightness(1.12) saturate(1.1); }
+.frise-etats-segment:focus-visible { box-shadow: inset 0 0 0 2px var(--txt); }
+
+/* état inconnu : hachures neutres */
+.frise-etats-segment.frise-inconnu {
+  background: repeating-linear-gradient(135deg, var(--surface-3) 0 5px,
+    var(--bord-fort) 5px 7px);
+}
+
+/* -- axe --- */
+.frise-etats-axe { position: absolute; left: 0; right: 0; bottom: 0; height: 22px; }
+.frise-etats-repere {
+  position: absolute;
+  top: 0;
+  padding-top: 6px;
+  transform: translateX(-50%);
+  font-size: var(--t-2xs);
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.frise-etats-repere::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 4px;
+  background: var(--bord-fort);
+}
+
+/* -- infobulle --- */
+.frise-etats-bulle {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  z-index: 2;
+  min-width: 200px;
+  max-width: 320px;
+  padding: 10px 12px;
+  transform: translateX(-50%);
+  background: var(--surface);
+  border: 1px solid var(--bord);
+  border-radius: var(--r-m);
+  box-shadow: var(--ombre-3);
+  font-size: var(--t-s);
+  pointer-events: none;
+}

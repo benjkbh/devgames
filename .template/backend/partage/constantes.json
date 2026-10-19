@@ -1,0 +1,6 @@
+{
+  "modules": {
+    "accueil": ["acces"],
+    "storybook": ["acces"]
+  }
+}

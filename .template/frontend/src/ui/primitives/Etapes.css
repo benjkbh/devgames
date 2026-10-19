@@ -1,0 +1,77 @@
+/* -- frise d'étapes ---------------------------------------------------------- */
+.etapes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e2) 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.etape {
+  display: flex;
+  align-items: center;
+  gap: var(--e2);
+  font-size: var(--t-s);
+  color: var(--dim);
+}
+/* Trait de liaison entre étapes (absent après la dernière). */
+.etape:not(:last-child)::after {
+  content: "";
+  width: 28px;
+  height: 2px;
+  margin: 0 var(--e2);
+  border-radius: 2px;
+  background: var(--bord-fort);
+}
+.etape.passe:not(:last-child)::after { background: var(--accent); }
+.etape-puce {
+  flex: 0 0 auto;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--bord-fort);
+  background: var(--surface);
+}
+.etape.passe .etape-puce { background: var(--accent); border-color: var(--accent); }
+.etape.passe .etape-libelle { color: var(--txt-2); }
+.etape.courant .etape-puce {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-doux);
+}
+.etape.courant .etape-libelle { color: var(--accent-txt); font-weight: 650; }
+
+/* -- chronologie ------------------------------------------------------------- */
+.chrono { margin: 0; padding: 0; list-style: none; }
+.chrono-item {
+  position: relative;
+  display: flex;
+  gap: var(--e3);
+  padding-bottom: var(--e4);
+}
+.chrono-item:last-child { padding-bottom: 0; }
+/* Fil vertical entre les puces. */
+.chrono-item:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 4px; top: 16px; bottom: 2px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--bord);
+}
+.chrono-puce {
+  flex: 0 0 auto;
+  width: 10px; height: 10px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--accent);
+}
+.chrono-corps { min-width: 0; flex: 1; }
+.chrono-ligne { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.chrono-titre { font-weight: 600; }
+.chrono-date {
+  margin-left: auto;
+  font-size: var(--t-s);
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+}
+.chrono-note { margin-top: 3px; font-size: var(--t-s); color: var(--dim); }

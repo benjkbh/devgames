@@ -1,0 +1,57 @@
+/* Paramètres du compte connecté. */
+
+.mon-compte .mon-compte-grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: var(--e4);
+  align-items: start;
+}
+.mon-compte .mon-compte-colonne { display: flex; flex-direction: column; gap: var(--e4); min-width: 0; }
+.mon-compte .carte-corps { display: flex; flex-direction: column; gap: var(--e4); }
+
+/* -- profil --- */
+.profil-tete { display: flex; align-items: center; gap: var(--e4); }
+.profil-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, var(--marque), var(--accent));
+  color: #fff;
+  font-size: var(--t-xl);
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+.profil-identite { min-width: 0; }
+.profil-nom { font-size: var(--t-2xl); font-weight: 700; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.profil-badges { display: flex; flex-wrap: wrap; gap: var(--e2); margin-top: var(--e1); }
+
+/* -- accès --- */
+.acces-liste { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.acces-ligne { display: flex; align-items: center; gap: var(--e3); padding: var(--e3) 0; }
+.acces-ligne + .acces-ligne { border-top: 1px solid var(--bord); }
+.acces-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 34px;
+  height: 34px;
+  border-radius: var(--r-m);
+  color: var(--accent-txt);
+  background: var(--accent-doux);
+}
+.acces-ico .ico { width: 19px; height: 19px; }
+.acces-texte { display: flex; flex-direction: column; flex: 1; min-width: 0; gap: 2px; }
+.acces-nom { font-weight: 650; }
+.acces-resume { font-size: var(--t-s); color: var(--dim); }
+.acces-sans { font-size: var(--t-s); }
+
+/* -- apparence --- */
+.apparence { display: flex; flex-direction: column; gap: var(--e4); }
+.apparence-titre { margin-bottom: var(--e2); font-size: var(--t-s); font-weight: 650; color: var(--txt-2); }
+.apparence-choix { display: flex; flex-wrap: wrap; gap: var(--e2); }
+
+/* -- mot de passe --- */
+.compte-formulaire { display: flex; flex-direction: column; gap: var(--e4); max-width: 420px; }
