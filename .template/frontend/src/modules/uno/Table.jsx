@@ -217,10 +217,12 @@ export function Plateau({ table, onAction, onExclure }) {
   const hote = table.hote === table.moi;
   const main = trier(p.main);
   const code = table.code;
-  const peutPiocher = monTour && p.pioche_jouable === null;
+  const peutPiocher = monTour && p.pioche_jouable === null && !p.suite;
+  // Règle de rapidité : une carte identique au dessus, posable hors tour.
+  const rapide = !monTour && !finie && p.jouables.length > 0;
   // Le bouton UNO n'existe que lorsqu'il sert : une carte à venir.
   const peutUno = !p.uno_annonce && !finie
-    && (main.length === 1 || (main.length === 2 && monTour));
+    && (main.length === 1 || (main.length === 2 && (monTour || rapide)));
 
   const poser = (carte, couleur, cible) => onAction(
     () => jouer(code, carte.id, couleur, false, cible),
@@ -235,6 +237,8 @@ export function Plateau({ table, onAction, onExclure }) {
 
   let message;
   if (finie) message = `${p.gagnant} remporte la manche !`;
+  else if (monTour && p.suite) message = 'Prolongez votre suite, ou arrêtez-la.';
+  else if (rapide) message = 'Carte identique : posez-la vite !';
   else if (monTour && p.pioche_jouable !== null) message = 'Posez la carte piochée, ou passez.';
   else if (monTour) message = 'À vous de jouer !';
   else message = `${p.tour} joue…`;
@@ -272,7 +276,7 @@ export function Plateau({ table, onAction, onExclure }) {
             )}
           </Carte>
         ) : (
-          <section className={cx('uno-joueur', monTour && 'actif')}
+          <section className={cx('uno-joueur', (monTour || rapide) && 'actif')}
                    aria-label="Votre main" data-uno-main>
             <div className="uno-joueur-tete">
               <span className="uno-siege-nom">
@@ -286,8 +290,9 @@ export function Plateau({ table, onAction, onExclure }) {
               )}
               <div className="uno-joueur-actions">
                 {p.uno_annonce && <Badge couleur="rouge" majuscules titre="UNO annoncé" />}
-                {monTour && p.pioche_jouable !== null && (
-                  <Bouton titre="Passer" onClick={() => onAction(() => passer(code))} />
+                {monTour && (p.pioche_jouable !== null || p.suite) && (
+                  <Bouton titre={p.suite ? 'Arrêter la suite' : 'Passer'}
+                          onClick={() => onAction(() => passer(code))} />
                 )}
               </div>
             </div>

@@ -72,6 +72,9 @@ préfixe `PUBLIC` dans `frontend/src/App.jsx`.
 | POST | `/api/uno/{creer,rejoindre,quitter,exclure,regler,lancer}` | rôle `uno:joueur` |
 | POST | `/api/uno/{jouer,piocher,passer,uno,contrer}` | rôle `uno:joueur` |
 | GET | `/api/uno/spectateur?code=` | libre : une table vue sans compte, sans aucune main |
+| GET | `/api/codenames/salons`, `/api/codenames/salon?code=` | rôle `codenames:joueur` |
+| POST | `/api/codenames/{creer,rejoindre,quitter,exclure,choisir,melanger,regler,lancer}` | rôle `codenames:joueur` |
+| POST | `/api/codenames/{indice,marquer,reveler,finir}` | rôle `codenames:joueur` |
 
 ## Module UNO
 
@@ -84,10 +87,13 @@ disparaissent au redémarrage, après 2 h sans activité, ou dès que plus aucun
 joueur ne la regarde depuis 2 minutes.
 
 **Règles de la table** : l'hôte choisit à la création, puis entre deux
-manches (`POST /api/uno/regler`), deux règles facultatives, copiées dans la
-manche au lancement : *piocher jusqu'à pouvoir jouer* et *7 et 0* (un 7
+manches (`POST /api/uno/regler`), des règles facultatives, copiées dans la
+manche au lancement : *piocher jusqu'à pouvoir jouer*, *7 et 0* (un 7
 échange sa main avec le joueur de son choix, un 0 fait passer toutes les mains
-dans le sens du jeu). Elles sont définies dans `REGLES`
+dans le sens du jeu), *rapidité* (une carte identique au dessus se pose hors
+de son tour, le jeu reprend après celui qui l'a posée) et *suites* (après un
+chiffre, on enchaîne dans le même tour les chiffres suivants de la même
+couleur, puis on s'arrête par `POST /api/uno/passer`). Elles sont définies dans `REGLES`
 (`backend/metier/uno/regles.py`) et `frontend/src/modules/uno/regles.js` :
 ajouter une règle, c'est une entrée de chaque côté et son effet dans `Partie`.
 
@@ -123,6 +129,28 @@ piochée, un bruitage est tiré au hasard parmi trois. Le son part au clic sur
 UNO dans le menu (`auClic` du registre `modules.jsx`), monte et descend en
 fondu à l'entrée et à la sortie du module ; volume, silence et bruitages sont
 mémorisés sur le poste.
+
+## Module Code Names
+
+Code Names au manoir (`backend/metier/codenames/`) : les Vampires (`sang`)
+contre les Chasseurs (`argent`), dans la galerie des portraits. Règles dans
+`regles.py` (le détail en tête de fichier), listes de mots dans `mots.py`
+(classique, manoir, mélange), salons dans `salons.py`, sur le modèle du UNO :
+code de 5 caractères, lien `/codenames/<code>`, hôte, exclusion, tables en
+mémoire (mêmes délais d'expiration).
+
+Entre deux manches, chacun choisit son camp et peut s'en proposer l'oracle
+(`POST /api/codenames/choisir`) ; l'hôte peut tout répartir au hasard
+(`melanger`), choisir la liste de mots (`regler`) et lancer la manche dès que
+chaque camp a un oracle et au moins un agent (4 à 16 joueurs). L'oracle voit le
+grimoire (le rôle de chaque carte) ; ses agents marquent des cartes (vu de
+tous) puis les révèlent. Le Comte fait perdre le camp qui le révèle.
+
+**Interface** (`frontend/src/modules/codenames/`) : une salle du manoir la nuit
+(damas prune, cadres dorés, chauves-souris), qui reste sombre dans les deux
+thèmes. Dessins (sceaux des camps, du domestique et du Comte, manoir de
+l'accueil, icône du menu) dans `decor.jsx`, galerie dans `Galerie.jsx`, styles
+dans `codenames.css` (préfixe `cn-`). Pas de musique ni de page spectateur.
 
 ## Santé et présence
 

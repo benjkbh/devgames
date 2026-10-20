@@ -444,10 +444,12 @@ class ReglesDeTable(unittest.TestCase):
 
     def test_regles_par_defaut_et_nettoyage(self) -> None:
         self.assertEqual(regles.nettoyer_regles(None),
-                         {'pioche_jusqua': False, 'sept_zero': False})
+                         {'pioche_jusqua': False, 'sept_zero': False,
+                          'rapidite': False, 'suites': False})
         self.assertEqual(
             regles.nettoyer_regles({'sept_zero': 1, 'inconnue': True}),
-            {'pioche_jusqua': False, 'sept_zero': True})
+            {'pioche_jusqua': False, 'sept_zero': True,
+             'rapidite': False, 'suites': False})
 
     def test_pioche_jusqu_a_pouvoir_jouer(self) -> None:
         p = partie_regles(pioche_jusqua=True)
@@ -540,6 +542,125 @@ class ReglesDeTable(unittest.TestCase):
         self.assertNotIn(j, p.uno_dit)
 
 
+def sur(p: Partie, dessus: Carte, joueur: str) -> None:
+    """`dessus` sur la défausse, au tour de `joueur`."""
+    p.defausse.append(dessus)
+    p.couleur = dessus.couleur or p.couleur
+    p.tour = p.ordre.index(joueur)
+    p.pioche_jouable = None
+
+
+class Rapidite(unittest.TestCase):
+
+    def test_carte_identique_posee_hors_tour(self) -> None:
+        p = partie_regles(rapidite=True)
+        j, suivant, dernier = p.ordre[0], p.ordre[1], p.ordre[2]
+        sur(p, Carte(200, 'rouge', '5'), j)
+        p.mains[dernier].append(Carte(201, 'rouge', '5'))
+        p.mains[dernier].append(Carte(202, 'bleu', '5'))
+        self.assertEqual(p.jouables(dernier), [201])
+        with self.assertRaises(CoupInvalide):
+            p.jouer(dernier, 202)                  # même valeur seulement
+        p.jouer(dernier, 201)
+        self.assertEqual(p.dessus.id, 201)
+        # Le jeu reprend après celui qui a intercepté.
+        self.assertEqual(p.courant, p.ordre[(2 + p.sens) % 3])
+
+    def test_l_effet_part_de_celui_qui_intercepte(self) -> None:
+        p = partie_regles(rapidite=True)
+        a, b, c = p.ordre
+        sur(p, Carte(200, 'vert', '+2'), a)
+        p.mains[b].append(Carte(201, 'vert', '+2'))
+        n = len(p.mains[c])
+        p.jouer(b, 201)
+        self.assertEqual(len(p.mains[c]), n + 2)
+        self.assertEqual(p.courant, a)             # c a passé son tour
+
+    def test_sans_la_regle_ni_joker(self) -> None:
+        p = partie_regles()
+        a, b, _ = p.ordre
+        sur(p, Carte(200, 'rouge', '5'), a)
+        p.mains[b].append(Carte(201, 'rouge', '5'))
+        self.assertEqual(p.jouables(b), [])
+        with self.assertRaises(CoupInvalide):
+            p.jouer(b, 201)
+        p = partie_regles(rapidite=True)
+        a, b, _ = p.ordre
+        sur(p, Carte(200, None, 'joker'), a)
+        p.mains[b].append(Carte(201, None, 'joker'))
+        self.assertEqual(p.jouables(b), [])
+
+    def test_uno_annonce_avant_d_intercepter(self) -> None:
+        p = partie_regles(rapidite=True)
+        a, b, _ = p.ordre
+        sur(p, Carte(200, 'rouge', '5'), a)
+        p.mains[b] = [Carte(201, 'rouge', '5'), Carte(202, 'bleu', '1')]
+        p.dire_uno(b)
+        p.jouer(b, 201)
+        self.assertIsNone(p.expose)
+
+
+class Suites(unittest.TestCase):
+
+    def test_suite_montante_dans_le_meme_tour(self) -> None:
+        p = partie_regles(suites=True)
+        j = p.ordre[0]
+        sur(p, Carte(200, 'rouge', '2'), j)
+        p.mains[j] = [Carte(201, 'rouge', '3'), Carte(202, 'rouge', '4'),
+                      Carte(203, 'rouge', '5'), Carte(204, 'rouge', '2'),
+                      Carte(205, 'bleu', '9')]
+        p.jouer(j, 201)
+        self.assertEqual(p.courant, j)
+        self.assertEqual(sorted(p.jouables(j)), [202, 204])
+        self.assertTrue(p.vue(j)['suite'])
+        p.jouer(j, 202)                            # le sens est fixé
+        self.assertEqual(p.jouables(j), [203])
+        with self.assertRaises(CoupInvalide):
+            p.piocher(j)
+        p.jouer(j, 203)                            # plus de 6 : fin
+        self.assertNotEqual(p.courant, j)
+        self.assertIsNone(p.suite)
+
+    def test_arreter_sa_suite(self) -> None:
+        p = partie_regles(suites=True)
+        j = p.ordre[0]
+        sur(p, Carte(200, 'rouge', '2'), j)
+        p.mains[j] = [Carte(201, 'rouge', '3'), Carte(202, 'rouge', '4'),
+                      Carte(205, 'bleu', '9')]
+        p.jouer(j, 201)
+        p.passer(j)
+        self.assertNotEqual(p.courant, j)
+        self.assertEqual(len(p.mains[j]), 2)
+
+    def test_suite_jusqu_a_la_victoire(self) -> None:
+        p = partie_regles(suites=True)
+        j = p.ordre[0]
+        sur(p, Carte(200, 'vert', '8'), j)
+        p.mains[j] = [Carte(201, 'vert', '9'), Carte(202, 'vert', '8')]
+        p.jouer(j, 202, uno=True)
+        p.jouer(j, 201)
+        self.assertEqual(p.gagnant, j)
+
+    def test_sans_la_regle_le_tour_passe(self) -> None:
+        p = partie_regles()
+        j = p.ordre[0]
+        sur(p, Carte(200, 'rouge', '2'), j)
+        p.mains[j] += [Carte(201, 'rouge', '3'), Carte(202, 'rouge', '4')]
+        p.jouer(j, 201)
+        self.assertNotEqual(p.courant, j)
+
+    def test_une_interception_coupe_la_suite(self) -> None:
+        p = partie_regles(suites=True, rapidite=True)
+        a, b, _ = p.ordre
+        sur(p, Carte(200, 'rouge', '2'), a)
+        p.mains[a] += [Carte(201, 'rouge', '3'), Carte(202, 'rouge', '4')]
+        p.mains[b].append(Carte(203, 'rouge', '3'))
+        p.jouer(a, 201)
+        p.jouer(b, 203)
+        self.assertNotIn(202, p.jouables(a))
+        self.assertNotEqual(p.courant, a)
+
+
 class ReglesDuSalon(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -549,14 +670,17 @@ class ReglesDuSalon(unittest.TestCase):
         code = self.salons.creer('ana', 'T', True, {'sept_zero': True})
         self.salons.rejoindre(code, 'bob')
         self.assertEqual(self.salons.vue(code, 'bob')['regles'],
-                         {'pioche_jusqua': False, 'sept_zero': True})
+                         {'pioche_jusqua': False, 'sept_zero': True,
+                          'rapidite': False, 'suites': False})
         with self.assertRaises(salons.ErreurSalon):
             self.salons.regler(code, 'bob', {'pioche_jusqua': True})
         self.salons.regler(code, 'ana', {'pioche_jusqua': True})
         self.assertEqual(self.salons.vue(code, 'ana')['regles'],
-                         {'pioche_jusqua': True, 'sept_zero': True})
+                         {'pioche_jusqua': True, 'sept_zero': True,
+                          'rapidite': False, 'suites': False})
         self.assertEqual(self.salons.lister('eve')['ouvertes'][0]['regles'],
-                         {'pioche_jusqua': True, 'sept_zero': True})
+                         {'pioche_jusqua': True, 'sept_zero': True,
+                          'rapidite': False, 'suites': False})
 
     def test_la_manche_reprend_les_regles_et_les_fige(self) -> None:
         code = self.salons.creer('ana', 'T', True, {'sept_zero': True})

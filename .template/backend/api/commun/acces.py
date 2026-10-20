@@ -26,6 +26,10 @@ if TYPE_CHECKING:
 #                     rejoindre,quitter,exclure,regler,lancer,jouer,piocher,
 #                     passer,uno,contrer} ; GET /api/uno/spectateur est sans compte
 #                     (une table vue sans aucune main)
+#
+# codenames joueur    GET /api/codenames/{salons,salon} ; POST
+#                     /api/codenames/{creer,rejoindre,quitter,exclure,choisir,
+#                     melanger,regler,lancer,indice,marquer,reveler,finir}
 ROLES: dict[str, tuple[str, ...]] = {
     module: tuple(roles) for module, roles in CONSTANTES['modules'].items()}
 

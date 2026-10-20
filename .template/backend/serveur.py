@@ -12,6 +12,7 @@ from urllib.parse import urlparse, parse_qs
 
 from . import api
 from .metier.comptes import presence, sessions, utilisateurs
+from .metier.codenames import salons as salons_codenames
 from .metier.uno import salons
 
 if TYPE_CHECKING:
@@ -75,6 +76,8 @@ class Requete:
         self.sessions = handler.server.sessions
         # Tables de UNO, en mémoire comme les sessions.
         self.uno = handler.server.uno
+        # Tables de Code Names, de même.
+        self.codenames = handler.server.codenames
         self.presence = handler.server.presence
         self.url = url
         self.corps = corps
@@ -358,7 +361,8 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 class Serveur(ThreadingHTTPServer):
     """Porte ce que les routes partagent : configuration, logger, sessions,
-    présence des comptes et état en mémoire des modules (tables de UNO)."""
+    présence des comptes et état en mémoire des modules (tables de UNO et de
+    Code Names)."""
 
     def __init__(self, config: Config,
                  logger: Callable[[str, str], None]) -> None:
@@ -368,6 +372,7 @@ class Serveur(ThreadingHTTPServer):
         self.sessions = sessions.Sessions(config.session_ttl)
         self.presence = presence.Presence()
         self.uno = salons.Salons()
+        self.codenames = salons_codenames.Salons()
 
 
 def creer(config: Config, logger: Callable[[str, str], None]) -> Serveur:

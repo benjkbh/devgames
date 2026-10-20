@@ -2,6 +2,7 @@
   "modules": {
     "accueil": ["acces"],
     "uno": ["joueur"],
+    "codenames": ["joueur"],
     "storybook": ["acces"]
   }
 }

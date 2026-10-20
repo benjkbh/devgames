@@ -1,4 +1,6 @@
 import Accueil from '../modules/accueil/Accueil';
+import CodeNames from '../modules/codenames/CodeNames';
+import { IcoManoir } from '../modules/codenames/decor';
 import Storybook from '../modules/storybook/Storybook';
 import { amorcerMusique } from '../modules/uno/ambiance';
 import Uno from '../modules/uno/Uno';
@@ -71,6 +73,22 @@ export const MODULES = [
         libelle: 'Joueur',
         resume: 'Crée des tables de UNO, en rejoint par code ou par lien, '
           + 'et y joue.',
+      },
+    ],
+  },
+  {
+    cle: 'codenames',
+    categorie: 'Jeux',
+    chemin: '/codenames',
+    libelle: 'Code Names',
+    Ico: IcoManoir,
+    Composant: CodeNames,
+    roles: [
+      {
+        cle: 'joueur',
+        libelle: 'Joueur',
+        resume: 'Crée des tables de Code Names au manoir, en rejoint par '
+          + 'code ou par lien, et y joue.',
       },
     ],
   },

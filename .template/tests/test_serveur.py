@@ -686,7 +686,7 @@ class ParcoursDAuthentification(ConnexionPersistante):
         _, _, corps = self.connecter('chef')
         self.assertEqual(json.loads(corps)['compte']['roles'],
                          {'accueil': 'acces', 'uno': 'joueur',
-                          'storybook': 'acces'})
+                          'codenames': 'joueur', 'storybook': 'acces'})
 
     def test_on_ne_supprime_pas_son_propre_compte(self) -> None:
         chef = self.installer()

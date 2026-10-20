@@ -26,7 +26,14 @@ Règles de la table (`REGLES`, choisies par l'hôte, copiées dans la manche) :
   - `sept_zero` : poser un 7 échange sa main avec celle d'un joueur au choix ;
     poser un 0 fait passer toutes les mains au joueur suivant, dans le sens du
     jeu. Une dernière carte posée gagne la manche sans autre effet ; échanger
-    ou faire tourner les mains efface les UNO annoncés ou à contrer.
+    ou faire tourner les mains efface les UNO annoncés ou à contrer ;
+  - `rapidite` : qui tient une carte identique à celle du dessus (même
+    couleur et même valeur, jokers exclus) peut la poser hors de son tour ;
+    le jeu reprend alors après lui, comme s'il avait joué à son tour ;
+  - `suites` : après un chiffre, le joueur peut enchaîner dans le même tour
+    le chiffre suivant de la même couleur (5, 6, 7… ou 5, 4, 3… : la deuxième
+    carte fixe le sens), ou s'arrêter (`passer`). Un 7 ou un 0 qui échange ou
+    fait tourner les mains (`sept_zero`) clôt la suite.
 """
 from __future__ import annotations
 
@@ -47,7 +54,8 @@ JOURNAL_MAX = 30
 # Événements de la manche gardés pour les interfaces (animations).
 EVENEMENTS_MAX = 12
 # Règles facultatives d'une table, et leur valeur par défaut.
-REGLES: dict[str, bool] = {'pioche_jusqua': False, 'sept_zero': False}
+REGLES: dict[str, bool] = {'pioche_jusqua': False, 'sept_zero': False,
+                           'rapidite': False, 'suites': False}
 
 
 def nettoyer_regles(brut: object) -> dict[str, bool]:
@@ -137,6 +145,9 @@ class Partie:
         # Carte piochée ce tour, jouable : seule carte que le joueur peut
         # encore poser, sinon il passe.
         self.pioche_jouable: int | None = None
+        # Suite en cours du joueur courant : couleur, dernier chiffre posé et
+        # sens (+1, -1, ou 0 tant qu'il n'est pas fixé).
+        self.suite: dict[str, Any] | None = None
         self.uno_dit: set[str] = set()
         # Joueur à une carte qui n'a pas dit UNO, contrable.
         self.expose: str | None = None
@@ -164,13 +175,33 @@ class Partie:
 
     def jouables(self, joueur: str) -> list[int]:
         """Identifiants des cartes que `joueur` peut poser maintenant."""
-        if self.finie or joueur != self.courant:
+        if self.finie or joueur not in self.mains:
             return []
         main = self.mains[joueur]
+        if joueur != self.courant:
+            # Règle de rapidité : les cartes identiques au dessus.
+            return [c.id for c in main if self._identique(c)]
+        if self.suite is not None:
+            return [c.id for c in main if self._prolonge(c)]
         if self.pioche_jouable is not None:
             return [self.pioche_jouable]
         return [c.id for c in main
                 if jouable(c, self.dessus, self.couleur, main)]
+
+    def _identique(self, carte: Carte) -> bool:
+        """Carte posable hors tour (règle de rapidité)."""
+        return (self.regles['rapidite'] and carte.couleur is not None
+                and carte.couleur == self.dessus.couleur
+                and carte.valeur == self.dessus.valeur)
+
+    def _prolonge(self, carte: Carte) -> bool:
+        """`carte` prolonge-t-elle la suite en cours ?"""
+        s = self.suite
+        if s is None or carte.couleur != s['couleur'] \
+                or carte.valeur not in CHIFFRES:
+            return False
+        ecart = int(carte.valeur) - s['valeur']
+        return ecart in (1, -1) and s['sens'] in (0, ecart)
 
     def _noter(self, ligne: str) -> None:
         self.journal.append(ligne)
@@ -189,6 +220,7 @@ class Partie:
     def _avancer(self, pas: int = 1) -> None:
         self.tour = self._rang(pas)
         self.pioche_jouable = None
+        self.suite = None
 
     def _tirer(self, joueur: str, n: int,
                evenement: bool = True) -> list[Carte]:
@@ -227,12 +259,21 @@ class Partie:
     # -- coups ---------------------------------------------------------------
     def jouer(self, joueur: str, carte_id: int, couleur: str | None = None,
               uno: bool = False, cible: str | None = None) -> None:
-        self._exige_tour(joueur)
+        if self.finie:
+            raise CoupInvalide('La manche est terminée.')
+        if joueur not in self.mains:
+            raise CoupInvalide('Vous ne jouez pas cette manche.')
         main = self.mains[joueur]
         carte = next((c for c in main if c.id == carte_id), None)
         if carte is None:
             raise CoupInvalide("Cette carte n'est pas dans votre main.")
-        if carte_id not in self.jouables(joueur):
+        rapide = joueur != self.courant
+        if rapide and not self._identique(carte):
+            raise CoupInvalide("Ce n'est pas votre tour.")
+        if not rapide and carte_id not in self.jouables(joueur):
+            if self.suite is not None:
+                raise CoupInvalide('Posez le chiffre suivant de votre suite, '
+                                   'ou arrêtez-la.')
             if self.pioche_jouable is not None:
                 raise CoupInvalide('Vous ne pouvez poser que la carte '
                                    'piochée, ou passer.')
@@ -249,6 +290,14 @@ class Partie:
                                'main.')
 
         self._fin_de_fenetre(joueur)
+        if rapide:
+            # Rapidité : le jeu reprend depuis lui.
+            self._noter('%s pose une carte identique, hors de son tour !'
+                        % joueur)
+            self.tour = self.ordre.index(joueur)
+            self.pioche_jouable = None
+            self.suite = None
+        suite = self.suite
         main.remove(carte)
         self.defausse.append(carte)
         self._evenement(joueur, 'pose')
@@ -290,6 +339,15 @@ class Partie:
             self._echanger(joueur, str(cible))
         elif self.regles['sept_zero'] and carte.valeur == '0':
             self._tourner()
+        elif self.regles['suites'] and carte.valeur in CHIFFRES:
+            # Suite : le joueur garde la main s'il peut la prolonger.
+            self.pioche_jouable = None
+            self.suite = {
+                'couleur': carte.couleur, 'valeur': int(carte.valeur),
+                'sens': (int(carte.valeur) - suite['valeur']
+                         if suite is not None else 0)}
+            if any(self._prolonge(c) for c in main):
+                return
         self._avancer(pas)
 
     def _oublier_uno(self, *joueurs: str) -> None:
@@ -325,6 +383,8 @@ class Partie:
         if self.pioche_jouable is not None:
             raise CoupInvalide('Vous avez déjà pioché : posez la carte ou '
                                'passez.')
+        if self.suite is not None:
+            raise CoupInvalide('Prolongez votre suite, ou arrêtez-la.')
         self._fin_de_fenetre(joueur)
         tirees: list[Carte] = []
         while True:
@@ -349,16 +409,21 @@ class Partie:
 
     def passer(self, joueur: str) -> None:
         self._exige_tour(joueur)
-        if self.pioche_jouable is None:
+        if self.suite is not None:
+            self._noter('%s arrête sa suite.' % joueur)
+        elif self.pioche_jouable is None:
             raise CoupInvalide('Piochez une carte avant de passer.')
-        self._noter('%s passe.' % joueur)
+        else:
+            self._noter('%s passe.' % joueur)
         self._avancer()
 
     def dire_uno(self, joueur: str) -> None:
         if self.finie or joueur not in self.mains:
             raise CoupInvalide('Rien à annoncer.')
         n = len(self.mains[joueur])
-        if n > 2 or (n == 2 and joueur != self.courant):
+        # Avec deux cartes : à son tour, ou prêt à poser hors tour.
+        if n > 2 or (n == 2 and joueur != self.courant
+                     and not self.jouables(joueur)):
             raise CoupInvalide('UNO s’annonce avec une ou deux cartes en '
                                'main, avant de poser l’avant-dernière.')
         self.uno_dit.add(joueur)
@@ -403,11 +468,13 @@ class Partie:
             # La main passe au suivant dans le sens du jeu.
             self.tour = (i if self.sens == 1 else i - 1) % len(self.ordre)
             self.pioche_jouable = None
+            self.suite = None
 
     def _terminer(self, joueur: str) -> None:
         self.gagnant = joueur
         self.expose = None
         self.pioche_jouable = None
+        self.suite = None
         self.points = sum(c.points for j, main in self.mains.items()
                           if j != joueur for c in main)
         self._noter('%s gagne la manche et marque %d points.'
@@ -446,6 +513,8 @@ class Partie:
             'uno_annonce': joueur in self.uno_dit,
             'pioche_jouable': (self.pioche_jouable
                                if joueur == self.courant else None),
+            # Le joueur courant peut prolonger sa suite ou l'arrêter.
+            'suite': self.suite is not None and joueur == self.courant,
         }
 
     def vue_spectateur(self) -> dict[str, Any]:

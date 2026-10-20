@@ -9,6 +9,9 @@ import FormulaireConnexion from '../src/coque/FormulaireConnexion';
 import MenuLateral from '../src/coque/MenuLateral';
 import { MODULES } from '../src/coque/modules';
 import Storybook from '../src/modules/storybook/Storybook';
+import {
+  Plateau as PlateauCn, Preparation as PreparationCn,
+} from '../src/modules/codenames/Table';
 import Spectateur from '../src/modules/uno/Spectateur';
 import { Plateau, SalleAttente } from '../src/modules/uno/Table';
 import { Tapis } from '../src/modules/uno/Tapis';
@@ -144,7 +147,7 @@ const MANCHE_UNO = {
     { id: 2, couleur: 'noir', valeur: '+4' },
     { id: 3, couleur: 'bleu', valeur: 'inversion' },
   ],
-  jouables: [1, 2], uno_annonce: false,
+  jouables: [1, 2], uno_annonce: false, suite: false,
   evenements: [{ n: 1, joueur: 'bob', type: 'pose', cartes: 1 }],
   regles: { pioche_jusqua: true, sept_zero: true },
   dessus: { id: 9, couleur: 'noir', valeur: 'joker' }, couleur: 'rouge',
@@ -174,6 +177,55 @@ ECRANS.push(
            moi={null} message="ana joue…" />],
   ['uno : page du spectateur', '/spectateur/K7Q2M',
     <Routes><Route path="/spectateur/:code" element={<Spectateur />} /></Routes>],
+);
+
+// Table de Code Names, telle que le serveur la décrit : attente, manche (vue
+// d'un oracle, d'un agent au trait), fin.
+const TABLE_CN = {
+  code: 'M4N0R', nom: 'Nuit au manoir', hote: 'ana', moi: 'ana', public: true,
+  membre: true, version: 4, manches: 1, min_joueurs: 4, max_joueurs: 16,
+  joueurs: ['ana', 'bob', 'cyd', 'dan'], etat: 'partie', liste: 'melange',
+  camps: { ana: 'sang', bob: 'sang', cyd: 'argent', dan: 'argent' },
+  oracles: { sang: 'ana', argent: 'cyd' }, victoires: { sang: 0, argent: 1 },
+  presents: { ana: true, bob: true, cyd: false, dan: true }, manque: null,
+};
+const ROLES_CN = ['sang', 'argent', 'domestique', 'comte', 'sang'];
+const MANCHE_CN = {
+  cartes: Array.from({ length: 25 }, (_, i) => ({
+    mot: `mot${i}`, revelee: i % 6 === 0, par: i % 6 === 0 ? 'bob' : null,
+    role: i % 6 === 0 ? ROLES_CN[i % 5] : null, marques: i === 3 ? ['bob'] : [],
+  })),
+  equipes: { sang: ['ana', 'bob'], argent: ['cyd', 'dan'] },
+  oracles: { sang: 'ana', argent: 'cyd' }, restants: { sang: 7, argent: 8 },
+  premiere: 'sang', equipe: 'sang', phase: 'devine',
+  indice: { equipe: 'sang', mot: 'Nuit', nombre: 2, trouves: 1 },
+  limite: 2, essais: 1, liste: 'melange', gagnant: null, cause: null,
+  indices: [{ equipe: 'sang', mot: 'Nuit', nombre: 2, trouves: 1 }],
+  journal: ['Les Vampires ouvrent la partie.'],
+  moi: { equipe: 'sang', role: 'oracle' },
+};
+const GRIMOIRE_CN = {
+  ...MANCHE_CN,
+  cartes: MANCHE_CN.cartes.map((c, i) => ({ ...c, role: ROLES_CN[i % 5] })),
+};
+ECRANS.push(
+  ['codenames : salle d’attente', '/codenames/M4N0R',
+    <PreparationCn table={{ ...TABLE_CN, etat: 'attente', manque: 'Les Vampires n’ont pas d’oracle.' }}
+                   onAction={() => {}} onExclure={() => {}} />],
+  ['codenames : vue de l’oracle', '/codenames/M4N0R',
+    <PlateauCn table={{ ...TABLE_CN, partie: GRIMOIRE_CN }} onAction={() => {}} />],
+  ['codenames : agent au trait', '/codenames/M4N0R',
+    <PlateauCn table={{
+      ...TABLE_CN, moi: 'bob',
+      partie: { ...MANCHE_CN, moi: { equipe: 'sang', role: 'agent' } },
+    }} onAction={() => {}} />],
+  ['codenames : manche finie', '/codenames/M4N0R',
+    <PlateauCn table={{
+      ...TABLE_CN, etat: 'finie',
+      partie: {
+        ...GRIMOIRE_CN, equipe: null, phase: 'fin', gagnant: 'argent', cause: 'comte',
+      },
+    }} onAction={() => {}} onExclure={() => {}} />],
 );
 
 let echecs = 0;

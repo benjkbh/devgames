@@ -4,6 +4,7 @@ from .commun.acces import (DROITS, MODULE_COMPTES, MODULES, ROLES, Fichier,
 from .commun import sante
 from .comptes import gestion, moncompte, presence, session
 from .uno import salons as uno
+from .codenames import salons as codenames
 
 # Toutes les routes exposées : (méthode, chemin exact) -> fonction.
 # Une route de module commence par `exige(req, module, role)`.
@@ -47,6 +48,22 @@ TABLE = {
     ('POST', '/api/uno/passer'): uno.passer,
     ('POST', '/api/uno/uno'): uno.dire_uno,
     ('POST', '/api/uno/contrer'): uno.contrer,
+
+    # == codenames : tables de jeu (rôle joueur) =============================
+    ('GET', '/api/codenames/salons'): codenames.lister,
+    ('GET', '/api/codenames/salon'): codenames.salon,
+    ('POST', '/api/codenames/creer'): codenames.creer,
+    ('POST', '/api/codenames/rejoindre'): codenames.rejoindre,
+    ('POST', '/api/codenames/quitter'): codenames.quitter,
+    ('POST', '/api/codenames/exclure'): codenames.exclure,
+    ('POST', '/api/codenames/choisir'): codenames.choisir,
+    ('POST', '/api/codenames/melanger'): codenames.melanger,
+    ('POST', '/api/codenames/regler'): codenames.regler,
+    ('POST', '/api/codenames/lancer'): codenames.lancer,
+    ('POST', '/api/codenames/indice'): codenames.indice,
+    ('POST', '/api/codenames/marquer'): codenames.marquer,
+    ('POST', '/api/codenames/reveler'): codenames.reveler,
+    ('POST', '/api/codenames/finir'): codenames.finir,
 }
 
 # Taille maximale du corps d'une requête, en octets, quand elle dépasse la
