@@ -18,7 +18,9 @@ import { musique } from './ambiance';
 //   [data-carte="id"]                              une carte de la main
 
 const DUREE = 280;
-const PAS = 90; // décalage entre deux cartes piochées, ms
+// Décalage entre deux cartes piochées, ms : elles arrivent une à une, pour le
+// suspense (+2, +4, pioche jusqu'à pouvoir jouer).
+const PAS = 500;
 const COURBE = 'cubic-bezier(.2, .75, .25, 1)';
 
 const mouvementReduit = () => typeof window !== 'undefined'
@@ -103,7 +105,7 @@ export function useGlissements(racine, partie, manche, moi, origine) {
       if (e.type === 'pose') {
         musique.effet('pose', DUREE / 1000 * 0.6);
       } else if (e.type === 'pioche') {
-        for (let i = 0; i < Math.min(e.cartes, 6); i += 1) {
+        for (let i = 0; i < Math.min(e.cartes, 12); i += 1) {
           musique.effet('pioche', retard);
           retard += PAS / 1000;
         }

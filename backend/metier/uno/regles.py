@@ -13,9 +13,10 @@ Règles retenues (règles de base) :
     cartes et passe son tour ; pas de cumul des +2 / +4 ;
   - qui ne peut ou ne veut pas jouer pioche une carte ; si elle est jouable,
     il peut la poser aussitôt ou passer, sinon son tour s'achève ;
-  - UNO : qui pose son avant-dernière carte doit l'annoncer. Tant qu'il ne
-    l'a pas fait, un autre joueur peut le contrer avant que le joueur
-    suivant n'agisse : il pioche alors 2 cartes ;
+  - UNO : qui pose son avant-dernière carte doit l'annoncer, avant ou
+    juste après l'avoir posée ; avec deux cartes, seulement s'il peut en
+    poser une. Tant qu'il ne l'a pas fait, un autre joueur peut le contrer,
+    jusqu'à la fin du tour du joueur suivant : il pioche alors 2 cartes ;
   - la manche s'arrête quand un joueur n'a plus de carte. Il marque la
     somme des cartes restant aux autres : chiffre = sa valeur, action = 20,
     joker et +4 = 50.
@@ -149,8 +150,11 @@ class Partie:
         # sens (+1, -1, ou 0 tant qu'il n'est pas fixé).
         self.suite: dict[str, Any] | None = None
         self.uno_dit: set[str] = set()
-        # Joueur à une carte qui n'a pas dit UNO, contrable.
+        # Joueur à une carte qui n'a pas dit UNO, contrable ; `fenetre` : fins
+        # de tour avant qu'il ne le soit plus (la sienne, puis celle du
+        # suivant).
         self.expose: str | None = None
+        self.fenetre = 0
         self.gagnant: str | None = None
         self.points = 0
         self.journal: list[str] = []
@@ -218,6 +222,10 @@ class Partie:
         return (self.tour + pas * self.sens) % len(self.ordre)
 
     def _avancer(self, pas: int = 1) -> None:
+        if self.expose is not None:
+            self.fenetre -= 1
+            if self.fenetre <= 0:
+                self.expose = None
         self.tour = self._rang(pas)
         self.pioche_jouable = None
         self.suite = None
@@ -250,11 +258,6 @@ class Partie:
             raise CoupInvalide('Vous ne jouez pas cette manche.')
         if joueur != self.courant:
             raise CoupInvalide("Ce n'est pas votre tour.")
-
-    def _fin_de_fenetre(self, joueur: str) -> None:
-        """Un autre joueur agit : on ne peut plus contrer l'exposé."""
-        if self.expose is not None and self.expose != joueur:
-            self.expose = None
 
     # -- coups ---------------------------------------------------------------
     def jouer(self, joueur: str, carte_id: int, couleur: str | None = None,
@@ -289,7 +292,6 @@ class Partie:
             raise CoupInvalide('Choisissez le joueur dont vous prenez la '
                                'main.')
 
-        self._fin_de_fenetre(joueur)
         if rapide:
             # Rapidité : le jeu reprend depuis lui.
             self._noter('%s pose une carte identique, hors de son tour !'
@@ -312,6 +314,7 @@ class Partie:
                 self._noter('%s : « UNO ! »' % joueur)
             else:
                 self.expose = joueur
+                self.fenetre = 2
         else:
             self.uno_dit.discard(joueur)
 
@@ -385,7 +388,6 @@ class Partie:
                                'passez.')
         if self.suite is not None:
             raise CoupInvalide('Prolongez votre suite, ou arrêtez-la.')
-        self._fin_de_fenetre(joueur)
         tirees: list[Carte] = []
         while True:
             une = self._tirer(joueur, 1, evenement=False)
@@ -421,11 +423,14 @@ class Partie:
         if self.finie or joueur not in self.mains:
             raise CoupInvalide('Rien à annoncer.')
         n = len(self.mains[joueur])
-        # Avec deux cartes : à son tour, ou prêt à poser hors tour.
-        if n > 2 or (n == 2 and joueur != self.courant
-                     and not self.jouables(joueur)):
+        # Avec deux cartes : seulement s'il peut en poser une (à son tour,
+        # ou hors tour avec la règle de rapidité).
+        if n > 2:
             raise CoupInvalide('UNO s’annonce avec une ou deux cartes en '
                                'main, avant de poser l’avant-dernière.')
+        if n == 2 and not self.jouables(joueur):
+            raise CoupInvalide('UNO s’annonce quand vous pouvez poser votre '
+                               'avant-dernière carte.')
         self.uno_dit.add(joueur)
         if self.expose == joueur:
             self.expose = None

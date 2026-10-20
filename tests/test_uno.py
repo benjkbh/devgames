@@ -174,7 +174,7 @@ class Manche(unittest.TestCase):
         with self.assertRaises(CoupInvalide):
             p.contrer('bob', 'ana')
 
-    def test_fenetre_de_contre_close_au_coup_suivant(self) -> None:
+    def test_fenetre_de_contre_jusqu_a_la_fin_du_tour_suivant(self) -> None:
         p = partie()
         p.tour = 0
         p.couleur = 'rouge'
@@ -182,9 +182,31 @@ class Manche(unittest.TestCase):
         p.mains['ana'] = [Carte(903, 'rouge', '3'), Carte(904, 'vert', '8')]
         p.jouer('ana', 903)
         self.assertEqual(p.courant, 'bob')
+        # bob agit (il pioche une carte jouable) : encore contrable.
+        p.pioche.append(Carte(905, 'rouge', '9'))
         p.piocher('bob')
+        self.assertEqual(p.expose, 'ana')
+        # Son tour fini, c'est trop tard.
+        p.passer('bob')
+        self.assertIsNone(p.expose)
         with self.assertRaises(CoupInvalide):
             p.contrer('cyd', 'ana')
+
+    def test_uno_a_deux_cartes_seulement_si_l_on_peut_jouer(self) -> None:
+        p = partie()
+        p.tour = 0
+        p.couleur = 'rouge'
+        p.defausse.append(Carte(899, 'rouge', '1'))
+        p.mains['ana'] = [Carte(903, 'bleu', '3'), Carte(904, 'vert', '8')]
+        with self.assertRaises(CoupInvalide):
+            p.dire_uno('ana')
+        p.mains['ana'][0] = Carte(905, 'rouge', '3')
+        p.dire_uno('ana')
+        self.assertIn('ana', p.uno_dit)
+        # Hors de son tour, sans rapidité : rien à poser, pas d'annonce.
+        p.mains['bob'] = [Carte(906, 'rouge', '4'), Carte(907, 'vert', '8')]
+        with self.assertRaises(CoupInvalide):
+            p.dire_uno('bob')
 
     def test_victoire_et_points(self) -> None:
         p = partie()

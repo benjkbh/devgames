@@ -109,9 +109,14 @@ seconde, ce qui permet aussi de montrer qui est encore à la table. Le tapis
 (`Tapis.jsx`) est commun au joueur et au spectateur : plateau de bois et de
 feutre, joueurs assis autour, pioche et défausse dans l'anneau de la couleur
 demandée que parcourent les flèches du sens du jeu. Le bouton UNO n'apparaît
-qu'avec une carte à venir. Le décor (lune, loup, sapins, bougies) est dans
+qu'avec une carte à venir (avec deux cartes, seulement si l'on peut en poser
+une) ; en face, un gros bouton « Contre UNO » apparaît tant qu'un joueur qui
+n'a pas dit UNO peut être contré (jusqu'à la fin du tour du joueur suivant).
+En fin de manche, l'hôte rechoisit les règles et tous peuvent inviter d'autres
+joueurs (code et liens), sans quitter la table. Le décor (lune, loup, sapins, bougies) est dans
 `Tapis.jsx`. La taille des cartes, et donc du tapis, suit la hauteur de la
-fenêtre (`--uno-l` dans `uno.css`) : tout tient dans un écran de 1080p. Les poses et les pioches glissent (`animations.js`) :
+fenêtre (`--uno-l` dans `uno.css`) : tout tient dans un écran de 1080p. Les poses et les pioches glissent (`animations.js`),
+les cartes piochées une à une, toutes les 0,5 s :
 le serveur numérote ces événements dans la vue de la manche (`evenements`), et
 l'interface rejoue ceux qu'elle n'a pas vus. Pendant une manche, quitter la
 table par le menu, un lien ou le bouton « précédent » demande confirmation

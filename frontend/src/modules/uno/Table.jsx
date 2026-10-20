@@ -220,9 +220,10 @@ export function Plateau({ table, onAction, onExclure }) {
   const peutPiocher = monTour && p.pioche_jouable === null && !p.suite;
   // Règle de rapidité : une carte identique au dessus, posable hors tour.
   const rapide = !monTour && !finie && p.jouables.length > 0;
-  // Le bouton UNO n'existe que lorsqu'il sert : une carte à venir.
+  // Le bouton UNO n'existe que lorsqu'il sert : une carte à venir. Avec deux
+  // cartes, seulement si l'on peut en poser une (à son tour, ou hors tour).
   const peutUno = !p.uno_annonce && !finie
-    && (main.length === 1 || (main.length === 2 && (monTour || rapide)));
+    && (main.length === 1 || (main.length === 2 && p.jouables.length > 0));
 
   const poser = (carte, couleur, cible) => onAction(
     () => jouer(code, carte.id, couleur, false, cible),
@@ -266,6 +267,14 @@ export function Plateau({ table, onAction, onExclure }) {
             </p>
             <Scores table={table} onExclure={hote ? onExclure : undefined} />
             <Regles table={table} onAction={onAction} />
+            <details className="uno-fin-inviter">
+              <summary>Inviter d’autres joueurs</summary>
+              <p className="dim">
+                Ils peuvent s’asseoir maintenant : ils seront servis à la
+                prochaine manche.
+              </p>
+              <Partage code={code} />
+            </details>
             {hote ? (
               <Bouton variante="principal" taille="l" icone={<IcoCarteRole />}
                       disabled={table.joueurs.length < table.min_joueurs}

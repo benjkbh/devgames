@@ -236,7 +236,19 @@
 .uno-siege-exclure:hover { background: var(--danger); color: #fff; }
 .uno-siege-exclure:focus-visible { outline: none; box-shadow: var(--anneau-danger); }
 .uno-siege-exclure .ico { width: 12px; height: 12px; }
-.uno-contre { margin-top: var(--e1); animation: uno-secoue .6s ease-in-out infinite; }
+/* Repère du joueur contrable (le bouton est au centre). */
+.uno-contre {
+  margin-top: var(--e1);
+  padding: 1px 8px;
+  border-radius: var(--r-plein);
+  background: #a3261e;
+  color: #fff7e6;
+  font-size: var(--t-2xs);
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  animation: uno-secoue .6s ease-in-out infinite;
+}
 .uno-presence { display: inline-flex; align-items: center; gap: 4px; }
 .uno-presence-texte { color: var(--dim); font-size: var(--t-2xs); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .uno-feutre .uno-presence-texte { color: rgba(236, 228, 210, .65); }
@@ -347,6 +359,49 @@
 .uno-bouton-uno:focus-visible { outline: none; box-shadow: 0 0 0 4px #fff, 0 0 0 7px var(--accent); }
 /* En capitales : la gothique y est illisible (cf. `--police-titre`). */
 .uno-bouton-uno-texte { font-family: var(--police); font-size: 28px; font-weight: 800; letter-spacing: .04em; text-shadow: 0 2px 3px rgba(0, 0, 0, .6); }
+
+/* Contre-UNO : face au bouton UNO, de l'autre côté de l'anneau (en bas, sous
+   le message du tour), tant qu'un joueur qui n'a pas dit UNO peut être
+   contré. */
+.uno-bouton-contre {
+  position: absolute;
+  z-index: 3;
+  left: calc(50% - var(--anneau) / 2 - 22px);
+  top: calc(var(--anneau) * .84);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 104px;
+  height: 104px;
+  padding: 0;
+  border: 3px solid #f6ead2;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #3b3f4a, #15171d 60%, #050608);
+  color: #fff7e6;
+  box-shadow: 0 0 0 4px #ea5246, 0 8px 24px rgba(0, 0, 0, .6), 0 0 34px rgba(234, 82, 70, .65);
+  cursor: pointer;
+  transform: translate(-100%, -50%);
+  animation: uno-surgit-contre .35s cubic-bezier(.3, 1.6, .5, 1) both, uno-secoue-contre .6s ease-in-out .35s infinite;
+}
+.uno-bouton-contre:hover { filter: brightness(1.2); }
+.uno-bouton-contre:focus-visible { outline: none; box-shadow: 0 0 0 4px #fff, 0 0 0 7px #ea5246; }
+.uno-bouton-contre-texte { font-family: var(--police); font-size: 19px; font-weight: 800; line-height: 1; text-align: center; text-transform: uppercase; text-shadow: 0 2px 3px rgba(0, 0, 0, .6); }
+.uno-bouton-contre-nom { max-width: 84px; overflow: hidden; color: #f0cd7b; font-size: var(--t-xs); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+@keyframes uno-secoue-contre {
+  0%, 100% { transform: translate(-100%, -50%) rotate(0); }
+  25% { transform: translate(-100%, -50%) rotate(-4deg); }
+  75% { transform: translate(-100%, -50%) rotate(4deg); }
+}
+@keyframes uno-surgit-contre {
+  from { opacity: 0; transform: translate(-100%, -50%) scale(.4); }
+  to { opacity: 1; transform: translate(-100%, -50%) scale(1); }
+}
+.uno-fin-inviter { align-self: stretch; }
+.uno-fin-inviter summary { cursor: pointer; font-weight: 700; }
+.uno-fin-inviter[open] summary { margin-bottom: var(--e2); }
+.uno-fin-inviter .uno-partage { margin-top: var(--e3); }
 
 /* Votre main, sur le tapis. */
 .uno-joueur {
@@ -483,6 +538,8 @@
   .uno-piles { gap: var(--e4); }
   .uno-tour { font-size: var(--t-l); padding: 4px var(--e4); }
   .uno-bouton-uno { left: auto; right: 2px; top: 120px; width: 76px; height: 76px; }
+  .uno-bouton-contre { left: 2px; top: 120px; width: 84px; height: 84px; transform: translateY(-50%); animation: none; }
+  .uno-bouton-contre-texte { font-size: 15px; }
   .uno-tapis::after { border-width: 1.5px; }
   .uno-bouton-uno-texte { font-size: 24px; }
   .uno-joueur { padding: var(--e2) var(--e2) var(--e3); }
@@ -491,7 +548,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .uno-sens, .uno-siege.actif, .uno-joueur.actif, .uno-tour.moi, .uno-siege-tour,
-  .uno-joueur-tour, .uno-bouton-uno, .uno-contre { animation: none; }
+  .uno-joueur-tour, .uno-bouton-uno, .uno-contre, .uno-bouton-contre { animation: none; }
   .uno-couleur { transition: none; }
   .uno-bouton-uno { transform: translateY(-50%); }
   .uno-bougie i, .uno-bougie b { animation: none; }

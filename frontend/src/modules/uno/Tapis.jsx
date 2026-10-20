@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 
 import {
-  Badge, Bouton, CarteJeu, Eventail, IcoFermer, Pastille, Sr, cx,
+  Badge, CarteJeu, Eventail, IcoFermer, Pastille, Sr, cx,
 } from '../../ui';
 import { useGlissements } from './animations';
 import { useEcranEtroit } from './ecran';
@@ -76,7 +76,7 @@ export function Presence({ table, nom }) {
 
 // Un joueur assis autour du tapis.
 function Siege({
-  joueur, table, actif, onContrer, onExclure,
+  joueur, table, actif, onExclure,
 }) {
   // Sur un écran étroit, un siège n'a la place que de quelques dos.
   const etroit = useEcranEtroit();
@@ -108,10 +108,10 @@ function Siege({
         {`${joueur.cartes} carte${joueur.cartes > 1 ? 's' : ''}`}
       </span>
       {actif && <span className="uno-siege-tour" aria-hidden="true">Joue…</span>}
-      {joueur.expose && onContrer && (
-        <Bouton taille="s" couleur="rouge" variante="principal"
-                className="uno-contre" titre="Contre-UNO !"
-                onClick={() => onContrer(joueur.nom)} />
+      {joueur.expose && (
+        <span className="uno-contre" title="Il n’a pas dit UNO : on peut le contrer">
+          Sans UNO !
+        </span>
       )}
     </li>
   );
@@ -135,7 +135,9 @@ function Sens({ inverse }) {
 // `partie` : la manche, telle que le joueur (ou le spectateur) la voit ;
 // `moi` : le joueur, absent pour un spectateur ; `message` : qui joue ;
 // `onPiocher` : rend la pioche cliquable (`peutPiocher` : c'est possible
-// maintenant) ; `boutonUno` : le bouton UNO, posé au centre ; `origine` : ref
+// maintenant) ; `boutonUno` : le bouton UNO, posé au centre ; `onContrer` :
+// un joueur peut contrer celui qui n'a pas dit UNO (gros bouton au centre,
+// face au bouton UNO) ; `origine` : ref
 // du rectangle de la carte que le joueur vient de jouer, d'où elle glisse.
 export function Tapis({
   table, partie: p, moi, message, onPiocher, peutPiocher, boutonUno, origine,
@@ -146,6 +148,8 @@ export function Tapis({
   const monTour = Boolean(moi) && p.tour === moi;
   const sieges = moi ? apresMoi(p.joueurs, moi) : p.joueurs;
   const finie = Boolean(p.gagnant);
+  // Un autre joueur a posé son avant-dernière carte sans dire UNO.
+  const contrable = !finie && p.joueurs.find((j) => j.expose && j.nom !== moi);
   return (
     <div ref={racine} className={cx('uno-tapis', `uno-centre-${p.couleur}`)}>
       <div className="uno-feutre">
@@ -153,7 +157,6 @@ export function Tapis({
         <ul className="uno-sieges" aria-label="Joueurs">
           {sieges.map((j) => (
             <Siege key={j.nom} joueur={j} table={table} actif={p.tour === j.nom}
-                   onContrer={onContrer}
                    onExclure={onExclure && j.nom !== table.hote ? onExclure : undefined} />
           ))}
         </ul>
@@ -179,6 +182,19 @@ export function Tapis({
             </div>
           </div>
           {boutonUno}
+          {onContrer && contrable && (
+            <button type="button" className="uno-bouton-contre"
+                    aria-label={`Contre-UNO : ${contrable.nom} n’a pas dit UNO`}
+                    title={`${contrable.nom} n’a pas dit UNO : 2 cartes pour lui !`}
+                    onClick={() => onContrer(contrable.nom)}>
+              <span className="uno-bouton-contre-texte" aria-hidden="true">
+                Contre
+                <br />
+                UNO&nbsp;!
+              </span>
+              <span className="uno-bouton-contre-nom" aria-hidden="true">{contrable.nom}</span>
+            </button>
+          )}
           <div className="uno-etat">
             <p className={cx('uno-tour', monTour && !finie && 'moi', finie && 'fin')}
                aria-live="polite">
