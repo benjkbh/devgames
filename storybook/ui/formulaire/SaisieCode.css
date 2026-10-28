@@ -1,0 +1,26 @@
+.saisie-code { display: inline-flex; gap: var(--e2); max-width: 100%; }
+.saisie-code-case {
+  flex: 1 1 0;
+  width: 46px;
+  min-width: 0;
+  height: 52px;
+  padding: 0;
+  border: 1px solid var(--bord-fort);
+  border-radius: var(--r-m);
+  background: var(--surface-2);
+  color: var(--accent-txt);
+  font-family: var(--police);
+  font-size: var(--t-xl);
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+  caret-color: var(--accent);
+  transition: border-color var(--duree), box-shadow var(--duree);
+}
+.saisie-code-case.remplie,
+.saisie-code.lecture .saisie-code-case { border-color: var(--accent-bord); background: var(--accent-doux-2); }
+.saisie-code-case:focus { outline: none; border-color: var(--accent); box-shadow: var(--anneau); }
+.saisie-code.lecture .saisie-code-case { display: inline-flex; align-items: center; justify-content: center; }
+@media (prefers-reduced-motion: reduce) {
+  .saisie-code-case { transition: none; }
+}

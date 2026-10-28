@@ -1,0 +1,8 @@
+.journal { display: flex; flex-direction: column; gap: var(--e2); margin: 0; padding: 0; list-style: none; color: var(--txt-2); font-size: var(--t-s); }
+.journal-ligne { display: flex; align-items: baseline; gap: var(--e3); line-height: 1.45; }
+.journal-marque { flex: 0 0 auto; width: 7px; height: 7px; border-radius: 50%; background: var(--bord-fort); transform: translateY(-1px); }
+.journal-marque.carre { width: 8px; height: 11px; border-radius: 2px; transform: translateY(1px); }
+.journal-ligne.actif .journal-marque { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+.journal-ligne.actif { color: var(--txt); }
+.journal-texte { min-width: 0; overflow-wrap: anywhere; }
+.journal-texte strong { color: var(--txt); }

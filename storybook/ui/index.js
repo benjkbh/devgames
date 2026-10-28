@@ -1,11 +1,13 @@
 // Bibliothèque de composants de l'interface.
 //   primitives/    boutons, icônes, badges, cartes, cartes à jouer,
-//                  définitions, frises, frise d'états
-//   formulaire/    champ, saisies, choix, copie, filtres de liste
+//                  définitions, frises, frise d'états, avatars, jauges,
+//                  places autour d'une table, journal de partie
+//   formulaire/    champ, saisies, saisie de code, choix, tuiles à cocher,
+//                  copie, filtres de liste
 //   tableau/       tableau, cellules, bouton d'ouverture du détail
 //   retour/        popup, dialogue, fenêtre de détail, menu déroulant,
 //                  onglets, alertes
-//   mise-en-page/  page, section, écran pleine fenêtre
+//   mise-en-page/  page, section, écran pleine fenêtre, fil d’Ariane
 //   hooks/         sondage, lecture paramétrée, actions, chargement,
 //                  préférences, ensemble de clés, recherche, tri
 //   outils/        formats d'affichage, périodes, comparaison
@@ -26,6 +28,10 @@ export { Chronologie, Etapes } from './primitives/Etapes';
 export { FriseEtats } from './primitives/FriseEtats';
 export { GrilleTuiles, Tuile } from './primitives/Tuile';
 export { Sr } from './primitives/Sr';
+export { Avatar, initiales } from './primitives/Avatar';
+export { Jauge } from './primitives/Jauge';
+export { Journal } from './primitives/Journal';
+export { Places } from './primitives/Places';
 export * from './primitives/Icones';
 
 export { BarreFiltres } from './formulaire/BarreFiltres';
@@ -39,6 +45,8 @@ export {
 export {
   Recherche, Saisie, Selecteur, ZoneTexte,
 } from './formulaire/Saisie';
+export { SaisieCode } from './formulaire/SaisieCode';
+export { TuileChoix } from './formulaire/TuileChoix';
 
 export {
   BoutonOuvrir, Tableau, Valeur,
@@ -59,6 +67,7 @@ export {
   MarqueAppli, Page, PageGarde, Section,
 } from './mise-en-page/Page';
 export { Banniere } from './mise-en-page/Banniere';
+export { FilAriane } from './mise-en-page/FilAriane';
 
 export { useCopie } from './hooks/copie';
 export { basculerDans, useEnsemble } from './hooks/ensemble';

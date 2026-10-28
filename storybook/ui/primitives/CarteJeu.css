@@ -39,6 +39,10 @@
   paint-order: stroke;
   letter-spacing: -.02em;
 }
+/* Chiffre du médaillon : ancré à gauche sur la ligne de base, puis décalé
+   d'après la mesure de son dessin (`InscriptionCentree`). */
+.cj-centree { dominant-baseline: alphabetic; letter-spacing: 0; }
+.cj-centree.mesuree { text-anchor: start; }
 .cj-rang { font-family: var(--police-titre); font-weight: 700; text-anchor: middle; }
 .cj-figure { font-family: var(--police-titre); font-weight: 700; text-anchor: middle; dominant-baseline: central; }
 

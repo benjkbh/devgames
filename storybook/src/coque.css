@@ -1,0 +1,6 @@
+/* Disposition de l'application (frontend/src/coque/coque.css), sans menu. */
+#racine { display: flex; min-height: 100vh; }
+#zone { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+/* Choix du thème, en haut à droite, au-dessus de la bannière. */
+.sb-theme { position: fixed; top: .75rem; right: .75rem; z-index: 10; }

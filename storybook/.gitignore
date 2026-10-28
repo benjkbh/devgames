@@ -1,0 +1,4 @@
+node_modules/
+dist/
+verif/.catalogue.cjs
+verif/.catalogue.css

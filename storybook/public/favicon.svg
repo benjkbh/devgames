@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="ciel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1c2438"/>
+      <stop offset="1" stop-color="#07090d"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="12" fill="url(#ciel)"/>
+  <!-- pleine lune -->
+  <circle cx="40" cy="22" r="13" fill="#ece4d2"/>
+  <circle cx="35" cy="18" r="2.4" fill="#cfc5b0"/>
+  <circle cx="44" cy="27" r="1.8" fill="#cfc5b0"/>
+  <!-- forêt -->
+  <path d="M0 64V46l6-10 6 10V40l6-11 6 11v6l5-8 5 8v-4l6-10 6 10v-6l6-11 6 11v8l6-9V64Z" fill="#05060a"/>
+  <!-- yeux dans la nuit -->
+  <circle cx="24" cy="52" r="1.8" fill="#c0352b"/>
+  <circle cx="30" cy="52" r="1.8" fill="#c0352b"/>
+</svg>

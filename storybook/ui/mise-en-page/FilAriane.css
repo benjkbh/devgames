@@ -1,0 +1,5 @@
+.fil-ariane ol { display: flex; flex-wrap: wrap; align-items: center; margin: 0; padding: 0; list-style: none; color: var(--dim); font-size: var(--t-s); }
+.fil-ariane li + li::before { content: "/"; margin: 0 var(--e2); color: var(--dim); }
+.fil-ariane a { color: inherit; text-decoration: none; }
+.fil-ariane a:hover { color: var(--txt); text-decoration: underline; }
+.fil-ariane .courant { color: var(--txt); font-weight: 700; }

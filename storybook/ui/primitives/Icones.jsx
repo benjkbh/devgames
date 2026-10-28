@@ -369,6 +369,53 @@ export const IcoMuet = (p) => (
   </Svg>
 );
 
+// Retour : chevron vers la gauche.
+export const IcoRetour = (p) => (
+  <Svg trait={1.8} {...p}><path d="M12.5 4.5 7.5 10l5 5.5" /></Svg>
+);
+
+// Couronne : l'hôte d'une table.
+export const IcoCouronne = (p) => (
+  <Svg {...p}><path d="M3.5 14.5 2.8 6.6l4.3 3.3L10 4.6l2.9 5.3 4.3-3.3-.7 7.9Z" /></Svg>
+);
+
+// Œil : regarder sans participer.
+export const IcoOeil = (p) => (
+  <Svg {...p}>
+    <path d="M1.8 10S4.8 4.6 10 4.6 18.2 10 18.2 10 15.2 15.4 10 15.4 1.8 10 1.8 10Z" />
+    <circle cx="10" cy="10" r="2.6" />
+  </Svg>
+);
+
+// Cadenas : action verrouillée tant qu'une condition manque.
+export const IcoCadenas = (p) => (
+  <Svg {...p}>
+    <rect x="4.2" y="8.8" width="11.6" height="8.4" rx="1.6" />
+    <path d="M6.8 8.8V6.4a3.2 3.2 0 0 1 6.4 0v2.4" />
+  </Svg>
+);
+
+// Inviter : silhouette et signe plus.
+export const IcoInviter = (p) => (
+  <Svg {...p}>
+    <circle cx="8" cy="6.6" r="3" />
+    <path d="M2.6 16.6a5.4 5.4 0 0 1 10.8 0M15.6 6.4v5M13.1 8.9h5" />
+  </Svg>
+);
+
+// Éclair : rapidité.
+export const IcoEclair = (p) => (
+  <Svg {...p}><path d="M11.2 2.4 4.6 11.2h5l-1 6.4 6.8-9h-5Z" /></Svg>
+);
+
+// Pioche : deux cartes décalées.
+export const IcoPioche = (p) => (
+  <Svg {...p}>
+    <rect x="6.6" y="2.6" width="9" height="12" rx="1.4" />
+    <path d="M4.4 5.8v10.2a1.4 1.4 0 0 0 1.4 1.4h7.4" />
+  </Svg>
+);
+
 // Carte de rôle (jeu de cartes) : un croissant de lune au centre.
 export const IcoCarteRole = (p) => (
   <Svg {...p}>

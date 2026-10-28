@@ -1,0 +1,7 @@
+.jauge { display: inline-flex; align-items: center; gap: var(--e3); color: var(--dim); font-size: var(--t-xs); font-variant-numeric: tabular-nums; }
+.jauge-texte strong { color: var(--txt); }
+.jauge-barre { position: relative; width: 76px; height: 4px; overflow: hidden; border-radius: var(--r-plein); background: var(--surface-3); }
+.jauge-plein { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: var(--accent); transition: width var(--duree); }
+@media (prefers-reduced-motion: reduce) {
+  .jauge-plein { transition: none; }
+}

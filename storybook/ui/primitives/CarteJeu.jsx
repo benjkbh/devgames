@@ -1,4 +1,6 @@
-import { Children, useId } from 'react';
+import {
+  Children, useEffect, useId, useRef, useState,
+} from 'react';
 
 import { cx } from '../classes';
 import './CarteJeu.css';
@@ -96,6 +98,62 @@ function Inscription({
           style={{ ...peint(couleur, ENCRE), strokeWidth: contour }}
           className="cj-inscription"
           transform={retourne ? `rotate(180 ${x} ${y})` : undefined}>
+      {children}
+    </text>
+  );
+}
+
+// Décalage qui centre l'encre d'un texte sur son point d'ancrage, mesuré sur
+// le dessin réel des glyphes (`measureText` d'un canevas) : le centre de la
+// boîte de la police (`dominant-baseline: central`) laisse les chiffres de
+// la gothique trop bas et de travers. Mis en cache une fois la police
+// chargée.
+const CENTRAGES = new Map();
+let canevas;
+function centrage(texte, taille, famille) {
+  const police = `800 ${taille}px ${famille}`;
+  const cle = `${police}|${texte}`;
+  if (CENTRAGES.has(cle)) return CENTRAGES.get(cle);
+  canevas = canevas || document.createElement('canvas');
+  const ctx = canevas.getContext && canevas.getContext('2d');
+  if (!ctx) return null;
+  ctx.font = police;
+  const m = ctx.measureText(texte);
+  if (m.actualBoundingBoxAscent === undefined) return null;
+  const decalage = {
+    x: (m.actualBoundingBoxLeft - m.actualBoundingBoxRight) / 2,
+    y: (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2,
+  };
+  if (!document.fonts || document.fonts.check(police, texte)) {
+    CENTRAGES.set(cle, decalage);
+  }
+  return decalage;
+}
+
+// Inscription centrée sur (0, 0) : le chiffre au milieu du médaillon. Avant
+// la mesure (rendu serveur, police en chargement), une estimation.
+function InscriptionCentree({
+  taille, couleur, children, contour,
+}) {
+  const ref = useRef(null);
+  const [decalage, setDecalage] = useState(null);
+  const texte = String(children);
+  useEffect(() => {
+    let vivant = true;
+    const mesurer = () => {
+      if (!vivant || !ref.current) return;
+      const d = centrage(texte, taille, getComputedStyle(ref.current).fontFamily);
+      if (d) setDecalage(d);
+    };
+    mesurer();
+    if (document.fonts) document.fonts.ready.then(mesurer);
+    return () => { vivant = false; };
+  }, [texte, taille]);
+  return (
+    <text ref={ref} x={decalage ? decalage.x : 0}
+          y={decalage ? decalage.y : taille * 0.34} fontSize={taille}
+          style={{ ...peint(couleur, ENCRE), strokeWidth: contour }}
+          className={cx('cj-inscription', 'cj-centree', decalage && 'mesuree')}>
       {children}
     </text>
   );
@@ -247,9 +305,9 @@ function FaceUno({ couleur, valeur }) {
     centre = null;
   } else {
     centre = (
-      <Inscription x={0} y={3} taille={56} couleur={encre} contour={1.2}>
+      <InscriptionCentree taille={56} couleur={encre} contour={1.2}>
         {valeur}
-      </Inscription>
+      </InscriptionCentree>
     );
   }
   return (
