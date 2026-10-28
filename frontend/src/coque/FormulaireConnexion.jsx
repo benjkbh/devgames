@@ -4,7 +4,7 @@ import { NOM_APPLI, SOUS_NOM_APPLI } from '../commun/appli';
 import { connexion, installer } from './session';
 import {
   Alerte, Bouton, ChampSaisie, PageGarde, useAction,
-} from '../ui';
+} from '@ui';
 
 const CHAMP_NOM = { type: 'texte', libelle: 'Nom d’utilisateur' };
 const CHAMP_MDP = { type: 'mot_de_passe', libelle: 'Mot de passe' };

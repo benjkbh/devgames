@@ -1,69 +1,138 @@
-/* Module UNO : accueil (tables), salle d'attente et tapis de jeu. Le tapis est
-   un vrai plateau : cadre de bois, feutre vert, anneau de la couleur
+/* Module UNO : en-tête et salle d'attente d'une table, tapis de jeu et sa
+   colonne (ordre de jeu, journal), lecteur de musique. L'accueil est celui de
+   toutes les tables (`commun/salons/salons.css`). Le tapis est un vrai
+   plateau : cadre de bois, feutre vert, anneau de la couleur
    demandée. Il reste sombre dans les deux thèmes, comme un objet posé sur la
    table. Tout ce qui bouge respecte « mouvement réduit ». */
 
 /* -- accueil --- */
 /* Cartes en éventail dans la bannière d’accueil. */
 .uno-banniere-cartes { padding-right: var(--e4); }
-.uno-accueil-grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: var(--e5); }
-.uno-formulaire { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e4); }
-.uno-formulaire .champ { width: 100%; }
-.uno-saisie-code { font-family: var(--police-mono); font-size: var(--t-l); letter-spacing: .3em; text-transform: uppercase; }
 
-.uno-tables { display: flex; flex-direction: column; gap: var(--e2); margin: 0; padding: 0; list-style: none; }
-.uno-tables-ligne {
+/* -- en-tête d'une table --- */
+.uno-entete { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e3) var(--e4); margin-bottom: var(--e5); }
+.uno-entete-retour {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--bord-fort);
+  border-radius: var(--r-m);
+  color: var(--txt-2);
+}
+.uno-entete-retour:hover { border-color: var(--accent-bord); color: var(--accent-txt); }
+.uno-entete-retour:focus-visible { outline: none; box-shadow: var(--anneau); }
+.uno-entete-retour .ico { width: 16px; height: 16px; }
+.uno-entete-titres { display: flex; flex-direction: column; min-width: 0; }
+.uno-entete-sur { color: var(--dim); font-size: var(--t-xs); }
+.uno-entete-code { color: var(--accent-txt); font-weight: 800; letter-spacing: .08em; }
+.uno-entete-titre { font-size: var(--t-xl); line-height: 1.15; overflow-wrap: anywhere; }
+.uno-entete-outils { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e3); margin-left: auto; }
+.uno-erreur { margin-bottom: var(--e4); }
+.uno-surtitre { color: var(--accent-txt); font-size: var(--t-2xs); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.uno-note { font-size: var(--t-xs); }
+/* Titres des cartes dans la police des titres, comme sur l'accueil. */
+.uno-page .carte-titre { color: var(--txt); font-family: var(--police-titre); font-size: var(--t-xl); font-weight: 700; letter-spacing: 0; text-transform: none; }
+/* Lien d'action discret, souligné, dans la teinte de l'accent. */
+.uno-lien { align-self: flex-start; padding: 0; border: 0; background: none; color: var(--accent-txt); font: inherit; font-size: var(--t-s); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.uno-lien:focus-visible { outline: none; border-radius: 2px; box-shadow: var(--anneau); }
+.uno-lien-ico { display: inline-flex; align-items: center; gap: var(--e2); }
+.uno-lien-ico .ico { width: 16px; height: 16px; }
+
+/* -- salle d'attente : places et pied à gauche, invitation et règles à droite --- */
+.uno-salle { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 330px); gap: var(--e5); align-items: start; }
+.uno-salle-principal, .uno-salle-cote { display: flex; flex-direction: column; gap: var(--e5); min-width: 0; }
+.uno-salle .carte { margin: 0; }
+.uno-attente-texte { text-align: center; }
+
+/* Hôte absent : bandeau ambré au-dessus de la salle. */
+.uno-absence {
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--e3);
+  gap: var(--e3) var(--e4);
   padding: var(--e3) var(--e4);
+  border: 1px solid var(--attn-bord);
+  border-radius: var(--r-l);
+  background: var(--attn-doux);
+  color: var(--txt-2);
+  font-size: var(--t-s);
+}
+.uno-absence-ico { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: var(--attn-doux-2); color: var(--attn-txt); }
+.uno-absence-ico .ico { width: 18px; height: 18px; }
+.uno-absence-textes { flex: 1 1 260px; min-width: 0; }
+.uno-absence-titre { color: var(--attn-txt); font-weight: 700; }
+
+/* Pied : pictogramme, ce qui se passe, l'action. */
+.uno-pied {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--e3) var(--e4);
+  padding: var(--e4) var(--e5);
   border: 1px solid var(--bord);
-  border-radius: var(--r-m);
+  border-radius: var(--r-l);
   background: var(--surface);
 }
-.uno-tables-ligne:hover { border-color: var(--accent-bord); }
-.uno-tables-ico { width: 22px; height: 22px; color: var(--accent); }
-.uno-tables-nom { display: flex; flex-direction: column; flex: 1 1 160px; min-width: 0; }
-.uno-tables-nom .dim { font-size: var(--t-xs); overflow-wrap: anywhere; }
-.uno-tables-joueurs { display: inline-flex; align-items: center; gap: 4px; color: var(--dim); font-variant-numeric: tabular-nums; }
+.uno-pied-ico { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; min-width: 40px; height: 40px; border-radius: var(--r-m); background: var(--surface-3); color: var(--txt-2); }
+.uno-pied-ico > .ico { width: 20px; height: 20px; }
+.uno-pied-textes { flex: 1 1 240px; min-width: 0; font-size: var(--t-s); }
+.uno-pied-titre { color: var(--txt); font-weight: 700; }
+/* Deux cartes croisées, pour le joueur qui attend la donne. */
+.uno-pied-cartes { display: inline-flex; padding: 0 4px; }
+.uno-pied-cartes .cj { --cj-taille-xs: 28px; }
+.uno-pied-cartes .cj:first-child { transform: rotate(-10deg); }
+.uno-pied-cartes .cj:last-child { margin-left: -12px; transform: rotate(8deg); }
+.uno-pied-ico:has(.uno-pied-cartes) { background: none; }
 
-/* -- barre de la table --- */
-.uno-barre { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e3); margin-bottom: var(--e5); }
-.uno-retour { color: var(--accent-txt); font-family: var(--police-titre); font-weight: 700; text-decoration: none; }
-.uno-retour::after { content: " /"; color: var(--dim); }
-.uno-retour.uno-jouer::after { content: " →"; }
-.uno-barre-titre { flex: 1 1 auto; min-width: 0; font-size: var(--t-xl); overflow-wrap: anywhere; }
-.uno-barre-code { padding: 2px 10px; border: 1px solid var(--accent-bord); border-radius: var(--r-s); color: var(--accent-txt); font-family: var(--police-mono); letter-spacing: .2em; }
-.uno-erreur { margin-bottom: var(--e4); }
+/* Invitation : code, lien pour jouer, lien pour regarder. */
+.uno-inviter { border-color: var(--accent-bord); background: radial-gradient(360px 180px at 100% 0%, color-mix(in srgb, var(--sang) 14%, transparent), transparent 70%), var(--surface); }
+.uno-inviter .carte-corps { display: flex; flex-direction: column; gap: var(--e4); }
+.uno-inviter-code { display: flex; align-items: center; gap: var(--e2); }
+.uno-inviter-code .saisie-code { flex: 1 1 auto; }
+.uno-inviter-code .saisie-code-case { height: 46px; }
+.uno-inviter-vue { display: flex; align-items: center; justify-content: space-between; gap: var(--e3); padding-top: var(--e4); border-top: 1px solid var(--bord); font-size: var(--t-s); }
+.uno-inviter-vue > div { display: flex; flex-direction: column; min-width: 0; }
+.uno-inviter-vue .dim { font-size: var(--t-xs); overflow-wrap: anywhere; }
+.uno-inviter-boutons { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e2); }
 
-/* -- invitation et salle d'attente --- */
-.uno-invitation { max-width: 520px; }
-.uno-invitation .carte-corps { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e3); }
-.uno-invitation-nom { font-family: var(--police-titre); font-size: var(--t-2xl); }
-.uno-invitation-actions { display: flex; flex-wrap: wrap; gap: var(--e3); }
-.uno-attente { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: var(--e5); align-items: start; }
-.uno-attente-actions { grid-column: 1 / -1; }
-.uno-partage {
-  display: flex;
-  flex-direction: column;
-  gap: var(--e4);
-  padding: var(--e5);
-  border: 1px solid var(--accent-bord);
-  border-radius: var(--r-l);
-  background:
-    radial-gradient(400px 200px at 100% 0%, color-mix(in srgb, var(--sang) 14%, transparent), transparent 70%),
-    var(--surface);
-}
-.uno-code, .uno-partage-lien { display: flex; flex-direction: column; gap: var(--e1); }
-.uno-code-libelle { color: var(--dim); font-size: var(--t-2xs); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
-.uno-code-valeur { color: var(--accent-txt); font-family: var(--police-mono); font-size: 40px; font-weight: 700; letter-spacing: .35em; line-height: 1.1; }
+/* Règles : tuiles en colonne (panneau), récapitulatif, rappel. */
+.uno-regles-colonne { grid-template-columns: 1fr; }
+.uno-recap { display: flex; flex-direction: column; gap: var(--e3); margin-bottom: var(--e4); }
+.uno-recap-tete { display: flex; align-items: center; gap: var(--e3); font-size: var(--t-xs); }
+.uno-recap-liste { display: flex; flex-direction: column; margin: 0; }
+.uno-recap-ligne { display: flex; align-items: center; justify-content: space-between; gap: var(--e3); padding: var(--e2) 0; border-bottom: 1px solid var(--bord); font-size: var(--t-s); }
+.uno-recap-ligne:last-child { border-bottom: 0; }
+.uno-recap-ligne dt { color: var(--txt-2); }
+.uno-recap-ligne.active dt { color: var(--txt); font-weight: 700; }
+.uno-recap-ligne dd { margin: 0; }
+.uno-rappel { display: flex; flex-direction: column; gap: var(--e3); }
+.uno-rappel ul { display: flex; flex-direction: column; gap: var(--e2); margin: 0; padding-left: var(--e5); }
+.uno-rappel h3 { font-size: var(--t-l); }
 
+/* Joueurs et points (fin de manche, spectateur). */
 .uno-scores { display: flex; flex-direction: column; gap: var(--e2); margin: 0; padding: 0; list-style: none; counter-reset: rang; }
 .uno-scores li { display: flex; align-items: center; justify-content: space-between; gap: var(--e3); padding: var(--e2) var(--e3); border-radius: var(--r-s); background: var(--surface-2); }
 .uno-scores-nom { display: inline-flex; align-items: center; flex-wrap: wrap; gap: var(--e2); min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
 .uno-scores-droite { display: inline-flex; align-items: center; gap: var(--e2); }
 .uno-scores-points { font-family: var(--police-titre); color: var(--accent-txt); font-variant-numeric: tabular-nums; }
+
+/* -- en jeu : le tapis, et sa colonne à droite --- */
+.uno-jeu { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 260px); gap: var(--e5); align-items: start; }
+.uno-jeu-cote { display: flex; flex-direction: column; gap: var(--e4); min-width: 0; }
+.uno-jeu-cote .carte { margin: 0; }
+.uno-ordre .carte-corps { padding: 0; }
+.uno-ordre-liste { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.uno-ordre-ligne { display: flex; align-items: center; gap: var(--e3); padding: var(--e3) var(--e4); border-left: 3px solid transparent; border-bottom: 1px solid var(--bord); }
+.uno-ordre-ligne.courant { border-left-color: var(--accent); background: var(--accent-doux-2); }
+.uno-ordre-nom { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
+.uno-ordre-etat { color: var(--dim); font-size: var(--t-2xs); font-weight: 600; }
+.uno-ordre-ligne.courant .uno-ordre-etat { color: var(--accent-txt); }
+.uno-ordre-cartes { display: inline-flex; align-items: center; gap: var(--e2); color: var(--txt-2); font-size: var(--t-xs); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.uno-ordre-score { padding: var(--e3) var(--e4); color: var(--dim); font-size: var(--t-xs); }
 
 /* -- tapis de jeu --- */
 .uno-plateau { display: flex; flex-direction: column; gap: var(--e5); }
@@ -401,7 +470,7 @@
 .uno-fin-inviter { align-self: stretch; }
 .uno-fin-inviter summary { cursor: pointer; font-weight: 700; }
 .uno-fin-inviter[open] summary { margin-bottom: var(--e2); }
-.uno-fin-inviter .uno-partage { margin-top: var(--e3); }
+.uno-fin-inviter .uno-inviter { margin-top: var(--e3); }
 
 /* Votre main, sur le tapis. */
 .uno-joueur {
@@ -426,10 +495,6 @@
 .uno-fin .uno-scores { align-self: stretch; }
 .uno-fin-titre { font-family: var(--police-titre); font-size: var(--t-xl); color: var(--accent-txt); }
 
-.uno-journal { color: var(--dim); font-size: var(--t-s); }
-.uno-journal summary { cursor: pointer; font-weight: 700; }
-.uno-journal ol { margin: var(--e2) 0 0; padding-left: var(--e5); line-height: 1.7; }
-
 /* Choix de la couleur d'un joker. */
 .uno-couleurs { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--e3); }
 .uno-couleur {
@@ -453,11 +518,7 @@
 .uno-couleur-vert  { background: var(--uno-vert); }
 .uno-couleur-bleu  { background: var(--uno-bleu); }
 
-/* -- règles de la table et échange du 7 --- */
-.uno-regles { display: flex; flex-direction: column; gap: var(--e3); }
-.uno-regles-texte { color: var(--dim); }
-.uno-regles-texte strong { color: var(--txt-2); }
-.uno-fin .uno-regles, .uno-fin .uno-regles-texte { align-self: stretch; }
+/* -- échange du 7 --- */
 .uno-echange { display: flex; flex-direction: column; gap: var(--e2); margin: 0; padding: 0; list-style: none; }
 .uno-echange-choix {
   display: flex;
@@ -514,8 +575,7 @@
 
 /* -- écrans étroits : le tapis se resserre, les cartes rapetissent --- */
 @media (max-width: 760px) {
-  .uno-attente { grid-template-columns: 1fr; }
-  .uno-code-valeur { font-size: 30px; letter-spacing: .25em; }
+  .uno-salle { grid-template-columns: 1fr; }
 }
 @media (max-width: 720px) {
   .uno-tapis {
@@ -544,7 +604,6 @@
   .uno-bouton-uno-texte { font-size: 24px; }
   .uno-joueur { padding: var(--e2) var(--e2) var(--e3); }
   .uno-joueur-actions { margin-left: 0; }
-  .uno-tables-ligne { padding: var(--e3); }
 }
 @media (prefers-reduced-motion: reduce) {
   .uno-sens, .uno-siege.actif, .uno-joueur.actif, .uno-tour.moi, .uno-siege-tour,
@@ -554,72 +613,51 @@
   .uno-bougie i, .uno-bougie b { animation: none; }
 }
 
-/* -- musique d'ambiance : lecteur fixe, bien visible -- */
+/* -- musique d'ambiance : contrôle en ligne, dans l'en-tête --- */
 .uno-lecteur {
-  position: fixed;
-  right: var(--e5);
-  bottom: var(--e5);
-  z-index: 35;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: var(--e3);
-  padding: var(--e3) var(--e4) var(--e3) var(--e3);
-  border: 1px solid rgba(212, 165, 74, .55);
+  height: 40px;
+  padding: 0 var(--e4) 0 4px;
+  border: 1px solid var(--bord-fort);
   border-radius: var(--r-plein);
-  background: linear-gradient(160deg, #18213a, #0b0e18);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, .5), inset 0 0 0 3px rgba(7, 9, 13, .5);
-  color: #ece4d2;
+  background: var(--surface);
+  color: var(--txt-2);
+  font-size: var(--t-xs);
 }
-.uno-lecteur.joue { box-shadow: 0 10px 30px rgba(0, 0, 0, .5), 0 0 22px rgba(212, 165, 74, .3), inset 0 0 0 3px rgba(7, 9, 13, .5); }
+.uno-lecteur.joue { border-color: var(--accent-bord); }
 .uno-lecteur-bouton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  width: 52px;
-  height: 52px;
+  width: 30px;
+  height: 30px;
   border: 0;
   border-radius: 50%;
-  background: var(--degrade);
-  color: #f6ead2;
+  background: var(--accent-doux);
+  color: var(--accent-txt);
   cursor: pointer;
-  box-shadow: var(--lueur);
-  transition: filter var(--duree), box-shadow var(--duree);
 }
-.uno-lecteur-bouton[aria-pressed="false"] { background: #2a2f3d; box-shadow: inset 0 0 0 2px rgba(212, 165, 74, .6); color: #e8c27a; }
-.uno-lecteur-bouton:hover { filter: brightness(1.15); }
-.uno-lecteur-bouton:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(212, 165, 74, .6); }
-.uno-lecteur-bouton .ico { width: 26px; height: 26px; }
-.uno-lecteur-corps { display: flex; flex-direction: column; gap: 2px; min-width: 170px; }
-.uno-lecteur-tete { display: flex; align-items: center; gap: var(--e2); }
-.uno-lecteur-titre { font-family: var(--police-titre); font-size: var(--t-l); font-weight: 700; color: #e8c27a; }
-.uno-lecteur-etat { color: rgba(236, 228, 210, .75); font-size: var(--t-xs); }
-.uno-lecteur-effets { display: inline-flex; align-items: center; gap: var(--e2); padding: 0; border: 0; background: none; color: rgba(236, 228, 210, .85); font: inherit; font-size: var(--t-xs); text-align: left; cursor: pointer; }
-.uno-lecteur-effets-coche { flex: 0 0 auto; width: 14px; height: 14px; border: 1.5px solid #d4a54a; border-radius: 3px; }
-.uno-lecteur-effets[aria-pressed="true"] .uno-lecteur-effets-coche { background: #d4a54a; box-shadow: inset 0 0 0 2px #0b0e18; }
-.uno-lecteur-effets:focus-visible { outline: 2px solid #d4a54a; outline-offset: 2px; }
-.uno-lecteur-volume { display: flex; align-items: center; gap: var(--e2); }
-.uno-lecteur-volume input { flex: 1 1 auto; accent-color: #d4a54a; cursor: pointer; }
+.uno-lecteur-bouton[aria-pressed="false"] { background: var(--attn-doux); color: var(--attn-txt); }
+.uno-lecteur-bouton:hover { filter: brightness(1.2); }
+.uno-lecteur-bouton:focus-visible { outline: none; box-shadow: var(--anneau); }
+.uno-lecteur-bouton .ico { width: 16px; height: 16px; }
+.uno-lecteur-volume { display: inline-flex; align-items: center; }
+.uno-lecteur-volume input { width: 96px; accent-color: var(--accent); cursor: pointer; }
+.uno-lecteur-compact .uno-lecteur-volume input { width: 76px; }
 .uno-lecteur-volume input:disabled { opacity: .4; cursor: not-allowed; }
-.uno-lecteur-pourcent { min-width: 40px; color: rgba(236, 228, 210, .75); font-size: var(--t-xs); font-variant-numeric: tabular-nums; text-align: right; }
-/* Égaliseur : quatre barres qui dansent pendant la lecture. */
-.uno-lecteur-egaliseur { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
-.uno-lecteur-egaliseur i { display: block; width: 3px; height: 3px; border-radius: 1px; background: #d4a54a; }
-.uno-lecteur.joue .uno-lecteur-egaliseur i { animation: uno-egaliseur 1s ease-in-out infinite alternate; }
-.uno-lecteur.joue .uno-lecteur-egaliseur i:nth-child(2) { animation-delay: -.3s; }
-.uno-lecteur.joue .uno-lecteur-egaliseur i:nth-child(3) { animation-delay: -.6s; }
-.uno-lecteur.joue .uno-lecteur-egaliseur i:nth-child(4) { animation-delay: -.15s; }
-@keyframes uno-egaliseur { from { height: 3px; } to { height: 12px; } }
-/* Place pour le lecteur sous le contenu. */
-.uno-page, .uno-accueil { padding-bottom: 120px; }
-@media (max-width: 720px) {
-  .uno-lecteur { right: var(--e3); bottom: var(--e3); left: var(--e3); border-radius: var(--r-l); }
-  .uno-lecteur { padding: var(--e2) var(--e3); }
-  .uno-lecteur-corps { flex: 1 1 auto; min-width: 0; }
-  .uno-lecteur-etat { display: none; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .uno-lecteur.joue .uno-lecteur-egaliseur i { animation: none; height: 8px; }
-}
-/* Le spectateur n'a pas de lecteur : pas de place à lui réserver. */
+.uno-lecteur-effets { display: inline-flex; align-items: center; gap: var(--e2); padding-left: var(--e3); border-left: 1px solid var(--bord-fort); cursor: pointer; }
+.uno-lecteur-effets input { width: 14px; height: 14px; margin: 0; accent-color: var(--accent); cursor: pointer; }
+/* Le spectateur n'a pas de lecteur. */
 .uno-spectateur { padding-bottom: var(--e8); }
+
+@media (max-width: 1100px) {
+  .uno-jeu { grid-template-columns: 1fr; }
+  .uno-jeu-cote { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+}
+@media (max-width: 720px) {
+  .uno-entete-outils { width: 100%; margin-left: 0; }
+  .uno-lecteur-titre { display: none; }
+}

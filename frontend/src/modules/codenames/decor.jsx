@@ -1,4 +1,4 @@
-import { cx } from '../../ui';
+import { cx } from '@ui';
 
 // Dessins du module Code Names, au manoir : icône du menu, sceaux des deux
 // camps, des domestiques et du Comte, silhouette du manoir pour l'accueil,

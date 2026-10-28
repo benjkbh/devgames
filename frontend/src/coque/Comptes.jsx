@@ -9,7 +9,7 @@ import {
   Chargement, Confirmation, DialogueFormulaire, FenetreDetail, QuestionChoix,
   IcoPlus, Page, TableauDonnees, useAction, useChargement, dateLocaleComplete,
   ChampSaisie,
-} from '../ui';
+} from '@ui';
 import './comptes.css';
 
 const CHAMP_NOM = { type: 'texte', libelle: 'Nom d’utilisateur' };

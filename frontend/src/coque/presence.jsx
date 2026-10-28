@@ -3,7 +3,7 @@ import {
 } from 'react';
 
 import { lire } from '../commun/requete';
-import { Alerte, Bouton, useSondage } from '../ui';
+import { Alerte, Bouton, useSondage } from '@ui';
 
 // Contrôle de santé côté client et présence des comptes.
 // `GET /api/presence` est relu toutes les `PERIODE` ms (et au retour sur

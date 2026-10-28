@@ -8,16 +8,12 @@ import MonCompte from '../src/coque/MonCompte';
 import FormulaireConnexion from '../src/coque/FormulaireConnexion';
 import MenuLateral from '../src/coque/MenuLateral';
 import { MODULES } from '../src/coque/modules';
-import Storybook from '../src/modules/storybook/Storybook';
 import {
   Plateau as PlateauCn, Preparation as PreparationCn,
 } from '../src/modules/codenames/Table';
 import Spectateur from '../src/modules/uno/Spectateur';
-import { Plateau, SalleAttente } from '../src/modules/uno/Table';
+import { Invitation, Plateau, SalleAttente } from '../src/modules/uno/Table';
 import { Tapis } from '../src/modules/uno/Tapis';
-import { CATALOGUE } from '../src/modules/storybook/catalogue';
-import { CATEGORIES } from '../src/modules/storybook/fiches/arbre';
-import * as ui from '../src/ui';
 
 
 // -- environnement navigateur minimal --
@@ -125,10 +121,6 @@ const ECRANS = [
     <MenuLateral session={SANS_ACCES} onDeconnecte={() => {}} />],
 ];
 
-ECRANS.push(
-  ['catalogue des composants', '/storybook', <Storybook />],
-);
-
 // Table de UNO, telle que le serveur la décrit : attente, manche, fin.
 const TABLE_UNO = {
   code: 'K7Q2M', nom: 'Soirée', hote: 'ana', moi: 'ana', public: true,
@@ -159,7 +151,21 @@ const MANCHE_UNO = {
 const { main: _main, jouables: _jouables, ...MANCHE_SPECTATEUR } = MANCHE_UNO;
 ECRANS.push(
   ['uno : salle d’attente', '/uno/K7Q2M',
-    <SalleAttente table={{ ...TABLE_UNO, etat: 'attente' }} onAction={() => {}} />],
+    <SalleAttente table={{ ...TABLE_UNO, etat: 'attente', prets: ['bob'] }}
+                  onAction={() => {}} onExclure={() => {}} />],
+  ['uno : salle d’attente (il manque un joueur)', '/uno/K7Q2M',
+    <SalleAttente table={{
+      ...TABLE_UNO, etat: 'attente', joueurs: ['ana'], scores: { ana: 0 },
+    }} onAction={() => {}} />],
+  ['uno : salle d’attente (invité prêt, hôte absent)', '/uno/K7Q2M',
+    <SalleAttente table={{
+      ...TABLE_UNO, etat: 'attente', moi: 'bob', prets: ['bob'],
+      presents: { ana: false, bob: true, cyd: true }, absence_hote: 75,
+      delai_reprise: 60,
+    }} onAction={() => {}} />],
+  ['uno : invitation (pas encore assis)', '/uno/K7Q2M',
+    <Invitation table={{ ...TABLE_UNO, etat: 'attente', moi: 'dan', membre: false }}
+                onAssis={() => {}} />],
   ['uno : manche en cours', '/uno/K7Q2M',
     <Plateau table={{ ...TABLE_UNO, partie: MANCHE_UNO }} onAction={() => {}} />],
   ['uno : manche finie', '/uno/K7Q2M',
@@ -177,6 +183,8 @@ ECRANS.push(
            moi={null} message="ana joue…" />],
   ['uno : page du spectateur', '/spectateur/K7Q2M',
     <Routes><Route path="/spectateur/:code" element={<Spectateur />} /></Routes>],
+  // Page publique d'un module, aiguillée par la coque avant la connexion.
+  ['uno : spectateur par la coque', '/spectateur/K7Q2M', <App />],
 );
 
 // Table de Code Names, telle que le serveur la décrit : attente, manche (vue
@@ -246,62 +254,6 @@ for (const [nom, route, element] of ECRANS) {
     echecs += 1;
   }
 }
-
-// Chaque export de `ui/` a sa fiche dans le catalogue : son nom figure dans le
-// nom de la fiche, dans ses paramètres ou dans sa liste `couvre`.
-const FICHES_TEXTE = CATALOGUE.map((f) => [
-  f.nom, ...(f.couvre || []), ...f.props.map((p) => p.nom),
-].join(' '));
-const sansFiche = Object.keys(ui).filter((nom) => !FICHES_TEXTE.some(
-  (texte) => new RegExp(`(^|[^\w])${nom}([^\w]|$)`).test(texte),
-));
-if (sansFiche.length) {
-  console.error(`  ECHEC  catalogue : exports de ui/ sans fiche : ${sansFiche.join(', ')}`);
-  echecs += 1;
-} else {
-  console.log(`  ok     catalogue : ${Object.keys(ui).length} exports de ui/ documentés`);
-}
-
-// Chaque fiche a une catégorie, et ses dépendances existent.
-const CLES = new Set(CATALOGUE.map((f) => f.cle));
-const incoherentes = [
-  ...CATALOGUE.filter((f) => !CATEGORIES[f.cle]).map((f) => `${f.cle} sans catégorie`),
-  ...CATALOGUE.flatMap((f) => f.dependances.filter((d) => !CLES.has(d))
-    .map((d) => `${f.cle} -> ${d} inconnu`)),
-];
-if (incoherentes.length) {
-  console.error(`  ECHEC  catalogue : ${incoherentes.join(', ')}`);
-  echecs += 1;
-} else {
-  console.log('  ok     catalogue : catégories et dépendances cohérentes');
-}
-
-// Exemples et bacs à sable de chaque fiche, rendus un à un. Un dialogue passe
-// par un portail, hors rendu serveur : ces exemples sont écartés.
-let exemples = 0;
-let ecartes = 0;
-const rendre = (nom, Composant, props = {}) => {
-  try {
-    renderToString(<MemoryRouter><Composant {...props} /></MemoryRouter>);
-    exemples += 1;
-  } catch (e) {
-    if (/Target container/.test(e.message)) {
-      ecartes += 1;
-      return;
-    }
-    console.error(`  ECHEC  catalogue ${nom} : ${e.message.split('\n')[0]}`);
-    echecs += 1;
-  }
-};
-CATALOGUE.forEach((f) => {
-  f.exemples.forEach((e) => rendre(`${f.cle} / ${e.titre}`, e.Rendu));
-  if (f.bac) {
-    const v = Object.fromEntries(f.bac.controles.map((c) => [c.cle || c.nom, c.defaut]));
-    rendre(`${f.cle} / bac`, f.bac.Rendu, { v });
-    f.bac.code(v);
-  }
-});
-console.log(`  ok     catalogue : ${exemples} exemples et bacs rendus, ${ecartes} dialogues écartés`);
 
 console.log(
   echecs

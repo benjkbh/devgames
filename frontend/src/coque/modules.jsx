@@ -1,114 +1,56 @@
-import Accueil from '../modules/accueil/Accueil';
-import CodeNames from '../modules/codenames/CodeNames';
-import { IcoManoir } from '../modules/codenames/decor';
-import Storybook from '../modules/storybook/Storybook';
-import { amorcerMusique } from '../modules/uno/ambiance';
-import Uno from '../modules/uno/Uno';
-import { IcoCarteRole, IcoDashboard, IcoPanneau } from '../ui';
+import accueil from '../modules/accueil';
+import uno from '../modules/uno';
+import codenames from '../modules/codenames';
 
 // Registre des modules, lu par le menu latéral (entrées) et par `App`
-// (routes). Ajouter un module : une entrée ici et un dossier dans `modules/`.
+// (routes). La coque ne connaît aucun module autrement que par ce registre.
 //
-// Contrat d'un module :
-//   1. il reçoit `session` et `setSession` ;
-//   2. il rend sa disposition dans `#zone`, colonne flex : une barre
-//      horizontale éventuelle, puis son contenu (exemple complet dans
-//      `modules/accueil/Accueil.jsx`) ;
-//   3. il porte son état, son API et ses constantes dans son dossier.
+// Ajouter un module : un dossier `modules/<cle>/` dont `index.jsx` exporte
+// son manifeste, et son import ici, dans `MODULES`. Le serveur a le même
+// registre (`backend/modules/__init__.py`) : mêmes clés, mêmes rôles, même
+// ordre ; `tests/test_partage.py` le contrôle.
+//
+// Manifeste d'un module (modèle : `modules/accueil/index.jsx`) :
+//   cle        identifiant partagé avec le serveur, stocké dans la table des
+//              droits ; c'est aussi le nom du dossier
+//   categorie  rubrique du menu latéral ; les rubriques suivent l'ordre de
+//              première apparition dans ce registre
+//   chemin     racine de ses routes (`<chemin>/*`)
+//   libelle    entrée du menu ; `Ico` : son icône
+//   Composant  sa racine ; elle reçoit `session`
+//   roles      rôles accordables, du moins au plus étendu, chacun contenant
+//              les précédents (`admin` ⊃ `operator` ⊃ `view`) ; un compte en
+//              tient un seul par module
+//   auClic     (facultatif) appelé au clic sur l'entrée du menu, dans le geste
+//              de l'utilisateur : le module peut y amorcer ce que le
+//              navigateur n'autorise qu'après un geste (le son du UNO)
+//   publiques  (facultatif) pages hors authentification,
+//              `[{ chemin, Composant }]` : traitées avant le contrôle d'accès
+//
+// Contrat de sa racine :
+//   1. elle rend sa disposition dans `#zone`, colonne flex : une barre
+//      horizontale éventuelle, puis son contenu (`modules/accueil/`) ;
+//   2. le module porte son état, son API et ses constantes dans son dossier ;
+//      les briques partagées sont dans `@ui` (composants, `storybook/ui`) et `commun/`
+//      (requêtes, tables de jeu).
 //
 // La gestion des comptes n'est pas un module : réservée aux
 // superadministrateurs, elle est ajoutée à part par le menu.
+//
+// Exemple de module à trois rôles (view < operator < admin) :
+//   {
+//     cle: 'clients', categorie: 'Exploitation', chemin: '/clients',
+//     libelle: 'Clients', Ico: IcoPointeuse, Composant: Clients,
+//     roles: [
+//       { cle: 'view', libelle: 'Consultation', resume: '…' },
+//       { cle: 'operator', libelle: 'Opérateur', resume: '…' },
+//       { cle: 'admin', libelle: 'Administration', resume: '…' },
+//     ],
+//   }
+export const MODULES = [accueil, uno, codenames];
 
-// `categorie` range le module sous une rubrique du menu latéral ; les
-// rubriques suivent l'ordre de première apparition dans ce registre.
-//
-// `auClic` (facultatif) est appelé au clic sur l'entrée du menu, dans le geste
-// de l'utilisateur : le module peut y amorcer ce que le navigateur n'autorise
-// qu'après un geste (le son du UNO).
-//
-// `cle` est l'identifiant partagé avec le serveur (`routes.ROLES`), stocké dans
-// la table des droits ; un test vérifie l'accord des modules et des rôles, dans
-// le même ordre. `chemin` ne sert qu'au routage.
-//
-// Les rôles sont ordonnés du moins au plus étendu et chacun contient les
-// précédents : `admin` contient `operator`, qui contient `view`. Un compte
-// tient un seul rôle par module.
-export const MODULES = [
-  {
-    cle: 'accueil',
-    categorie: 'Général',
-    chemin: '/accueil',
-    libelle: 'Accueil',
-    Ico: IcoDashboard,
-    Composant: Accueil,
-    roles: [
-      {
-        cle: 'acces',
-        libelle: 'Accès',
-        resume: 'Ouvre la page d’accueil.',
-      },
-    ],
-  },
-  // Exemple de module à trois rôles (view < operator < admin) :
-  // {
-  //   cle: 'clients', categorie: 'Exploitation', chemin: '/clients',
-  //   libelle: 'Clients', Ico: IcoPointeuse, Composant: Clients,
-  //   roles: [
-  //     { cle: 'view', libelle: 'Consultation', resume: '…' },
-  //     { cle: 'operator', libelle: 'Opérateur', resume: '…' },
-  //     { cle: 'admin', libelle: 'Administration', resume: '…' },
-  //   ],
-  // },
-  {
-    cle: 'uno',
-    categorie: 'Jeux',
-    chemin: '/uno',
-    libelle: 'UNO',
-    Ico: IcoCarteRole,
-    Composant: Uno,
-    auClic: amorcerMusique,
-    roles: [
-      {
-        cle: 'joueur',
-        libelle: 'Joueur',
-        resume: 'Crée des tables de UNO, en rejoint par code ou par lien, '
-          + 'et y joue.',
-      },
-    ],
-  },
-  {
-    cle: 'codenames',
-    categorie: 'Jeux',
-    chemin: '/codenames',
-    libelle: 'Code Names',
-    Ico: IcoManoir,
-    Composant: CodeNames,
-    roles: [
-      {
-        cle: 'joueur',
-        libelle: 'Joueur',
-        resume: 'Crée des tables de Code Names au manoir, en rejoint par '
-          + 'code ou par lien, et y joue.',
-      },
-    ],
-  },
-  {
-    cle: 'storybook',
-    categorie: 'Développement',
-    chemin: '/storybook',
-    libelle: 'Composants',
-    Ico: IcoPanneau,
-    Composant: Storybook,
-    roles: [
-      {
-        cle: 'acces',
-        libelle: 'Accès',
-        resume: 'Ouvre le catalogue des composants réutilisables de '
-          + 'l’interface.',
-      },
-    ],
-  },
-];
+// Pages publiques de tous les modules.
+export const PAGES_PUBLIQUES = MODULES.flatMap((m) => m.publiques || []);
 
 // Clé d'un droit, telle que le serveur la stocke.
 export const cleDroit = (module, role) => `${module}:${role}`;

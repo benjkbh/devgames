@@ -7,7 +7,7 @@ import {
   Alerte, Badge, Bouton, Carte, ChampCopiable, Chargement, Confirmation,
   EtatVide, IcoFermer, IcoRecharger, IcoSortie, Page, Pastille,
   QuestionChoix, Saisie, Sr, cx, useAction, useLecture,
-} from '../../ui';
+} from '@ui';
 import {
   choisir, donnerIndice, exclure, finir, lancer, lienTable, lireTable,
   marquer, melanger, quitter, regler, rejoindre, reveler,

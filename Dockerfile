@@ -4,6 +4,8 @@ WORKDIR /build/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 COPY frontend/ ./
+# Bibliothèque de composants, importée par l'alias `@ui` (`vite.config.js`).
+COPY storybook/ui/ /build/storybook/ui/
 RUN npm run build
 
 # Étape 2 : le service. Bibliothèque standard Python seule : rien à installer.

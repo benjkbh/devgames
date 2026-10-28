@@ -10,7 +10,7 @@ import {
   Definitions, IcoComptes, IcoLune, IcoSoleil, IcoSortie, Page, QuestionBool,
   dateLocaleComplete, duree, pluriel, useAction, useChargement, usePreference,
   useTheme,
-} from '../ui';
+} from '@ui';
 import './moncompte.css';
 
 // Paramètres du compte connecté : identité, accès tenus, préférences

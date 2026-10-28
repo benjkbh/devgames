@@ -7,8 +7,8 @@ import unittest
 from collections import Counter
 
 from backend import api
-from backend.metier.codenames import mots, salons
-from backend.metier.codenames.regles import (COMTE, DOMESTIQUE, CoupInvalide,
+from backend.modules.codenames import mots, salons
+from backend.modules.codenames.regles import (COMTE, DOMESTIQUE, CoupInvalide,
                                               Partie, normaliser)
 
 EQUIPES = {'sang': ['ana', 'bob'], 'argent': ['cyd', 'dan']}

@@ -1,7 +1,10 @@
 # Liste blanche : seul ce que le Dockerfile copie entre dans le contexte.
+# L'interface importe la bibliothèque de composants de `storybook/ui`.
 *
 !frontend/
 !backend/
+!storybook/ui/
 frontend/node_modules
 frontend/dist
+frontend/verif/.rendu.*
 **/__pycache__

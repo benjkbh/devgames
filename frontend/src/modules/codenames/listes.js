@@ -1,4 +1,4 @@
-// Listes de mots, connues du serveur (`backend/metier/codenames/mots.py`).
+// Listes de mots, connues du serveur (`backend/modules/codenames/mots.py`).
 export const LISTES = [
   { valeur: 'melange', libelle: 'Mélange', resume: 'Mots de tous les jours et mots du manoir.' },
   { valeur: 'classique', libelle: 'Classique', resume: 'Mots de tous les jours, à double sens.' },

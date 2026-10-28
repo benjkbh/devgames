@@ -1,18 +1,23 @@
 import { Link, useParams } from 'react-router-dom';
 
 import {
-  Alerte, Badge, Carte, Chargement, EtatVide, IcoCarteRole, Page, Sr,
-  useLecture, useTheme,
-} from '../../ui';
+  Alerte, Carte, Chargement, EtatVide, IcoCarteRole, Page, useLecture,
+  useTheme,
+} from '@ui';
 import { lireSpectateur } from './api';
+import { JournalManche, OrdreJeu } from './Cote';
+import { RappelRegles, RecapRegles } from './ReglesUno';
+import { AutourTable, EnTete } from './Salle';
 import { Scores } from './Table';
 import { Tapis } from './Tapis';
 import './uno.css';
 
 // Regarder une table sans compte : page publique (`/spectateur/<code>`, hors
-// authentification), ouverte avec le code ou le lien de la table. On voit le
-// tapis, les joueurs et le nombre de leurs cartes, jamais une main. La table
-// est relue chaque seconde ; aucune musique.
+// authentification), ouverte avec le code ou le lien de la table. Même
+// disposition que pour les joueurs : le tapis, et à sa droite l'ordre de jeu
+// et le journal ; avant la donne, les places et les règles. On voit le nombre
+// de cartes de chacun, jamais une main. La table est relue chaque seconde ;
+// aucune musique.
 
 const SONDAGE = 1000;
 
@@ -45,46 +50,49 @@ export default function Spectateur() {
   return (
     <div id="zone">
       <Page className="uno-page uno-spectateur">
-        <header className="uno-barre">
-          <Badge couleur="bleu" majuscules titre="Spectateur" />
-          <h1 className="uno-barre-titre">
-            {table.nom}
-            <Sr>{`, table ${table.code}`}</Sr>
-          </h1>
-          <span className="uno-barre-code" aria-hidden="true">{table.code}</span>
-          {table.manches > 0 && <Badge titre={`Manche ${table.manches}`} />}
-          <Link to={`/uno/${table.code}`} className="uno-retour uno-jouer">
-            Jouer à cette table
-          </Link>
-        </header>
+        <EnTete table={table} spectateur
+                actions={(
+                  <Link to={`/uno/${table.code}`} className="btn btn-secondaire btn-sang btn-m">
+                    Jouer à cette table
+                  </Link>
+                )} />
         {erreur && <Alerte niveau="attention" compacte>{`Connexion perturbée : ${erreur}`}</Alerte>}
 
         {p ? (
-          <div className="uno-plateau">
-            <Tapis table={table} partie={p} moi={null} message={message}>
-              {p.gagnant && (
-                <Carte titre="Fin de la manche" className="uno-fin">
-                  <p className="uno-fin-titre">
-                    {`${p.gagnant} remporte la manche et marque ${p.points} points.`}
-                  </p>
-                  <Scores table={table} />
-                </Carte>
-              )}
-            </Tapis>
-            <details className="uno-journal">
-              <summary>Journal de la manche</summary>
-              <ol>
-                {p.journal.slice().reverse().map((ligne, i) => (
-                  <li key={`${p.journal.length - i}-${ligne}`}>{ligne}</li>
-                ))}
-              </ol>
-            </details>
+          <div className="uno-jeu">
+            <div className="uno-plateau">
+              <Tapis table={table} partie={p} moi={null} message={message}>
+                {p.gagnant && (
+                  <Carte titre="Fin de la manche" className="uno-fin">
+                    <p className="uno-fin-titre">
+                      {`${p.gagnant} remporte la manche et marque ${p.points} points.`}
+                    </p>
+                    <Scores table={table} />
+                  </Carte>
+                )}
+              </Tapis>
+            </div>
+            <aside className="uno-jeu-cote" aria-label="Déroulement de la manche">
+              <OrdreJeu table={table} partie={p} />
+              <JournalManche table={table} partie={p} />
+            </aside>
           </div>
         ) : (
-          <Carte titre={`Joueurs (${table.joueurs.length})`} className="uno-invitation">
-            <Scores table={table} />
-            <p className="dim">En attente de la distribution des cartes par l’hôte.</p>
-          </Carte>
+          <div className="uno-salle">
+            <div className="uno-salle-principal">
+              <AutourTable table={table} />
+              <p className="dim uno-attente-texte">
+                {`En attente de la distribution des cartes par ${table.hote}.`}
+              </p>
+            </div>
+            <aside className="uno-salle-cote" aria-label="Table">
+              <Carte titre="Règles de la table"
+                     actions={<span className="dim uno-note">Choisies par l’hôte</span>}>
+                <RecapRegles regles={table.regles} />
+                <RappelRegles />
+              </Carte>
+            </aside>
+          </div>
         )}
       </Page>
     </div>

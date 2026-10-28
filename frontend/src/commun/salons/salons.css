@@ -1,0 +1,85 @@
+/* Accueil des tables d'un jeu (`AccueilSalons`) : fil d'Ariane et outils,
+   bannière, puis deux colonnes : ouvrir une table à gauche ; la rejoindre et
+   les listes à droite. Les couleurs viennent des jetons : chaque jeu peut
+   reprendre ses classes préfixées (`<prefixe>-accueil`…) pour son habillage. */
+
+.salons-barre { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--e3); margin-bottom: var(--e4); }
+.salons-grille { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 330px); gap: var(--e5); align-items: start; margin-top: var(--e5); }
+.salons-cote { display: flex; flex-direction: column; gap: var(--e5); min-width: 0; }
+.salons-note { font-size: var(--t-xs); }
+/* Titres des cartes dans la police des titres, comme ceux de la page. */
+.salons-accueil .carte-titre { color: var(--txt); font-family: var(--police-titre); font-size: var(--t-xl); font-weight: 700; letter-spacing: 0; text-transform: none; }
+.salons-accueil .carte-titre .badge { margin-left: var(--e2); font-family: var(--police); }
+.salons-accent { color: var(--accent-txt); }
+
+/* -- ouvrir une table --- */
+.salons-creation .carte-corps { padding: 0; }
+.salons-creation-corps { display: flex; flex-direction: column; gap: var(--e5); padding: var(--e5); }
+.salons-creation-ligne { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e5); align-items: start; }
+.salons-creation-ligne .radios { margin: 0; padding: 0; border: 0; }
+.salons-creation-ligne .radios legend { margin-bottom: var(--e2); padding: 0; font-weight: 700; font-size: var(--t-s); }
+.salons-reglages { display: flex; flex-direction: column; gap: var(--e3); }
+.salons-reglages .tuiles-choix { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.salons-reglages-tete { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: var(--e2); }
+.salons-reglages-titre { font-weight: 700; font-size: var(--t-s); }
+.salons-creation-pied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--e3);
+  padding: var(--e4) var(--e5);
+  border-top: 1px solid var(--bord);
+  font-size: var(--t-s);
+}
+
+/* -- rejoindre --- */
+.salons-rejoindre-corps { display: flex; flex-direction: column; gap: var(--e3); }
+.salons-rejoindre-corps .champ { width: 100%; }
+.salons-rejoindre-corps .saisie-code { width: 100%; }
+.salons-spectateur { display: inline-flex; align-items: center; justify-content: center; gap: var(--e2); color: var(--accent-txt); font-size: var(--t-s); font-weight: 700; }
+.salons-spectateur .ico { width: 16px; height: 16px; }
+.salons-spectateur.inactif { color: var(--dim); cursor: not-allowed; text-decoration: none; }
+
+/* -- listes de tables --- */
+.salons-tables { display: flex; flex-direction: column; gap: var(--e2); margin: 0; padding: 0; list-style: none; }
+.salons-table {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--e2) var(--e3);
+  padding: var(--e3);
+  border: 1px solid var(--bord);
+  border-radius: var(--r-m);
+  background: var(--surface-2);
+}
+.salons-table:hover { border-color: var(--accent-bord); }
+.salons-table-ico { width: 20px; height: 20px; color: var(--accent); }
+.salons-table-nom { display: flex; flex-direction: column; flex: 1 1 120px; min-width: 0; }
+.salons-table-nom strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.salons-table-nom .dim { font-size: var(--t-xs); overflow-wrap: anywhere; }
+.salons-table-joueurs { display: inline-flex; align-items: center; gap: 4px; color: var(--dim); font-size: var(--t-xs); font-variant-numeric: tabular-nums; }
+.salons-table-joueurs .ico { width: 14px; height: 14px; }
+
+.salons-vide { display: flex; flex-direction: column; align-items: center; gap: var(--e2); padding: var(--e4) var(--e2); text-align: center; }
+.salons-vide-titre { font-weight: 700; }
+.salons-vide .btn { margin-top: var(--e2); }
+/* Deux cartes vides, en pointillé doré. */
+.salons-vide-cartes { position: relative; width: 52px; height: 48px; margin-bottom: var(--e2); }
+.salons-vide-cartes i {
+  position: absolute;
+  top: 2px;
+  width: 26px;
+  height: 40px;
+  border: 1.5px dashed var(--accent-bord);
+  border-radius: 4px;
+}
+.salons-vide-cartes i:first-child { left: 6px; transform: rotate(-10deg); }
+.salons-vide-cartes i:last-child { left: 20px; transform: rotate(8deg); border-color: var(--accent); }
+
+@media (max-width: 960px) {
+  .salons-grille { grid-template-columns: 1fr; }
+}
+@media (max-width: 620px) {
+  .salons-creation-ligne, .salons-reglages .tuiles-choix { grid-template-columns: 1fr; }
+}

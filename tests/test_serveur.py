@@ -462,9 +462,9 @@ class SpectateurUno(ConnexionPersistante):
     sans aucune main ; le reste du module exige toujours un compte."""
 
     def test_regarder_une_table_sans_session(self) -> None:
-        code_table = self.srv.uno.creer('ana', 'Veillée')
-        self.srv.uno.rejoindre(code_table, 'bob')
-        self.srv.uno.lancer(code_table, 'ana')
+        code_table = self.srv.etats['uno'].creer('ana', 'Veillée')
+        self.srv.etats['uno'].rejoindre(code_table, 'bob')
+        self.srv.etats['uno'].lancer(code_table, 'ana')
         code, _, corps = self.demande('/api/uno/spectateur?code=%s'
                                       % code_table.lower())
         self.assertEqual(code, HTTPStatus.OK)
@@ -617,10 +617,10 @@ class ParcoursDAuthentification(ConnexionPersistante):
     # -- droits ------------------------------------------------------------
     def test_un_compte_restreint_n_ouvre_que_son_module(self) -> None:
         chef = self.installer()
-        self.creer('lecteur', ['storybook:acces'], chef)
+        self.creer('lecteur', ['uno:joueur'], chef)
         _, cookie, corps = self.connecter('lecteur')
         self.assertEqual(json.loads(corps)['compte']['modules'],
-                         ['storybook'])
+                         ['uno'])
         # `accueil` ne lui est pas accordé : 403, et non 401 - il EST
         # identifié, ce n'est simplement pas pour lui.
         code, _, _ = self.demande('/api/_module', entetes={'Cookie': cookie})
@@ -686,7 +686,7 @@ class ParcoursDAuthentification(ConnexionPersistante):
         _, _, corps = self.connecter('chef')
         self.assertEqual(json.loads(corps)['compte']['roles'],
                          {'accueil': 'acces', 'uno': 'joueur',
-                          'codenames': 'joueur', 'storybook': 'acces'})
+                          'codenames': 'joueur'})
 
     def test_on_ne_supprime_pas_son_propre_compte(self) -> None:
         chef = self.installer()

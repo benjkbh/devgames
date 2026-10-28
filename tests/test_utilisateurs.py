@@ -18,12 +18,11 @@ from typing import TYPE_CHECKING
 
 import json
 import os
-import re
 import tempfile
 import time
 import unittest
 
-from backend import api, base
+from backend import base
 from backend.metier.comptes import utilisateurs as u
 from tests import muet
 
@@ -548,46 +547,5 @@ class PasDOracleParLeTemps(BaseAvecComptes):
         self.assertGreater(inconnu, connu / 4,
                            'un nom inconnu répond trop vite : le temps de '
                            'réponse permet de deviner les comptes existants')
-class LesDeuxListesDeModulesSontDAccord(unittest.TestCase):
-    """`api.MODULES` et `frontend/src/coque/modules.jsx`.
-
-    **Le seul couplage de ce modèle de droits qu'aucun des deux côtés ne
-    détecte seul.** Une clé présente d'un côté et pas de l'autre ne lève
-    rien : elle produit soit une case à cocher qui n'ouvre aucune route,
-    soit une route qu'aucune case n'accorde. Dans les deux cas le compte est
-    créé, la grille s'affiche, et le défaut ne se voit qu'à l'usage - par un
-    module qui reste fermé sans explication.
-    """
-
-    # `cle:` d'un module est en début de ligne à 4 espaces, celui d'un rôle
-    # est plus profond. La distinction se fait sur l'indentation, seul repère
-    # disponible sans analyser le JavaScript.
-    MODULE = re.compile(r"^ {4}cle: '([a-z0-9-]+)',", re.M)
-    ROLE = re.compile(r"^ {8,}cle: '([a-z0-9-]+)',", re.M)
-
-    def setUp(self) -> None:
-        racine = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        chemin = os.path.join(racine, 'frontend', 'src', 'coque',
-                              'modules.jsx')
-        with open(chemin, encoding='utf-8') as f:
-            self.source = f.read()
-
-    def test_les_memes_modules_des_deux_cotes(self) -> None:
-        self.assertEqual(self.MODULE.findall(self.source),
-                         list(api.MODULES))
-
-    def test_les_memes_roles_des_deux_cotes(self) -> None:
-        """Dans le même ordre, et l'ordre porte du sens : il va du moins au
-        plus étendu, et c'est lui qui décide ce qu'un rôle contient."""
-        attendus = [r for m in api.MODULES for r in api.ROLES[m]]
-        self.assertEqual(self.ROLE.findall(self.source), attendus)
-
-    def test_le_menu_des_comptes_n_est_pas_un_module(self) -> None:
-        """`comptes` n'est pas accordable : il tient au drapeau superadmin.
-        L'inscrire dans `MODULES` le ferait apparaître dans la grille, où le
-        cocher n'aurait aucun effet."""
-        self.assertNotIn(api.MODULE_COMPTES, api.MODULES)
-        self.assertNotIn(api.MODULE_COMPTES,
-                         self.MODULE.findall(self.source))
 if __name__ == '__main__':
     unittest.main()

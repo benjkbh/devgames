@@ -12,8 +12,7 @@ from urllib.parse import urlparse, parse_qs
 
 from . import api
 from .metier.comptes import presence, sessions, utilisateurs
-from .metier.codenames import salons as salons_codenames
-from .metier.uno import salons
+from .modules import MODULES
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
@@ -74,10 +73,9 @@ class Requete:
         self._h = handler
         self.config = handler.server.config
         self.sessions = handler.server.sessions
-        # Tables de UNO, en mémoire comme les sessions.
-        self.uno = handler.server.uno
-        # Tables de Code Names, de même.
-        self.codenames = handler.server.codenames
+        # État en mémoire de chaque module (tables de jeu…), comme les
+        # sessions ; lu par `etat`.
+        self._etats = handler.server.etats
         self.presence = handler.server.presence
         self.url = url
         self.corps = corps
@@ -93,6 +91,10 @@ class Requete:
             self.presence.signaler(self.utilisateur)
         self.cookie: str | None = None
         self._compte: CompteDetail | None = None
+
+    def etat(self, module: str) -> Any:
+        """L'état en mémoire du module (`Module.etat`)."""
+        return self._etats[module]
 
     def parametre(self, nom: str, defaut: Any = '') -> Any:
         return (parse_qs(self.url.query).get(nom) or [defaut])[0]
@@ -361,8 +363,8 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 class Serveur(ThreadingHTTPServer):
     """Porte ce que les routes partagent : configuration, logger, sessions,
-    présence des comptes et état en mémoire des modules (tables de UNO et de
-    Code Names)."""
+    présence des comptes et état en mémoire des modules (`etats`, par clé de
+    module)."""
 
     def __init__(self, config: Config,
                  logger: Callable[[str, str], None]) -> None:
@@ -371,8 +373,8 @@ class Serveur(ThreadingHTTPServer):
         self.logger = logger
         self.sessions = sessions.Sessions(config.session_ttl)
         self.presence = presence.Presence()
-        self.uno = salons.Salons()
-        self.codenames = salons_codenames.Salons()
+        self.etats: dict[str, Any] = {m.cle: m.etat() for m in MODULES
+                                      if m.etat is not None}
 
 
 def creer(config: Config, logger: Callable[[str, str], None]) -> Serveur:

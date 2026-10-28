@@ -8,7 +8,7 @@ import { deconnexion, estSuperadmin } from './session';
 import {
   Bouton, IcoComptes, IcoEpingle, IcoLune, IcoSoleil, IcoSortie, Marque,
   Pastille, Popup, cx, usePreference, useTheme,
-} from '../ui';
+} from '@ui';
 import './coque.css';
 
 // Menu latéral : liste les modules du registre `coque/modules.jsx` que la

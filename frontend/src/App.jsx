@@ -1,16 +1,19 @@
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import {
+  Navigate, Route, Routes, matchPath, useLocation,
+} from 'react-router-dom';
 
 import Comptes from './coque/Comptes';
 import FormulaireConnexion from './coque/FormulaireConnexion';
 import MenuLateral from './coque/MenuLateral';
 import MonCompte from './coque/MonCompte';
-import { moduleDefaut, modulesVisibles } from './coque/modules';
-import Spectateur from './modules/uno/Spectateur';
+import {
+  PAGES_PUBLIQUES, moduleDefaut, modulesVisibles,
+} from './coque/modules';
 import { BandeauSante, FournisseurPresence } from './coque/presence';
 import { estSuperadmin, useSession } from './coque/session';
 import {
   Chargement, EtatVide, IcoComptes, IcoFiltre, Page,
-} from './ui';
+} from '@ui';
 import './coque/coque.css';
 
 // Coque de l'application : contrôle d'accès, menu latéral et routage des
@@ -20,19 +23,20 @@ import './coque/coque.css';
 // Toute l'application est derrière l'authentification : une session non
 // authentifiée n'affiche que le formulaire de connexion.
 //
-// Pages publiques (hors authentification) : ajouter ici un préfixe et sa route
-// pour une page remise à un tiers, traitée avant le contrôle d'accès. Ici,
+// Pages publiques (hors authentification) : déclarées par les modules
+// (`publiques` de leur manifeste), traitées avant le contrôle d'accès. Ici,
 // regarder une table de UNO sans compte (`/spectateur/<code>`).
-const PUBLIC = '/spectateur/';
 
 export default function App() {
   const [session, rafraichir] = useSession();
   const emplacement = useLocation();
 
-  if (PUBLIC && emplacement.pathname.startsWith(PUBLIC)) {
+  if (PAGES_PUBLIQUES.some((p) => matchPath(p.chemin, emplacement.pathname))) {
     return (
       <Routes>
-        <Route path={`${PUBLIC}:code`} element={<Spectateur />} />
+        {PAGES_PUBLIQUES.map(({ chemin, Composant }) => (
+          <Route key={chemin} path={chemin} element={<Composant />} />
+        ))}
       </Routes>
     );
   }

@@ -1,4 +1,4 @@
-import { EtatVide, IcoDashboard, Page } from '../../ui';
+import { EtatVide, IcoDashboard, Page } from '@ui';
 
 // Module d'exemple : sert de modèle à copier pour un nouveau module (voir le
 // contrat dans `coque/modules.jsx`). À remplacer ou supprimer.

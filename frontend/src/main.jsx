@@ -3,8 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 // Jetons et socle CSS, chargés avant les feuilles des composants.
-import './ui/styles/tokens.css';
-import './ui/styles/base.css';
+import '@ui/styles/tokens.css';
+import '@ui/styles/base.css';
 import App from './App';
 
 // Routage par chemin. Un routeur « de données » (et non `BrowserRouter`) :

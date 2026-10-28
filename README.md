@@ -5,11 +5,16 @@ catalogue de composants**, sans aucune logique métier. Frontend React/Vite,
 backend Python sans dépendance (bibliothèque standard, SQLite).
 
 ```
-.template/
-  frontend/   coque, connexion, comptes, mon compte, ui/, storybook
-  backend/    serveur HTTP, sessions, comptes et droits, base SQLite
-  tests/      tests du backend (unittest)
-  Dockerfile  build de l'interface puis service
+frontend/          coque, connexion, comptes, mon compte
+  src/commun/      requêtes ; salons/ : API et accueil des tables de jeu
+  src/modules/     un dossier par module, avec son manifeste (index.jsx)
+backend/           serveur HTTP, sessions, comptes et droits, base SQLite
+  commun/          outils de route ; salons : tables de jeu et leurs routes
+  modules/         un paquet par module, avec son manifeste (__init__.py)
+storybook/         bibliothèque de composants (ui/) et son catalogue,
+                   projet et image à part
+tests/             tests du backend (unittest)
+Dockerfile         build de l'interface puis service
 ```
 
 ## Démarrer une application
@@ -22,27 +27,52 @@ backend Python sans dépendance (bibliothèque standard, SQLite).
    démarrage, l'interface demande de créer le superadministrateur fondateur.
 4. Frontend : `cd frontend && npm install && npm run dev` (le proxy relaie
    `/api` vers `BACKEND_URL`, par défaut `http://127.0.0.1:8080`).
-5. Vérifier : `python -m unittest discover -s tests -t .` et
-   `cd frontend && npm run verifier`.
+5. Vérifier : `python -m unittest discover -s tests -t .`,
+   `cd frontend && npm run verifier` et `cd storybook && npm run verifier`.
 6. Docker : `docker build -t mon-application .`
+
+## Storybook
+
+La bibliothèque de composants (`storybook/ui/`) et son catalogue forment un
+projet autonome, sans compte ni serveur. L'application l'importe par l'alias
+`@ui` (`frontend/vite.config.js`) ; il n'en existe qu'une copie.
+
+- Développement : `cd storybook && npm install && npm run dev`
+  (http://localhost:6006).
+- Vérification : `npm run verifier` rend chaque fiche, et échoue si un export
+  de `ui/` n'a pas sa fiche.
+- Docker, depuis `storybook/` : `docker build -t storybook .` puis
+  `docker run --rm -p 6006:8080 storybook`. Fichiers statiques derrière
+  nginx, sur le port 8080.
 
 ## Ajouter un module (de bout en bout)
 
-1. **Clés partagées** : `backend/partage/constantes.json`, entrée
-   `module: [rôles du moins au plus étendu]`.
-2. **Frontend** : dossier `frontend/src/modules/<nom>/` et entrée dans
-   `MODULES` (`frontend/src/coque/modules.jsx`), mêmes clés et même ordre ;
-   `tests/test_partage.py` le contrôle. Le modèle est
-   `modules/accueil/Accueil.jsx`.
-3. **Backend** : une fonction de route par action, qui commence par
-   `refus = exige(req, 'module', 'role')` ; l'enregistrer dans `api.TABLE`
-   (`backend/api/__init__.py`). Les droits côté interface ne font que
-   masquer : seul `exige` protège.
-4. **Base** : `backend/base/<module>/schema.py` (constante `SCHEMA`) ajouté à
-   `MORCEAUX` dans `backend/base/schema.py`.
+Un module est autonome : un dossier de chaque côté, avec un manifeste. Le
+noyau (coque, serveur, comptes, droits) n'en connaît aucun autrement que par
+les deux registres.
+
+1. **Backend** : paquet `backend/modules/<cle>/` dont `__init__.py` définit
+   `MODULE = Module(...)` (contrat : `backend/modules/contrat.py`) : rôles
+   du moins au plus étendu, routes, état en mémoire, schéma de base. Chaque
+   route commence par `refus = exige(req, '<cle>', 'role')`
+   (`backend/commun/routage.py`) : les droits côté interface ne font que
+   masquer, seul `exige` protège. L'inscrire dans `MODULES`
+   (`backend/modules/__init__.py`). Modèles : `accueil/` (rôles seuls),
+   `uno/` (complet).
+2. **Frontend** : dossier `frontend/src/modules/<cle>/` dont `index.jsx`
+   exporte le manifeste (contrat en tête de `frontend/src/coque/modules.jsx`) :
+   mêmes clés et mêmes rôles, avec libellés, chemin, icône, racine. L'inscrire
+   dans `MODULES` de `coque/modules.jsx`, dans le même ordre ;
+   `tests/test_partage.py` contrôle l'accord des deux registres.
+
+Un jeu à tables (code, hôte, exclusion, manches) dérive `Salon` et `Salons`
+de `backend/commun/salons.py`, monte ses routes avec `RoutesSalons`
+(`backend/commun/routes_salons.py`), et côté interface reprend
+`apiSalons` et `AccueilSalons` (`frontend/src/commun/salons/`).
 
 Une page publique (jeton dans l'URL) : route sans `exige` côté serveur,
-préfixe `PUBLIC` dans `frontend/src/App.jsx`.
+documentée dans le manifeste, et entrée `publiques` du manifeste
+d'interface, aiguillée par `frontend/src/App.jsx` avant la connexion.
 
 ## Modèle de comptes
 
@@ -69,16 +99,16 @@ préfixe `PUBLIC` dans `frontend/src/App.jsx`.
 | GET | `/api/sante` | libre : 200 si la base répond |
 | GET | `/api/presence` | tout compte actif : santé vue de l'interface (sondée toutes les 10 s) et comptes en ligne |
 | GET | `/api/uno/salons`, `/api/uno/salon?code=` | rôle `uno:joueur` |
-| POST | `/api/uno/{creer,rejoindre,quitter,exclure,regler,lancer}` | rôle `uno:joueur` |
+| POST | `/api/uno/{creer,rejoindre,quitter,exclure,regler,lancer,pret,reprendre,fermer}` | rôle `uno:joueur` |
 | POST | `/api/uno/{jouer,piocher,passer,uno,contrer}` | rôle `uno:joueur` |
 | GET | `/api/uno/spectateur?code=` | libre : une table vue sans compte, sans aucune main |
 | GET | `/api/codenames/salons`, `/api/codenames/salon?code=` | rôle `codenames:joueur` |
-| POST | `/api/codenames/{creer,rejoindre,quitter,exclure,choisir,melanger,regler,lancer}` | rôle `codenames:joueur` |
+| POST | `/api/codenames/{creer,rejoindre,quitter,exclure,pret,reprendre,fermer,choisir,melanger,regler,lancer}` | rôle `codenames:joueur` |
 | POST | `/api/codenames/{indice,marquer,reveler,finir}` | rôle `codenames:joueur` |
 
 ## Module UNO
 
-Tables de UNO en mémoire (`backend/metier/uno/`) : règles de base dans
+Tables de UNO en mémoire (`backend/modules/uno/`) : règles de base dans
 `regles.py` (le détail en tête de fichier), salons dans `salons.py`. Une table
 se partage par son code de 5 caractères ou par le lien `/uno/<code>` ; le
 créateur en est l'hôte, lance les manches (2 à 10 joueurs) et peut exclure un
@@ -94,18 +124,36 @@ dans le sens du jeu), *rapidité* (une carte identique au dessus se pose hors
 de son tour, le jeu reprend après celui qui l'a posée) et *suites* (après un
 chiffre, on enchaîne dans le même tour les chiffres suivants de la même
 couleur, puis on s'arrête par `POST /api/uno/passer`). Elles sont définies dans `REGLES`
-(`backend/metier/uno/regles.py`) et `frontend/src/modules/uno/regles.js` :
+(`backend/modules/uno/regles.py`) et `frontend/src/modules/uno/regles.js` :
 ajouter une règle, c'est une entrée de chaque côté et son effet dans `Partie`.
 
 **Spectateurs** : le lien `/spectateur/<code>` montre la table (joueurs, nombre
 de leurs cartes, défausse, tour, journal, jamais une main) à qui n'a pas de
-compte. C'est la seule page publique de l'application : route `PUBLIC` de
-`frontend/src/App.jsx` et `GET /api/uno/spectateur`, sans `exige` ; le code de
+compte. C'est la seule page publique de l'application : entrée `publiques`
+du manifeste `frontend/src/modules/uno/index.jsx` et
+`GET /api/uno/spectateur`, sans `exige` ; le code de
 la table en est le secret, comme pour s'y asseoir. Un spectateur ne garde pas
 la table en vie.
 
+**Tables communes à tous les jeux** (`backend/commun/salons.py`) : chacun peut
+se dire prêt pour la prochaine manche (`pret`, remis à zéro à la donne) ;
+quand l'hôte ne relit plus la table depuis `DELAI_REPRISE` (60 s), un joueur
+assis peut la reprendre et en devenir l'hôte (`reprendre`) ; l'hôte peut
+fermer la table pour tous (`fermer`). L'accueil (`AccueilSalons`) : ouvrir
+une table (nom, visibilité, réglages du jeu), la rejoindre par un code saisi
+case par case (un lien collé se répartit tout seul), listes de ses tables et
+des tables ouvertes.
+
 **Interface** (`frontend/src/modules/uno/`) : elle relit la table chaque
-seconde, ce qui permet aussi de montrer qui est encore à la table. Le tapis
+seconde, ce qui permet aussi de montrer qui est encore à la table. En-tête de
+la table (retour, nom, état, musique, quitter ou fermer) et salle d'attente
+dans `Salle.jsx` : les places autour de la table, puis, pour l'hôte,
+l'invitation (code, lien pour jouer, lien spectateur) et les variantes en
+tuiles à cocher (`ReglesUno.jsx`, les mêmes qu'à la création) ; pour un
+joueur assis, le récapitulatif des règles, le bouton « Prêt » et, si l'hôte
+s'absente, de quoi reprendre la table. En manche, l'ordre de jeu et le journal
+sont à droite du tapis (`Cote.jsx`), pour le joueur comme pour le spectateur.
+Le tapis
 (`Tapis.jsx`) est commun au joueur et au spectateur : plateau de bois et de
 feutre, joueurs assis autour, pioche et défausse dans l'anneau de la couleur
 demandée que parcourent les flèches du sens du jeu. Le bouton UNO n'apparaît
@@ -131,13 +179,14 @@ tient sur téléphone (cartes et tapis resserrés sous 720 px).
 veillée (lente, à la table) et la partie (plus vive, pendant la manche), que
 `Table` aiguille d'un fondu enchaîné à l'autre. À chaque carte posée ou
 piochée, un bruitage est tiré au hasard parmi trois. Le son part au clic sur
-UNO dans le menu (`auClic` du registre `modules.jsx`), monte et descend en
-fondu à l'entrée et à la sortie du module ; volume, silence et bruitages sont
-mémorisés sur le poste.
+UNO dans le menu (`auClic` du manifeste `modules/uno/index.jsx`), monte et descend en
+fondu à l'entrée et à la sortie du module (`SonUno`, à la racine du module) ;
+son contrôle (`Lecteur`) est dans l'en-tête de chaque page. Volume, silence et
+bruitages sont mémorisés sur le poste.
 
 ## Module Code Names
 
-Code Names au manoir (`backend/metier/codenames/`) : les Vampires (`sang`)
+Code Names au manoir (`backend/modules/codenames/`) : les Vampires (`sang`)
 contre les Chasseurs (`argent`), dans la galerie des portraits. Règles dans
 `regles.py` (le détail en tête de fichier), listes de mots dans `mots.py`
 (classique, manoir, mélange), salons dans `salons.py`, sur le modèle du UNO :

@@ -1,14 +1,19 @@
 # flake8: noqa: F401  - réexports.
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from .commun.acces import (DROITS, MODULE_COMPTES, MODULES, ROLES, Fichier,
                            Texte, exige, exige_superadmin)
 from .commun import sante
 from .comptes import gestion, moncompte, presence, session
-from .uno import salons as uno
-from .codenames import salons as codenames
+from ..modules import MODULES as _MODULES
 
-# Toutes les routes exposées : (méthode, chemin exact) -> fonction.
-# Une route de module commence par `exige(req, module, role)`.
-TABLE = {
+if TYPE_CHECKING:
+    from ..commun.routage import Route
+
+# Routes du noyau : (méthode, chemin exact) -> fonction.
+NOYAU: dict[tuple[str, str], Route] = {
     # == comptes ============================================================
     ('GET', '/api/session'): session.session_etat,
     ('POST', '/api/login'): session.session_ouvrir,
@@ -31,41 +36,27 @@ TABLE = {
     ('GET', '/api/sante'): sante.sante,
     # Santé vue de l'interface et présence des comptes : tout compte actif.
     ('GET', '/api/presence'): presence.presence,
-
-    # == uno : tables de jeu (rôle joueur) ===================================
-    ('GET', '/api/uno/salons'): uno.lister,
-    ('GET', '/api/uno/salon'): uno.salon,
-    # Sans session : regarder une table, par son code, sans voir les mains.
-    ('GET', '/api/uno/spectateur'): uno.spectateur,
-    ('POST', '/api/uno/creer'): uno.creer,
-    ('POST', '/api/uno/rejoindre'): uno.rejoindre,
-    ('POST', '/api/uno/quitter'): uno.quitter,
-    ('POST', '/api/uno/exclure'): uno.exclure,
-    ('POST', '/api/uno/regler'): uno.regler,
-    ('POST', '/api/uno/lancer'): uno.lancer,
-    ('POST', '/api/uno/jouer'): uno.jouer,
-    ('POST', '/api/uno/piocher'): uno.piocher,
-    ('POST', '/api/uno/passer'): uno.passer,
-    ('POST', '/api/uno/uno'): uno.dire_uno,
-    ('POST', '/api/uno/contrer'): uno.contrer,
-
-    # == codenames : tables de jeu (rôle joueur) =============================
-    ('GET', '/api/codenames/salons'): codenames.lister,
-    ('GET', '/api/codenames/salon'): codenames.salon,
-    ('POST', '/api/codenames/creer'): codenames.creer,
-    ('POST', '/api/codenames/rejoindre'): codenames.rejoindre,
-    ('POST', '/api/codenames/quitter'): codenames.quitter,
-    ('POST', '/api/codenames/exclure'): codenames.exclure,
-    ('POST', '/api/codenames/choisir'): codenames.choisir,
-    ('POST', '/api/codenames/melanger'): codenames.melanger,
-    ('POST', '/api/codenames/regler'): codenames.regler,
-    ('POST', '/api/codenames/lancer'): codenames.lancer,
-    ('POST', '/api/codenames/indice'): codenames.indice,
-    ('POST', '/api/codenames/marquer'): codenames.marquer,
-    ('POST', '/api/codenames/reveler'): codenames.reveler,
-    ('POST', '/api/codenames/finir'): codenames.finir,
 }
+
+
+def _assembler() -> dict[tuple[str, str], Route]:
+    """Routes du noyau et de chaque module (`backend/modules/`). Un chemin
+    déclaré deux fois est une erreur de montage, signalée au démarrage."""
+    table = dict(NOYAU)
+    for m in _MODULES:
+        for cle, route in m.routes.items():
+            if cle in table:
+                raise ValueError('route %s %s déclarée deux fois (module %s)'
+                                 % (cle[0], cle[1], m.cle))
+            table[cle] = route
+    return table
+
+
+# Toutes les routes exposées. Une route de module commence par
+# `exige(req, module, role)` ; ses routes sont documentées dans son manifeste.
+TABLE = _assembler()
 
 # Taille maximale du corps d'une requête, en octets, quand elle dépasse la
 # valeur par défaut du serveur (8 Kio).
-TAILLE_CORPS: dict[tuple[str, str], int] = {}
+TAILLE_CORPS: dict[tuple[str, str], int] = {
+    cle: taille for m in _MODULES for cle, taille in m.taille_corps.items()}

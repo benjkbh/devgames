@@ -1,4 +1,4 @@
-import { cx } from '../../ui';
+import { cx } from '@ui';
 import { CAMPS, ChauveSouris, SceauRole } from './decor';
 
 // La galerie des portraits : les 25 cartes, en 5 × 5, chacune un cadre doré

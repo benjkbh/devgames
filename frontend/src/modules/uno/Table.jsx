@@ -4,22 +4,29 @@ import {
 } from 'react-router-dom';
 
 import {
-  Alerte, Badge, Bouton, Carte, CarteJeu, ChampCopiable, Chargement,
-  Confirmation, COULEURS_UNO, Dialogue, EtatVide, Eventail, IcoCarteRole,
-  IcoFermer, IcoSortie, Page, QuestionBool, Sr, VALEURS_UNO, cx, useAction,
-  useLecture,
-} from '../../ui';
+  Alerte, Badge, Bouton, Carte, CarteJeu, Chargement, Confirmation,
+  COULEURS_UNO, Dialogue, EtatVide, Eventail, IcoCarteRole, IcoFermer,
+  IcoSortie, Page, VALEURS_UNO, cx, useAction, useLecture,
+} from '@ui';
 import {
-  cheminSpectateur, contrer, direUno, exclure, jouer, lancer, lienSpectateur,
-  lienTable, lireTable, passer, piocher, quitter, regler, rejoindre,
+  contrer, direUno, exclure, fermer, jouer, lancer, lireTable, passer, piocher,
+  quitter, regler,
 } from './api';
 import { musique } from './ambiance';
+import { JournalManche, OrdreJeu } from './Cote';
 import { useEcranEtroit } from './ecran';
-import { REGLES, reglesActives } from './regles';
+import Lecteur from './Lecteur';
+import { ChoixRegles, RecapRegles } from './ReglesUno';
+import {
+  EnTete, InviterTable, Invitation, SalleAttente,
+} from './Salle';
 import { Presence, Tapis } from './Tapis';
 
-// Une table : salle d'attente (lien à partager, joueurs, lancement par
-// l'hôte), puis plateau de jeu, puis résultat de la manche.
+export { Invitation, SalleAttente };
+
+// Une table : salle d'attente (`Salle.jsx`), puis plateau de jeu, puis
+// résultat de la manche. À droite du tapis, l'ordre de jeu et le journal
+// (`Cote.jsx`).
 
 const SONDAGE = 1000;
 const ORDRE_COULEURS = [...COULEURS_UNO, 'noir'];
@@ -28,51 +35,6 @@ const ORDRE_COULEURS = [...COULEURS_UNO, 'noir'];
 const trier = (main) => main.slice().sort((a, b) => (
   ORDRE_COULEURS.indexOf(a.couleur) - ORDRE_COULEURS.indexOf(b.couleur)
   || VALEURS_UNO.indexOf(a.valeur) - VALEURS_UNO.indexOf(b.valeur)));
-
-// Code, lien pour s'asseoir et lien pour regarder (sans compte).
-export function Partage({ code }) {
-  return (
-    <div className="uno-partage">
-      <div className="uno-code">
-        <span className="uno-code-libelle">Code de la table</span>
-        <span className="uno-code-valeur">{code}</span>
-      </div>
-      <div className="uno-partage-lien">
-        <span className="uno-code-libelle">Lien pour jouer</span>
-        <ChampCopiable valeur={lienTable(code)} libelle="Lien pour jouer à la table" />
-      </div>
-      <div className="uno-partage-lien">
-        <span className="uno-code-libelle">Lien pour regarder, sans compte</span>
-        <ChampCopiable valeur={lienSpectateur(code)} libelle="Lien pour regarder la table" />
-      </div>
-    </div>
-  );
-}
-
-// Règles de la table : l'hôte les change entre deux manches, les autres les
-// lisent.
-export function Regles({ table, onAction }) {
-  const hote = table.hote === table.moi && table.etat !== 'partie';
-  const actives = reglesActives(table.regles);
-  if (!hote) {
-    return (
-      <p className="uno-regles-texte">
-        <strong>Règles : </strong>
-        {actives.length ? actives.join(' · ') : 'classiques.'}
-      </p>
-    );
-  }
-  return (
-    <div className="uno-regles">
-      {REGLES.map(({ cle, titre, aide }) => (
-        <QuestionBool key={cle} libelle={titre} description={aide}
-                      checked={Boolean(table.regles && table.regles[cle])}
-                      onChange={(v) => onAction(() => regler(
-                        table.code, { ...table.regles, [cle]: v }))} />
-      ))}
-    </div>
-  );
-}
 
 // Les joueurs et leurs points. `onExclure` : l'hôte peut exclure un joueur.
 export function Scores({ table, onExclure }) {
@@ -98,69 +60,6 @@ export function Scores({ table, onExclure }) {
         </li>
       ))}
     </ol>
-  );
-}
-
-// -- avant la première manche, ou pour qui n'est pas assis -------------------
-
-function Invitation({ table, onAssis }) {
-  const action = useAction();
-  const pleine = table.joueurs.length >= table.max_joueurs;
-  const s = async () => {
-    const r = await action.executer(() => rejoindre(table.code));
-    if (r.ok) onAssis();
-  };
-  return (
-    <Carte titre="Invitation" className="uno-invitation">
-      <p className="uno-invitation-nom">{table.nom}</p>
-      <p className="dim">
-        {`Hôte : ${table.hote} · ${table.joueurs.length} joueur(s) : `
-          + `${table.joueurs.join(', ')}`}
-      </p>
-      {table.exclu && (
-        <Alerte compacte>L’hôte vous a exclu de cette table.</Alerte>
-      )}
-      {table.etat === 'partie' && !table.exclu && (
-        <Alerte niveau="info" compacte>
-          Une manche est en cours : vous pourrez vous asseoir à la fin.
-        </Alerte>
-      )}
-      {action.erreur && <Alerte compacte>{action.erreur}</Alerte>}
-      <div className="uno-invitation-actions">
-        <Bouton variante="principal" taille="l" waiting={action.occupe}
-                disabled={pleine || table.etat === 'partie' || table.exclu}
-                titre={pleine ? 'Table complète' : 'S’asseoir à la table'}
-                onClick={s} />
-        <Bouton taille="l" href={cheminSpectateur(table.code)}
-                titre="Regarder sans jouer" />
-      </div>
-    </Carte>
-  );
-}
-
-export function SalleAttente({ table, onAction, onExclure }) {
-  const hote = table.hote === table.moi;
-  const assez = table.joueurs.length >= table.min_joueurs;
-  return (
-    <div className="uno-attente">
-      <Partage code={table.code} />
-      <Carte titre={`Joueurs (${table.joueurs.length} / ${table.max_joueurs})`}>
-        <Scores table={table} onExclure={hote ? onExclure : undefined} />
-      </Carte>
-      <Carte titre="Règles" className="uno-carte-regles">
-        <Regles table={table} onAction={onAction} />
-      </Carte>
-      <div className="uno-attente-actions">
-        {hote ? (
-          <Bouton variante="principal" taille="l" icone={<IcoCarteRole />}
-                  disabled={!assez} onClick={() => onAction(() => lancer(table.code))}
-                  titre={assez ? 'Distribuer les cartes'
-                    : `Encore ${table.min_joueurs - table.joueurs.length} joueur(s)…`} />
-        ) : (
-          <p className="dim">{`En attente de ${table.hote}, qui distribuera les cartes.`}</p>
-        )}
-      </div>
-    </div>
   );
 }
 
@@ -253,82 +152,82 @@ export function Plateau({ table, onAction, onExclure }) {
   );
 
   return (
-    <div className="uno-plateau">
-      <Tapis table={table} partie={p} moi={table.moi} message={message}
-             origine={origine} peutPiocher={peutPiocher}
-             onPiocher={() => onAction(() => piocher(code))}
-             boutonUno={boutonUno}
-             onContrer={(cible) => onAction(() => contrer(code, cible))}
-             onExclure={hote ? onExclure : undefined}>
-        {finie ? (
-          <Carte titre="Fin de la manche" className="uno-fin">
-            <p className="uno-fin-titre">
-              {`${p.gagnant} remporte la manche et marque ${p.points} points.`}
-            </p>
-            <Scores table={table} onExclure={hote ? onExclure : undefined} />
-            <Regles table={table} onAction={onAction} />
-            <details className="uno-fin-inviter">
-              <summary>Inviter d’autres joueurs</summary>
-              <p className="dim">
-                Ils peuvent s’asseoir maintenant : ils seront servis à la
-                prochaine manche.
+    <div className="uno-jeu">
+      <div className="uno-plateau">
+        <Tapis table={table} partie={p} moi={table.moi} message={message}
+               origine={origine} peutPiocher={peutPiocher}
+               onPiocher={() => onAction(() => piocher(code))}
+               boutonUno={boutonUno}
+               onContrer={(cible) => onAction(() => contrer(code, cible))}
+               onExclure={hote ? onExclure : undefined}>
+          {finie ? (
+            <Carte titre="Fin de la manche" className="uno-fin">
+              <p className="uno-fin-titre">
+                {`${p.gagnant} remporte la manche et marque ${p.points} points.`}
               </p>
-              <Partage code={code} />
-            </details>
-            {hote ? (
-              <Bouton variante="principal" taille="l" icone={<IcoCarteRole />}
-                      disabled={table.joueurs.length < table.min_joueurs}
-                      titre="Nouvelle manche"
-                      onClick={() => onAction(() => lancer(code))} />
-            ) : (
-              <p className="dim">{`${table.hote} peut relancer une manche.`}</p>
-            )}
-          </Carte>
-        ) : (
-          <section className={cx('uno-joueur', (monTour || rapide) && 'actif')}
-                   aria-label="Votre main" data-uno-main>
-            <div className="uno-joueur-tete">
-              <span className="uno-siege-nom">
-                {`${table.moi} · ${main.length} carte${main.length > 1 ? 's' : ''}`}
-              </span>
-              {monTour && <span className="uno-joueur-tour">À vous !</span>}
-              {moi && moi.expose && (
-                <Alerte niveau="attention" compacte>
-                  Vous n’avez pas dit UNO : vite, avant d’être contré !
-                </Alerte>
+              <Scores table={table} onExclure={hote ? onExclure : undefined} />
+              {hote ? (
+                <ChoixRegles regles={table.regles}
+                             onChange={(regles) => onAction(() => regler(code, regles))} />
+              ) : <RecapRegles regles={table.regles} />}
+              <details className="uno-fin-inviter">
+                <summary>Inviter d’autres joueurs</summary>
+                <p className="dim">
+                  Ils peuvent s’asseoir maintenant : ils seront servis à la
+                  prochaine manche.
+                </p>
+                <InviterTable code={code} />
+              </details>
+              {hote ? (
+                <Bouton variante="principal" taille="l" icone={<IcoCarteRole />}
+                        disabled={table.joueurs.length < table.min_joueurs}
+                        titre="Nouvelle manche"
+                        onClick={() => onAction(() => lancer(code))} />
+              ) : (
+                <p className="dim">{`${table.hote} peut relancer une manche.`}</p>
               )}
-              <div className="uno-joueur-actions">
-                {p.uno_annonce && <Badge couleur="rouge" majuscules titre="UNO annoncé" />}
-                {monTour && (p.pioche_jouable !== null || p.suite) && (
-                  <Bouton titre={p.suite ? 'Arrêter la suite' : 'Passer'}
-                          onClick={() => onAction(() => passer(code))} />
+            </Carte>
+          ) : (
+            <section className={cx('uno-joueur', (monTour || rapide) && 'actif')}
+                     aria-label="Votre main" data-uno-main>
+              <div className="uno-joueur-tete">
+                <span className="uno-siege-nom">
+                  {`${table.moi} · ${main.length} carte${main.length > 1 ? 's' : ''}`}
+                </span>
+                {monTour && <span className="uno-joueur-tour">À vous !</span>}
+                {moi && moi.expose && (
+                  <Alerte niveau="attention" compacte>
+                    Vous n’avez pas dit UNO : vite, avant d’être contré !
+                  </Alerte>
                 )}
+                <div className="uno-joueur-actions">
+                  {p.uno_annonce && <Badge couleur="rouge" majuscules titre="UNO annoncé" />}
+                  {monTour && (p.pioche_jouable !== null || p.suite) && (
+                    <Bouton titre={p.suite ? 'Arrêter la suite' : 'Passer'}
+                            onClick={() => onAction(() => passer(code))} />
+                  )}
+                </div>
               </div>
-            </div>
-            <Eventail arc chevauchement={(etroit ? 0.55 : 0.4) + (main.length > 12 ? 0.15 : 0)}
-                      libelle="Vos cartes" className="uno-main">
-              {main.map((c) => {
-                const ok = p.jouables.includes(c.id);
-                return (
-                  <CarteJeu key={c.id} taille="l" couleur={c.couleur} valeur={c.valeur}
-                            data-carte={c.id}
-                            jouable={ok} desactivee={!ok}
-                            onClick={(e) => cliquer(c, e)} />
-                );
-              })}
-            </Eventail>
-          </section>
-        )}
-      </Tapis>
-
-      <details className="uno-journal">
-        <summary>Journal de la manche</summary>
-        <ol>
-          {p.journal.slice().reverse().map((ligne, i) => (
-            <li key={`${p.journal.length - i}-${ligne}`}>{ligne}</li>
-          ))}
-        </ol>
-      </details>
+              <Eventail arc chevauchement={(etroit ? 0.55 : 0.4) + (main.length > 12 ? 0.15 : 0)}
+                        libelle="Vos cartes" className="uno-main">
+                {main.map((c) => {
+                  const ok = p.jouables.includes(c.id);
+                  return (
+                    <CarteJeu key={c.id} taille="l" couleur={c.couleur} valeur={c.valeur}
+                              data-carte={c.id}
+                              jouable={ok} desactivee={!ok}
+                              onClick={(e) => cliquer(c, e)} />
+                  );
+                })}
+              </Eventail>
+            </section>
+          )}
+        </Tapis>
+      </div>
+      <aside className="uno-jeu-cote" aria-label="Déroulement de la manche">
+        <OrdreJeu table={table} partie={p} />
+        <JournalManche table={table} partie={p} />
+      </aside>
 
       <ChoixCouleur ouvert={Boolean(joker)} onFermer={() => setJoker(null)}
                     onChoisir={(c) => { const carte = joker; setJoker(null); poser(carte, c); }} />
@@ -393,8 +292,11 @@ export default function Table() {
     relire();
     return r;
   };
+  // L'hôte, hors manche, ferme la table pour tous ; sinon on la quitte.
+  const ferme = Boolean(table && table.membre && table.hote === table.moi
+    && table.etat !== 'partie');
   const partir = async () => {
-    const r = await action.executer(() => quitter(code));
+    const r = await action.executer(() => (ferme ? fermer(code) : quitter(code)));
     if (r.ok) {
       libre.current = true;
       naviguer('/uno');
@@ -425,38 +327,36 @@ export default function Table() {
     contenu = <SalleAttente table={table} onAction={agir} onExclure={setExclusion} />;
   } else contenu = <Plateau table={table} onAction={agir} onExclure={setExclusion} />;
 
+  let titreSortie = 'Quitter la table';
+  if (ferme) titreSortie = 'Fermer la table';
+  else if (table.etat === 'partie') titreSortie = 'Quitter';
+  let messageSortie = 'Vous pourrez revenir avec le code tant que la table existe.';
+  if (ferme) {
+    messageSortie = table.joueurs.length > 1
+      ? 'La table disparaît, pour vous et pour les joueurs assis.'
+      : 'La table disparaît : son code ne mènera plus nulle part.';
+  } else if (table.etat === 'partie') {
+    messageSortie = 'Vos cartes repartent sous la pioche et la manche continue sans vous.';
+  }
+
   return (
     <Page className="uno-page">
-      <header className="uno-barre">
-        <Link to="/uno" className="uno-retour">UNO</Link>
-        <h1 className="uno-barre-titre">
-          {table.nom}
-          <Sr>{`, table ${table.code}`}</Sr>
-        </h1>
-        <span className="uno-barre-code" aria-hidden="true">{table.code}</span>
-        {table.manches > 0 && <Badge titre={`Manche ${table.manches}`} />}
-        {reglesActives(table.regles).map((r) => (
-          <Badge key={r} couleur="or" titre={r} />
-        ))}
-        {table.membre && (
-          <Bouton variante="fantome" taille="s" icone={<IcoSortie />}
-                  titre="Quitter la table" onClick={() => setSortie(true)} />
-        )}
-      </header>
+      <EnTete
+        table={table}
+        outils={table.membre && <Lecteur variante="compact" />}
+        actions={table.membre && (
+          <Bouton icone={<IcoSortie />} titre={titreSortie} onClick={() => setSortie(true)} />
+        )} />
       {action.erreur && (
         <Alerte compacte className="uno-erreur">{action.erreur}</Alerte>
       )}
       {erreur && <Alerte niveau="attention" compacte>{`Connexion perturbée : ${erreur}`}</Alerte>}
       {contenu}
       <GardeManche actif={table.membre && table.etat === 'partie'} libre={libre} />
-      <Confirmation ouvert={sortie} titre="Quitter la table ?"
-                    libelle="Quitter" danger occupe={action.occupe}
+      <Confirmation ouvert={sortie} titre={`${titreSortie} ?`}
+                    libelle={ferme ? 'Fermer' : 'Quitter'} danger occupe={action.occupe}
                     onConfirmer={partir} onAnnuler={() => setSortie(false)}
-                    message={table.etat === 'partie'
-                      ? 'Vos cartes repartent sous la pioche et la manche '
-                        + 'continue sans vous.'
-                      : 'Vous pourrez revenir avec le code tant que la table '
-                        + 'existe.'} />
+                    message={messageSortie} />
       <Confirmation ouvert={exclusion !== null} titre={`Exclure ${exclusion} ?`}
                     libelle="Exclure" danger onConfirmer={exclureJoueur}
                     onAnnuler={() => setExclusion(null)}

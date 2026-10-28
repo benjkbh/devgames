@@ -2,7 +2,7 @@ import { useRef } from 'react';
 
 import {
   Badge, CarteJeu, Eventail, IcoFermer, Pastille, Sr, cx,
-} from '../../ui';
+} from '@ui';
 import { useGlissements } from './animations';
 import { useEcranEtroit } from './ecran';
 

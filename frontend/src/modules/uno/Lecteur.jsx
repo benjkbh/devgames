@@ -1,29 +1,36 @@
-import { useEffect, useRef, useState } from 'react';
+import {
+  createContext, useContext, useEffect, useRef, useState,
+} from 'react';
 
-import { IcoMuet, IcoSon, cx, usePreference } from '../../ui';
+import { IcoMuet, IcoSon, cx, usePreference } from '@ui';
 import {
   CLE_EFFETS, CLE_MUET, CLE_VOLUME, musique,
 } from './ambiance';
 
-// Lecteur de la musique d'ambiance du module UNO, fixé en bas à droite :
-// grand bouton son / muet, curseur de volume, égaliseur animé pendant la
-// lecture, interrupteur des bruitages de cartes. Volume, silence et bruitages
-// sont des préférences du poste. Le son part dès l'ouverture du module (le
-// clic sur UNO dans le menu a déjà amorcé le moteur, `amorcerMusique`) ; si le
-// navigateur le refuse encore, il part au premier clic ou à la première touche
-// dans le module (sauf si tout est coupé). Le moteur (`musique`) est unique :
-// quitter le module descend le son en fondu, y revenir le remonte, sans
-// coupure ; `Table` y choisit le morceau (veillée ou partie).
+// Musique d'ambiance du module UNO, en deux morceaux :
+//   `SonUno`  le moteur, monté une fois à la racine du module : le son part
+//             dès l'ouverture du module (le clic sur UNO dans le menu a déjà
+//             amorcé le moteur, `amorcerMusique`) ; si le navigateur le
+//             refuse encore, il part au premier clic ou à la première touche
+//             dans le module (sauf si tout est coupé). Quitter le module
+//             descend le son en fondu, y revenir le remonte, sans coupure ;
+//             `Table` y choisit le morceau (veillée ou partie) ;
+//   `Lecteur` le contrôle, posé dans l'en-tête de chaque page : bouton son /
+//             muet, curseur de volume et, en barre, interrupteur des
+//             bruitages. Volume, silence et bruitages sont des préférences du
+//             poste. Hors de `SonUno` (page du spectateur), il ne rend rien.
 
 const VOLUMES = Array.from({ length: 101 }, (_, i) => String(i));
+const ContexteSon = createContext(null);
 
-export default function Lecteur() {
+export function SonUno({ children }) {
   const [volume, setVolume] = usePreference(CLE_VOLUME, '40', VOLUMES);
   const [muet, setMuet] = usePreference(CLE_MUET, '0', ['0', '1']);
   const [effets, setEffets] = usePreference(CLE_EFFETS, '1', ['0', '1']);
   const [joue, setJoue] = useState(false);
   const [erreur, setErreur] = useState('');
-  const cadre = useRef(null);
+  // Le contrôle visible : un geste sur lui est laissé à ses boutons.
+  const controle = useRef(null);
   const estMuet = muet === '1';
   const avecEffets = effets === '1';
   // Le moteur sert aussi aux bruitages : il est lancé si l'un des deux vit.
@@ -52,12 +59,11 @@ export default function Lecteur() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Navigateur qui refuse le son sans geste : le premier geste dans la page
-  // lance la musique. Un geste sur le lecteur lui-même est laissé à son
-  // bouton.
+  // lance la musique.
   useEffect(() => {
     if (!veutDuSon || joue) return undefined;
     const geste = (e) => {
-      if (cadre.current && cadre.current.contains(e.target)) return;
+      if (controle.current && controle.current.contains(e.target)) return;
       lancer();
     };
     document.addEventListener('pointerdown', geste);
@@ -85,47 +91,52 @@ export default function Lecteur() {
       setMuet('1');
     }
   };
+  const basculerEffets = () => {
+    setEffets(avecEffets ? '0' : '1');
+    if (!avecEffets && !joue) lancer();
+  };
 
+  const son = {
+    volume, setVolume, estMuet, avecEffets, joue, erreur, controle,
+    basculer, basculerEffets,
+  };
+  return <ContexteSon.Provider value={son}>{children}</ContexteSon.Provider>;
+}
+
+// `variante` : barre (accueil : libellé, volume, bruitages) ou compact (à la
+// table : bouton et volume).
+export default function Lecteur({ variante = 'barre' }) {
+  const son = useContext(ContexteSon);
+  if (!son) return null;
+  const {
+    volume, setVolume, estMuet, avecEffets, joue, erreur, controle, basculer,
+    basculerEffets,
+  } = son;
+  const coupe = estMuet || !joue;
   const enLecture = joue && !estMuet && Number(volume) > 0;
-  let etat = 'Cliquez pour lancer';
-  if (erreur) etat = erreur;
-  else if (estMuet) etat = 'Coupée';
-  else if (joue) etat = Number(volume) > 0 ? 'Veillée à Thiercelieux' : 'Volume à zéro';
+  let titre = coupe ? 'Lancer la musique' : 'Couper la musique';
+  if (erreur) titre = `${titre} (${erreur})`;
 
   return (
-    <aside ref={cadre} className={cx('uno-lecteur', enLecture && 'joue')}
-           aria-label="Musique d’ambiance">
+    <div ref={controle} role="group" aria-label="Musique d’ambiance"
+         className={cx('uno-lecteur', `uno-lecteur-${variante}`, enLecture && 'joue')}>
       <button type="button" className="uno-lecteur-bouton" onClick={basculer}
-              aria-pressed={!estMuet && joue}
-              aria-label={estMuet || !joue ? 'Lancer la musique' : 'Couper la musique'}
-              title={estMuet || !joue ? 'Lancer la musique' : 'Couper la musique'}>
-        {estMuet || !joue ? <IcoMuet /> : <IcoSon />}
+              aria-pressed={!coupe} aria-label={titre} title={titre}>
+        {coupe ? <IcoMuet /> : <IcoSon />}
       </button>
-      <div className="uno-lecteur-corps">
-        <div className="uno-lecteur-tete">
-          <span className="uno-lecteur-titre">Musique</span>
-          <span className="uno-lecteur-egaliseur" aria-hidden="true">
-            <i /><i /><i /><i />
-          </span>
-        </div>
-        <span className="uno-lecteur-etat" aria-live="polite">{etat}</span>
-        <button type="button" className="uno-lecteur-effets"
-                aria-pressed={avecEffets}
-                onClick={() => {
-                  setEffets(avecEffets ? '0' : '1');
-                  if (!avecEffets && !joue) lancer();
-                }}>
-          <span className="uno-lecteur-effets-coche" aria-hidden="true" />
-          Bruitages des cartes
-        </button>
-        <label className="uno-lecteur-volume">
-          <span className="sr">Volume de la musique</span>
-          <input type="range" min="0" max="100" step="1" value={volume}
-                 disabled={estMuet}
-                 onChange={(e) => setVolume(e.target.value)} />
-          <span className="uno-lecteur-pourcent" aria-hidden="true">{`${volume} %`}</span>
+      {variante === 'barre' && <span className="uno-lecteur-titre" aria-hidden="true">Musique</span>}
+      <label className="uno-lecteur-volume">
+        <span className="sr">Volume de la musique</span>
+        <input type="range" min="0" max="100" step="1" value={volume}
+               disabled={estMuet} title={`${volume} %`}
+               onChange={(e) => setVolume(e.target.value)} />
+      </label>
+      {variante === 'barre' && (
+        <label className="uno-lecteur-effets">
+          <input type="checkbox" checked={avecEffets} onChange={basculerEffets} />
+          Bruitages
         </label>
-      </div>
-    </aside>
+      )}
+    </div>
   );
 }

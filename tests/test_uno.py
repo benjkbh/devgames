@@ -1,5 +1,6 @@
-"""UNO : règles d'une manche (`metier/uno/regles.py`) et salons partagés
-(`metier/uno/salons.py`) ; présence des comptes (`metier/comptes/presence.py`)."""
+"""UNO : règles d'une manche (`modules/uno/regles.py`) et salons partagés
+(`modules/uno/salons.py`, sur `commun/salons.py`) ; présence des comptes
+(`metier/comptes/presence.py`)."""
 from __future__ import annotations
 
 import random
@@ -8,8 +9,8 @@ from collections import Counter
 
 from backend import api
 from backend.metier.comptes import presence
-from backend.metier.uno import regles, salons
-from backend.metier.uno.regles import Carte, CoupInvalide, Partie
+from backend.modules.uno import regles, salons
+from backend.modules.uno.regles import Carte, CoupInvalide, Partie
 
 
 def partie(joueurs: tuple[str, ...] = ('ana', 'bob', 'cyd'),
