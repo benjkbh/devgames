@@ -26,19 +26,13 @@ class Config:
     static_dir: Path
     dev_origin: str             # origine Vite autorisée en CORS ; vide en prod
     trust_proxy: int            # sauts de X-Forwarded-For de confiance
-    session_ttl: int            # secondes
     cookie_secure: bool
 
-    def resume(self, comptes: int | None = None) -> list[str]:
-        """Lignes du démarrage. `comptes` : nombre de comptes en base."""
+    def resume(self, pseudos: int | None = None) -> list[str]:
+        """Lignes du démarrage. `pseudos` : nombre de pseudos en base."""
         lignes = ['%s : http://0.0.0.0:%d' % (NOM_APPLI, self.listen_port)]
-        if comptes is not None:
-            lignes.append(
-                'comptes : %s'
-                % ('AUCUN - la première ouverture du site demandera de créer'
-                   ' un superadministrateur'
-                   if not comptes else
-                   '%d, session de %d s' % (comptes, self.session_ttl)))
+        if pseudos is not None:
+            lignes.append('pseudos connus : %d' % pseudos)
         lignes += self._resume_interface()
         return lignes
 
@@ -80,6 +74,5 @@ def charger(env: Mapping[str, str] | None = None) -> Config:
                                 str(RACINE / 'frontend' / 'dist'))),
         dev_origin=env.get('DEV_ORIGIN', ''),
         trust_proxy=int(env.get('TRUST_PROXY', '0')),
-        session_ttl=int(env.get('SESSION_TTL', '3600')),
         cookie_secure=env.get('COOKIE_SECURE', '0') == '1',
     )

@@ -1,6 +1,6 @@
 """UNO : règles d'une manche (`modules/uno/regles.py`) et salons partagés
-(`modules/uno/salons.py`, sur `commun/salons.py`) ; présence des comptes
-(`metier/comptes/presence.py`)."""
+(`modules/uno/salons.py`, sur `commun/salons.py`) ; présence des joueurs
+(`metier/joueurs/presence.py`)."""
 from __future__ import annotations
 
 import random
@@ -8,7 +8,7 @@ import unittest
 from collections import Counter
 
 from backend import api
-from backend.metier.comptes import presence
+from backend.metier.joueurs import presence
 from backend.modules.uno import regles, salons
 from backend.modules.uno.regles import Carte, CoupInvalide, Partie
 
@@ -163,6 +163,35 @@ class Manche(unittest.TestCase):
         p.contrer('bob', 'ana')
         self.assertEqual(len(p.mains['ana']), 3)
         self.assertIsNone(p.expose)
+
+    def test_le_joueur_contre_passe_son_prochain_tour(self) -> None:
+        """ana, contrée pendant le tour de bob, perd son prochain tour : après
+        bob et cyd, la main revient à bob."""
+        p = partie()
+        p.tour = 0
+        p.couleur = 'rouge'
+        p.defausse.append(Carte(899, 'rouge', '1'))
+        p.mains['ana'] = [Carte(903, 'rouge', '3'), Carte(904, 'vert', '8')]
+        p.jouer('ana', 903)
+        p.contrer('bob', 'ana')
+        self.assertEqual(p.courant, 'bob')
+        for j in ('bob', 'cyd'):
+            p.pioche.append(Carte(905, 'bleu', '9'))
+            p.piocher(j)
+        self.assertEqual(p.courant, 'bob')
+        # Une fois seulement.
+        for j in ('bob', 'cyd'):
+            p.pioche.append(Carte(906, 'bleu', '9'))
+            p.piocher(j)
+        self.assertEqual(p.courant, 'ana')
+
+    def test_contre_pendant_son_tour_il_le_perd_aussitot(self) -> None:
+        p = partie()
+        p.tour = 0
+        p.expose, p.fenetre = 'ana', 2
+        p.contrer('bob', 'ana')
+        self.assertEqual(p.courant, 'bob')
+        self.assertNotIn('ana', p.punis)
 
     def test_uno_annonce_protege(self) -> None:
         p = partie()
@@ -738,8 +767,8 @@ class Presences(unittest.TestCase):
 
 class Routes(unittest.TestCase):
 
-    def test_routes_enregistrees_et_role_declare(self) -> None:
-        self.assertEqual(api.ROLES['uno'], ('joueur',))
+    def test_routes_enregistrees(self) -> None:
+        self.assertIn('uno', api.MODULES)
         for chemin in ('creer', 'rejoindre', 'quitter', 'exclure', 'regler',
                        'lancer',
                        'jouer', 'piocher', 'passer', 'uno', 'contrer'):

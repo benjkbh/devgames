@@ -11,14 +11,13 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
 from . import api
-from .metier.comptes import presence, sessions, utilisateurs
+from .metier.joueurs import presence, pseudos
 from .modules import MODULES
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
     from typing import Any
 
-    from .base.comptes.depot import CompteDetail
     from .config import Config
     from urllib.parse import ParseResult
 
@@ -72,25 +71,22 @@ class Requete:
                  corps: Any) -> None:
         self._h = handler
         self.config = handler.server.config
-        self.sessions = handler.server.sessions
-        # État en mémoire de chaque module (tables de jeu…), comme les
-        # sessions ; lu par `etat`.
+        self.pseudos = handler.server.pseudos
+        # État en mémoire de chaque module (tables de jeu…) ; lu par `etat`.
         self._etats = handler.server.etats
         self.presence = handler.server.presence
         self.url = url
         self.corps = corps
         self.brut = getattr(handler, 'corps_brut', b'')
         self.adresse = _adresse_client(handler, self.config.trust_proxy)
-        # Jeton de la session en cours : sert à fermer les autres sessions du
-        # compte sans fermer celle-ci.
+        # Jeton du cookie : la clé du pseudo de ce navigateur.
         self.jeton: str | None = handler.jeton()
-        # Nom du compte seulement : les droits sont relus en base par `compte`.
-        self.utilisateur: str | None = self.sessions.utilisateur(self.jeton)
-        # Toute requête authentifiée vaut signe de vie du compte.
-        if self.utilisateur:
-            self.presence.signaler(self.utilisateur)
+        # Le pseudo du joueur, ou None : il n'en a pas encore choisi.
+        self.pseudo: str | None = self.pseudos.pseudo(self.jeton)
+        # Toute requête d'un joueur vaut signe de vie.
+        if self.pseudo:
+            self.presence.signaler(self.pseudo)
         self.cookie: str | None = None
-        self._compte: CompteDetail | None = None
 
     def etat(self, module: str) -> Any:
         """L'état en mémoire du module (`Module.etat`)."""
@@ -99,56 +95,38 @@ class Requete:
     def parametre(self, nom: str, defaut: Any = '') -> Any:
         return (parse_qs(self.url.query).get(nom) or [defaut])[0]
 
-    @property
-    def compte(self) -> CompteDetail | None:
-        """Compte courant et ses droits, ou None. Lu une fois par requête."""
-        if self._compte is None and self.utilisateur:
-            self._compte = utilisateurs.compte(self.config.db_path,
-                                               self.utilisateur)
-        return self._compte
+    def choisir_pseudo(self, demande: object) -> str:
+        """Donne le pseudo demandé à ce navigateur et pose son cookie.
+        `PseudoRefuse` ou `PseudoPris` sinon (`metier/joueurs/pseudos.py`)."""
+        ancien = self.pseudo
+        pseudo, jeton = self.pseudos.choisir(demande, self.jeton)
+        if jeton != self.jeton:
+            self.cookie = pseudos.entete_cookie(jeton, pseudos.DUREE_COOKIE,
+                                                self.config.cookie_secure)
+            self.jeton = jeton
+        if ancien and ancien != pseudo:
+            self.presence.oublier(ancien)
+        self.pseudo = pseudo
+        self.presence.signaler(pseudo)
+        return pseudo
 
-    def peut(self, module: str, role: str | None = None) -> bool:
-        """L'utilisateur tient-il au moins ce rôle sur ce module ?
-
-        `role` absent : un rôle quelconque suffit. Rôles inclusifs
-        (`admin` > `operator` > `view`) ; un superadmin passe partout.
-        """
-        c = self.compte
-        if c is None or not c['actif']:
-            return False
-        if c['superadmin']:
-            return module in api.ROLES
-        rangs = api.ROLES.get(module)
-        if not rangs:
-            return False
-        tenu = utilisateurs.role_tenu(c['droits'], module, rangs)
-        return utilisateurs.role_suffit(tenu, role, rangs)
-
-    def ouvrir_session(self, nom: str) -> None:
-        self.cookie = sessions.entete_cookie(self.sessions.ouvrir(nom),
-                                             self.config.session_ttl,
-                                             self.config.cookie_secure)
-        self.utilisateur = nom
-        self._compte = None
-        self.presence.signaler(nom)
-
-    def fermer_session(self) -> None:
-        if self.jeton:
-            self.sessions.fermer(self.jeton)
-        if self.utilisateur:
-            self.presence.oublier(self.utilisateur)
-        self.cookie = sessions.entete_cookie('', 0, self.config.cookie_secure)
-        self.utilisateur = None
-        self._compte = None
+    def quitter(self) -> None:
+        """Déconnexion : le cookie est effacé, le pseudo reste réservé une
+        heure."""
+        self.pseudos.quitter(self.jeton)
+        if self.pseudo:
+            self.presence.oublier(self.pseudo)
+        self.cookie = pseudos.entete_cookie('', 0, self.config.cookie_secure)
+        self.pseudo = None
 
     def journal(self, message: str) -> None:
-        """Une ligne de journal, préfixée de l'adresse et du compte."""
-        qui = '%s %s' % (self.adresse, self.utilisateur or '-')
+        """Une ligne de journal, préfixée de l'adresse et du pseudo."""
+        qui = '%s %s' % (self.adresse, self.pseudo or '-')
         self._h.server.logger('info', '%s %s' % (qui, _sans_controle(message)))
 
     def erreur(self, message: str) -> None:
         """Erreur de route, avec la trace, au journal seulement."""
-        qui = '%s %s' % (self.adresse, self.utilisateur or '-')
+        qui = '%s %s' % (self.adresse, self.pseudo or '-')
         self._h.server.logger('erreur', '%s %s\n%s' % (
             qui, _sans_controle(message), traceback.format_exc()))
 
@@ -159,7 +137,8 @@ class Handler(BaseHTTPRequestHandler):
     server_version = 'backend'
 
     # Secondes d'inactivité avant fermeture : un fil par connexion persistante.
-    # Doit rester au-dessus du délai de rafraîchissement de l'interface.
+    # Une attente longue (`commun/salons.ATTENTE`, 25 s) occupe le fil sans
+    # compter : l'interface relance sa requête dès la réponse reçue.
     timeout = 30
 
     # En-têtes et corps partent en deux écritures : sans cela, Nagle et
@@ -177,7 +156,7 @@ class Handler(BaseHTTPRequestHandler):
         brut = self.headers.get('Cookie')
         if not brut:
             return None
-        morceau = SimpleCookie(brut).get(sessions.COOKIE)
+        morceau = SimpleCookie(brut).get(pseudos.COOKIE)
         return morceau.value if morceau else None
 
     def _entetes_communs(self, ctype: str, taille: int,
@@ -362,8 +341,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Content-Length', '0')
         self.end_headers()
 class Serveur(ThreadingHTTPServer):
-    """Porte ce que les routes partagent : configuration, logger, sessions,
-    présence des comptes et état en mémoire des modules (`etats`, par clé de
+    """Porte ce que les routes partagent : configuration, logger, pseudos,
+    présence des joueurs et état en mémoire des modules (`etats`, par clé de
     module)."""
 
     def __init__(self, config: Config,
@@ -371,7 +350,7 @@ class Serveur(ThreadingHTTPServer):
         super().__init__(('0.0.0.0', config.listen_port), Handler)
         self.config = config
         self.logger = logger
-        self.sessions = sessions.Sessions(config.session_ttl)
+        self.pseudos = pseudos.Pseudos(config.db_path)
         self.presence = presence.Presence()
         self.etats: dict[str, Any] = {m.cle: m.etat() for m in MODULES
                                       if m.etat is not None}

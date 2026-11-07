@@ -1,9 +1,9 @@
 """Contrat d'un module : ce qu'il apporte au noyau, déclaré dans son
 manifeste (`backend/modules/<module>/__init__.py`, constante `MODULE`).
 
-Le noyau (serveur, comptes, droits) ne connaît aucun module : il lit le
-registre (`backend/modules/__init__.py`) pour les rôles accordables, les
-routes, l'état en mémoire et le schéma.
+Le noyau (serveur, pseudos) ne connaît aucun module : il lit le registre
+(`backend/modules/__init__.py`) pour les routes, l'état en mémoire et le
+schéma. Tout joueur qui a un pseudo ouvre tous les modules.
 """
 from __future__ import annotations
 
@@ -19,14 +19,11 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class Module:
-    # Identifiant partagé avec l'interface, stocké dans la table des droits.
+    # Identifiant partagé avec l'interface (même registre, même ordre).
     cle: str
-    # Rôles accordables, du moins au plus étendu ; chacun contient les
-    # précédents. Au moins un.
-    roles: tuple[str, ...]
-    # (méthode, chemin exact) -> route. Une route commence par
-    # `exige(req, cle, role)`, sauf une route publique, documentée comme
-    # telle.
+    # (méthode, chemin exact) -> route, sous `/api/<cle>/`. Une route
+    # commence par `exige(req)` (un pseudo), sauf une route publique,
+    # documentée comme telle.
     routes: Mapping[tuple[str, str], Route] = field(default_factory=dict)
     # Fabrique de l'état en mémoire du module (tables de jeu…), appelée une
     # fois au démarrage du serveur ; les routes le lisent par

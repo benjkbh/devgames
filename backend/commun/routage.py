@@ -56,27 +56,16 @@ def parametre_epoch(req: Requete, nom: str) -> int | None:
         return None
     return v if v > 0 else None
 # -- contrôle d'accès --------------------------------------------------------
-REFUS = (HTTPStatus.FORBIDDEN, {'erreur': "Vous n'avez pas accès à cette "
-                                          'fonctionnalité.'})
-NON_CONNECTE = (HTTPStatus.UNAUTHORIZED, {'erreur': 'Connexion requise.'})
-def exige(req: Requete, module: str,
-           role: str | None = None) -> Reponse | None:
+# Tout joueur qui a choisi un pseudo ouvre tous les modules : le seul
+# contrôle est d'en avoir un.
+SANS_PSEUDO = (HTTPStatus.UNAUTHORIZED, {'erreur': 'Choisissez un pseudo.'})
+def exige(req: Requete) -> Reponse | None:
     """À appeler en tête de route. `(code, objet)` à rendre tel quel, ou None.
 
-    `role` : rôle minimal exigé ; absent, un rôle quelconque suffit.
-    401 sans session (l'interface montre la connexion), 403 sinon.
+    401 sans pseudo : l'interface montre alors le choix du pseudo.
     """
-    if req.utilisateur is None:
-        return NON_CONNECTE
-    if not req.peut(module, role):
-        return REFUS
-    return None
-def exige_superadmin(req: Requete) -> Reponse | None:
-    if req.utilisateur is None:
-        return NON_CONNECTE
-    c = req.compte
-    if c is None or not c['actif'] or not c['superadmin']:
-        return REFUS
+    if req.pseudo is None:
+        return SANS_PSEUDO
     return None
 def corps_objet(req: Requete) -> dict[str, Any]:
     """Corps JSON de la requête s'il est un objet, sinon `{}`."""

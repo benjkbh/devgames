@@ -377,8 +377,8 @@ class Tables(unittest.TestCase):
 
 class Routes(unittest.TestCase):
 
-    def test_routes_enregistrees_et_role_declare(self) -> None:
-        self.assertEqual(api.ROLES['codenames'], ('joueur',))
+    def test_routes_enregistrees(self) -> None:
+        self.assertIn('codenames', api.MODULES)
         for chemin in ('creer', 'rejoindre', 'quitter', 'exclure', 'choisir',
                        'melanger', 'regler', 'lancer', 'indice', 'marquer',
                        'reveler', 'finir'):

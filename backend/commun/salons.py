@@ -3,7 +3,7 @@ code, hôte, exclusion, présence, manches, expiration.
 
 Un salon est désigné par un code de 5 caractères, à partager (le lien
 `/<module>/<code>` l'ouvre). Le créateur en est l'hôte : il lance les manches.
-Les joueurs sont des comptes de l'application. Un salon `public` est listé aux
+Les joueurs sont désignés par leur pseudo. Un salon `public` est listé aux
 autres joueurs tant qu'aucune manche n'est en cours. L'hôte peut exclure un
 joueur (il ne peut plus s'asseoir).
 
@@ -12,6 +12,12 @@ les efface. Un salon sans activité depuis `INACTIVITE` secondes est retiré,
 comme un salon dont aucun joueur n'a relu la table depuis `ABSENCE_TABLE`
 secondes. Un verrou unique sérialise les accès (les requêtes arrivent sur des
 fils distincts).
+
+Attente longue (`attendre`) : l'interface donne la version de la table
+qu'elle a, et la réponse ne part qu'au premier changement (un coup, un joueur
+qui arrive, s'absente ou revient), ou au bout de `ATTENTE` secondes. Chaque
+changement réveille les attentes (`_toucher`). Un joueur qui attend est
+présent : il regarde la table.
 
 Un jeu dérive `Salon` (ce que la table garde entre deux manches) et `Salons`
 (ses règles de table), et fournit sa manche : un objet qui a `finie`,
@@ -45,6 +51,9 @@ PRESENCE_TABLE = 8
 ABSENCE_TABLE = 120
 # Un joueur assis peut reprendre la table d'un hôte absent depuis ce délai (s).
 DELAI_REPRISE = 60
+# Attente longue d'une relecture (s) : sous le délai d'inactivité d'une
+# connexion du serveur (30 s, `serveur.Handler.timeout`).
+ATTENTE = 25
 
 
 class SalonIntrouvable(Exception):
@@ -157,7 +166,9 @@ class Salons(Generic[S]):
     def __init__(self, rng: random.Random | None = None,
                  horloge: Callable[[], float] = time.monotonic) -> None:
         self._salons: dict[str, S] = {}
-        self._verrou = threading.Lock()
+        # Verrou et signal des changements (`attendre`) ; réentrant : une
+        # attente relit la table sous le verrou.
+        self._verrou = threading.Condition()
         self._rng = rng or random.Random()
         self._horloge = horloge
 
@@ -168,6 +179,7 @@ class Salons(Generic[S]):
                      if s.touche < maintenant - INACTIVITE
                      or s.derniere_presence < maintenant - ABSENCE_TABLE]:
             del self._salons[code]
+            self._verrou.notify_all()
 
     def _salon(self, code: object) -> S:
         self._purger()
@@ -198,6 +210,8 @@ class Salons(Generic[S]):
     def _toucher(self, salon: S) -> None:
         salon.touche = self._horloge()
         salon.version += 1
+        # Les attentes longues repartent avec la table à jour.
+        self._verrou.notify_all()
 
     def _nouveau_code(self) -> str:
         while True:
@@ -225,6 +239,7 @@ class Salons(Generic[S]):
             self._compter(salon)
         if not salon.joueurs:
             del self._salons[salon.code]
+            self._verrou.notify_all()
             return
         if salon.hote == joueur:
             salon.hote = salon.joueurs[0]
@@ -329,6 +344,7 @@ class Salons(Generic[S]):
         with self._verrou:
             salon = self._hote(code, joueur, 'ferme la table')
             del self._salons[salon.code]
+            self._verrou.notify_all()
 
     def agir(self, code: object, joueur: str, action: str,
              **params: Any) -> None:
@@ -370,6 +386,40 @@ class Salons(Generic[S]):
             'delai_reprise': DELAI_REPRISE,
             **self._vue_table(salon),
         }
+
+    def _presences(self, salon: S) -> tuple[Any, ...]:
+        """Ce qui change avec le temps seul, sans changer la version : qui est
+        là, et si l'hôte absent peut être remplacé."""
+        maintenant = self._horloge()
+        absence = self._absence(salon, salon.hote)
+        return (tuple(maintenant - salon.vus.get(j, float('-inf'))
+                      < PRESENCE_TABLE for j in salon.joueurs),
+                absence is not None and absence >= DELAI_REPRISE)
+
+    def attendre(self, code: object, version: int,
+                 joueur: str | None = None, delai: float = ATTENTE) -> None:
+        """Rend la main dès que la table n'est plus à `version` (un coup),
+        que la présence change, ou après `delai` secondes. `joueur` : s'il
+        est assis, il reste présent pendant l'attente (un spectateur, non).
+        `SalonIntrouvable` si la table disparaît."""
+        fin = time.monotonic() + delai
+        with self._verrou:
+            salon = self._salon(code)
+            if joueur is not None and joueur in salon.joueurs:
+                salon.vus[joueur] = self._horloge()
+            presences = self._presences(salon)
+            while True:
+                if joueur is not None and joueur in salon.joueurs:
+                    salon.vus[joueur] = self._horloge()
+                reste = fin - time.monotonic()
+                if salon.version != version or reste <= 0:
+                    return
+                # Réveil au moins deux fois par délai de présence : un
+                # joueur qui part se voit sans attendre un coup.
+                self._verrou.wait(min(reste, PRESENCE_TABLE / 2))
+                salon = self._salon(code)
+                if self._presences(salon) != presences:
+                    return
 
     def vue(self, code: object, joueur: str) -> dict[str, Any]:
         """Le salon vu par `joueur`. Non assis : de quoi décider de

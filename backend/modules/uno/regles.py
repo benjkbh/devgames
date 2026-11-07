@@ -16,7 +16,8 @@ Règles retenues (règles de base) :
   - UNO : qui pose son avant-dernière carte doit l'annoncer, avant ou
     juste après l'avoir posée ; avec deux cartes, seulement s'il peut en
     poser une. Tant qu'il ne l'a pas fait, un autre joueur peut le contrer,
-    jusqu'à la fin du tour du joueur suivant : il pioche alors 2 cartes ;
+    jusqu'à la fin du tour du joueur suivant : il pioche alors 2 cartes et
+    passe son tour (le tour en cours si c'est le sien, sinon le prochain) ;
   - la manche s'arrête quand un joueur n'a plus de carte. Il marque la
     somme des cartes restant aux autres : chiffre = sa valeur, action = 20,
     joker et +4 = 50.
@@ -155,6 +156,8 @@ class Partie:
         # suivant).
         self.expose: str | None = None
         self.fenetre = 0
+        # Joueurs contrés hors de leur tour : ils passeront le prochain.
+        self.punis: set[str] = set()
         self.gagnant: str | None = None
         self.points = 0
         self.journal: list[str] = []
@@ -229,6 +232,11 @@ class Partie:
         self.tour = self._rang(pas)
         self.pioche_jouable = None
         self.suite = None
+        # Un joueur contré passe ce tour-ci ; deux contrés de suite, les deux.
+        while self.courant in self.punis and len(self.ordre) > 1:
+            self.punis.discard(self.courant)
+            self._noter('%s passe son tour (contré).' % self.courant)
+            self.tour = self._rang(1)
 
     def _tirer(self, joueur: str, n: int,
                evenement: bool = True) -> list[Carte]:
@@ -444,8 +452,14 @@ class Partie:
                                'contré.')
         self.expose = None
         self._tirer(cible, 2)
-        self._noter('%s contre %s, qui avait oublié UNO : 2 cartes.'
-                    % (joueur, cible))
+        self._noter('%s contre %s, qui avait oublié UNO : 2 cartes et un tour '
+                    'passé.' % (joueur, cible))
+        if cible == self.courant:
+            # Contré pendant son tour (une suite, une carte piochée à poser) :
+            # il le perd aussitôt.
+            self._avancer()
+        else:
+            self.punis.add(cible)
 
     def retirer(self, joueur: str) -> None:
         """Le joueur quitte la manche : ses cartes repartent sous la pioche.
@@ -456,6 +470,7 @@ class Partie:
         self.pioche[:0] = self.mains.pop(joueur)
         self.ordre.remove(joueur)
         self.uno_dit.discard(joueur)
+        self.punis.discard(joueur)
         if self.expose == joueur:
             self.expose = None
         self._noter('%s quitte la table.' % joueur)

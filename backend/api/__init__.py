@@ -3,38 +3,29 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .commun.acces import (DROITS, MODULE_COMPTES, MODULES, ROLES, Fichier,
-                           Texte, exige, exige_superadmin)
+from ..commun.routage import Fichier, Texte, exige
 from .commun import sante
-from .comptes import gestion, moncompte, presence, session
+from .joueurs import presence, session
 from ..modules import MODULES as _MODULES
 
 if TYPE_CHECKING:
     from ..commun.routage import Route
 
+# Clés des modules, dans l'ordre du registre. Tout joueur qui a un pseudo les
+# ouvre tous.
+MODULES = tuple(m.cle for m in _MODULES)
+
 # Routes du noyau : (méthode, chemin exact) -> fonction.
 NOYAU: dict[tuple[str, str], Route] = {
-    # == comptes ============================================================
+    # == joueur =============================================================
+    # Sans pseudo : le pseudo de ce navigateur, le choisir, l'oublier.
     ('GET', '/api/session'): session.session_etat,
-    ('POST', '/api/login'): session.session_ouvrir,
-    ('POST', '/api/logout'): session.session_fermer,
-    # Ouverte tant qu'aucun compte n'existe, fermée définitivement ensuite.
-    ('POST', '/api/installation'): session.installation,
+    ('POST', '/api/pseudo'): session.choisir,
+    ('POST', '/api/logout'): session.quitter,
 
-    # Le compte connecté, sur lui-même : tout compte, sans droit de module.
-    ('GET', '/api/compte'): moncompte.compte_lire,
-    ('POST', '/api/compte/mot-de-passe'): moncompte.mot_de_passe,
-    ('POST', '/api/compte/sessions/fermer'): moncompte.sessions_fermer,
-
-    # Superadmin uniquement ; le drapeau superadmin, au seul fondateur.
-    ('GET', '/api/comptes'): gestion.comptes_lister,
-    ('POST', '/api/comptes/creer'): gestion.comptes_creer,
-    ('POST', '/api/comptes/modifier'): gestion.comptes_modifier,
-    ('POST', '/api/comptes/supprimer'): gestion.comptes_supprimer,
-
-    # Sonde de santé, sans session.
+    # Sonde de santé, sans pseudo.
     ('GET', '/api/sante'): sante.sante,
-    # Santé vue de l'interface et présence des comptes : tout compte actif.
+    # Santé vue de l'interface et présence des joueurs : avec un pseudo.
     ('GET', '/api/presence'): presence.presence,
 }
 
@@ -53,7 +44,7 @@ def _assembler() -> dict[tuple[str, str], Route]:
 
 
 # Toutes les routes exposées. Une route de module commence par
-# `exige(req, module, role)` ; ses routes sont documentées dans son manifeste.
+# `exige(req)` ; ses routes sont documentées dans son manifeste.
 TABLE = _assembler()
 
 # Taille maximale du corps d'une requête, en octets, quand elle dépasse la

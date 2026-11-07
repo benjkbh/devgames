@@ -1,5 +1,5 @@
 """Le serveur HTTP : consommation du corps, adresse du client, statiques,
-authentification.
+pseudos.
 
 **Pourquoi ce fichier existe.** L'invariant **I5** de docs/securite.md - *le
 corps d'une requête est toujours consommé, ou la connexion fermée* - avait un
@@ -243,10 +243,10 @@ class ConnexionPersistante(unittest.TestCase):
                               static_dir=statique, listen_port=0)
         from backend import base
         base.initialiser(cls.cfg.db_path, muet)
-        # Route de test gardée par un module : sert aux contrôles de droits.
+        # Route de test d'un module : elle exige un pseudo.
         cls._routes = mock.patch.dict(api.TABLE, {
             ('GET', '/api/_module'):
-                lambda req: api.exige(req, 'accueil') or (HTTPStatus.OK, {}),
+                lambda req: api.exige(req) or (HTTPStatus.OK, {}),
         })
         cls._routes.start()
         cls.srv = serveur.creer(cls.cfg, muet)
@@ -346,26 +346,22 @@ class ConnexionPersistante(unittest.TestCase):
         finally:
             cx.close()
 
-    def test_toutes_les_routes_de_donnees_exigent_une_session(self) -> None:
-        """**Il n'y a pas de vue libre.** Toute route qui rend des données
-        répond `401` sans session - et non `403` : la distinction compte
-        pour l'interface, qui montre le formulaire sur l'un et un refus sur
-        l'autre. Rendre `403` dans les deux cas ferait tourner en rond
-        quelqu'un dont la session a simplement expiré.
+    def test_toutes_les_routes_de_donnees_exigent_un_pseudo(self) -> None:
+        """Sans pseudo, une route de jeu ou de présence répond `401` :
+        l'interface montre alors le choix du pseudo.
 
-        `/api/sante` et `/api/session` sont les exceptions.
+        `/api/sante`, `/api/session`, `/api/pseudo` et la vue du
+        spectateur sont les exceptions.
         """
-        for chemin in ('/api/comptes', '/api/compte', '/api/_module'):
+        for chemin in ('/api/presence', '/api/_module', '/api/uno/salons',
+                       '/api/codenames/salons'):
             with self.subTest(route=chemin):
                 code, _, _ = self.demande(chemin)
                 self.assertEqual(code, HTTPStatus.UNAUTHORIZED)
-        for chemin in ('/api/comptes/creer', '/api/comptes/modifier',
-                       '/api/comptes/supprimer',
-                       '/api/compte/mot-de-passe',
-                       '/api/compte/sessions/fermer'):
+        for chemin in ('/api/uno/creer', '/api/codenames/creer'):
             with self.subTest(route=chemin):
                 code, _, _ = self.demande(
-                    chemin, 'POST', json.dumps({'actif': False}),
+                    chemin, 'POST', json.dumps({}),
                     {'Content-Type': 'application/json'})
                 self.assertEqual(code, HTTPStatus.UNAUTHORIZED)
 
@@ -442,7 +438,7 @@ class ConnexionPersistante(unittest.TestCase):
         self.assertIn('application/json', entetes.get('Content-Type', ''))
 
 class RouteDeSante(ConnexionPersistante):
-    """`GET /api/sante` : sans session, 200 tant que la base répond."""
+    """`GET /api/sante` : sans pseudo, 200 tant que la base répond."""
 
     def test_sans_session_la_base_repond(self) -> None:
         code, _, corps = self.demande('/api/sante')
@@ -458,8 +454,8 @@ class RouteDeSante(ConnexionPersistante):
 
 
 class SpectateurUno(ConnexionPersistante):
-    """`GET /api/uno/spectateur` : la seule route du UNO sans session, et
-    sans aucune main ; le reste du module exige toujours un compte."""
+    """`GET /api/uno/spectateur` : la seule route du UNO sans pseudo, et
+    sans aucune main ; le reste du module exige toujours un pseudo."""
 
     def test_regarder_une_table_sans_session(self) -> None:
         code_table = self.srv.etats['uno'].creer('ana', 'Veillée')
@@ -485,27 +481,16 @@ class SpectateurUno(ConnexionPersistante):
         self.assertEqual(code, HTTPStatus.UNAUTHORIZED)
 
 
-class ParcoursDAuthentification(ConnexionPersistante):
-    """Comptes, droits et installation, de bout en bout sur socket réelle.
-
-    `utilisateurs.py` est testé isolément dans `test_utilisateurs.py`. Ici on
-    vérifie le CÂBLAGE, qui est l'autre moitié : un contrôle de droits correct
-    mais branché après la lecture des données ne protégerait rien, et cela ne
-    se voit qu'en traversant la route.
-    """
-
-    MDP = 'motdepasse-de-test'
+class ParcoursDuPseudo(ConnexionPersistante):
+    """Choix du pseudo, cookie, réservation et déconnexion, de bout en bout
+    sur socket réelle. La règle de réservation est testée isolément dans
+    `test_pseudos.py` ; ici, le CÂBLAGE : le cookie posé, relu, effacé."""
 
     def setUp(self) -> None:
-        # Base vierge de comptes à chaque test : l'installation ne s'ouvre
-        # qu'une fois, et la partager entre tests les rendrait dépendants de
-        # leur ordre d'exécution.
-        from backend import base
+        # Table vide à chaque test : un pseudo pris par un test le resterait
+        # une heure pour les suivants.
         with base._connexion(self.cfg.db_path) as cx:
-            cx.execute('DELETE FROM "comptes.droit"')
-            cx.execute('DELETE FROM "comptes.utilisateur"')
-        self.srv.sessions.succes('127.0.0.1')
-        self.addCleanup(self.srv.sessions.succes, '127.0.0.1')
+            cx.execute('DELETE FROM "joueurs.pseudo"')
 
     def poster(self, chemin: str, corps: dict[str, Any],
                cookie: str | None = None) -> tuple[int, dict[str, str], bytes]:
@@ -514,327 +499,88 @@ class ParcoursDAuthentification(ConnexionPersistante):
             entetes['Cookie'] = cookie
         return self.demande(chemin, 'POST', json.dumps(corps), entetes)
 
-    def creer(self, nom: str, droits: list[str], cookie: str | None) -> None:
-        code, _, corps = self.poster(
-            '/api/comptes/creer',
-            {'nom': nom, 'mot_de_passe': self.MDP, 'droits': droits}, cookie)
-        self.assertEqual(code, HTTPStatus.CREATED, corps)
+    def entrer(self, pseudo: str,
+               cookie: str | None = None) -> tuple[int, str, dict[str, Any]]:
+        code, entetes, corps = self.poster('/api/pseudo', {'pseudo': pseudo},
+                                           cookie)
+        return (code, entetes.get('Set-Cookie', '').split(';')[0],
+                json.loads(corps))
 
-    def installer(self, nom: str = 'chef') -> str:
-        code, entetes, _ = self.poster('/api/installation',
-                                       {'nom': nom, 'mot_de_passe': self.MDP})
-        self.assertEqual(code, HTTPStatus.CREATED)
-        return entetes['Set-Cookie'].split(';')[0]
-
-    def connecter(self, nom: str,
-                  mot_de_passe: str | None = None) -> tuple[int, str, bytes]:
-        code, entetes, corps = self.poster(
-            '/api/login',
-            {'nom': nom, 'mot_de_passe': mot_de_passe or self.MDP})
-        return code, entetes.get('Set-Cookie', '').split(';')[0], corps
-
-    # -- installation ------------------------------------------------------
-    def test_l_installation_est_annoncee_tant_qu_aucun_compte_n_existe(
-            self) -> None:
-        _, _, corps = self.demande('/api/session')
-        self.assertTrue(json.loads(corps)['installation_requise'])
-
-    def test_l_installation_cree_un_superadmin_et_ouvre_la_session(
-            self) -> None:
-        cookie = self.installer()
+    def session(self, cookie: str) -> dict[str, Any]:
         _, _, corps = self.demande('/api/session', entetes={'Cookie': cookie})
-        d = json.loads(corps)
-        self.assertFalse(d['installation_requise'])
-        self.assertEqual(d['compte']['nom'], 'chef')
-        self.assertTrue(d['compte']['superadmin'])
+        return cast('dict[str, Any]', json.loads(corps))
 
-    def test_l_installation_se_referme_definitivement(self) -> None:
-        """**Le garde-fou de cette route.** Elle écrit sans session : elle
-        doit se fermer dès qu'un compte existe, sinon n'importe qui se crée un
-        superadministrateur à tout moment."""
-        self.installer()
-        code, _, _ = self.poster('/api/installation',
-                                 {'nom': 'pirate', 'mot_de_passe': self.MDP})
-        self.assertEqual(code, HTTPStatus.CONFLICT)
-
-    def test_un_mot_de_passe_court_est_ACCEPTE_a_l_installation(self) -> None:
-        """**Il n'y a plus de politique de mot de passe.** Ce test le dit
-        explicitement : ce n'est pas un contrôle perdu en route."""
-        code, _, _ = self.poster('/api/installation',
-                                 {'nom': 'chef', 'mot_de_passe': 'x'})
-        self.assertEqual(code, HTTPStatus.CREATED)
-
-    def test_un_mot_de_passe_vide_est_refuse_a_l_installation(self) -> None:
-        code, _, corps = self.poster('/api/installation',
-                                     {'nom': 'chef', 'mot_de_passe': ''})
-        self.assertEqual(code, HTTPStatus.BAD_REQUEST)
-        self.assertIn('vide', json.loads(corps)['erreur'])
-        # …et l'installation reste ouverte : un refus ne doit pas verrouiller
-        # l'application avant qu'un compte n'existe.
+    def test_sans_pseudo_la_session_le_demande(self) -> None:
         _, _, corps = self.demande('/api/session')
-        self.assertTrue(json.loads(corps)['installation_requise'])
+        vue = json.loads(corps)
+        self.assertIsNone(vue['pseudo'])
+        self.assertEqual(vue['modules'], list(api.MODULES))
 
-    # -- connexion ---------------------------------------------------------
-    def test_la_connexion_ouvre_une_session_nommee(self) -> None:
-        self.installer()
-        code, cookie, corps = self.connecter('chef')
+    def test_le_pseudo_choisi_pose_un_cookie_qui_le_retrouve(self) -> None:
+        code, cookie, corps = self.entrer('Ana')
         self.assertEqual(code, HTTPStatus.OK)
-        self.assertIn('session=', cookie)
-        self.assertEqual(json.loads(corps)['compte']['nom'], 'chef')
+        self.assertEqual(corps['pseudo'], 'Ana')
+        self.assertTrue(cookie.startswith('joueur='))
+        self.assertEqual(self.session(cookie)['pseudo'], 'Ana')
+        code, _, _ = self.demande('/api/_module', entetes={'Cookie': cookie})
+        self.assertEqual(code, HTTPStatus.OK)
 
     def test_le_cookie_est_durci(self) -> None:
-        self.installer()
-        _, entetes, _ = self.poster(
-            '/api/login', {'nom': 'chef', 'mot_de_passe': self.MDP})
+        _, entetes, _ = self.poster('/api/pseudo', {'pseudo': 'Ana'})
         brut = entetes['Set-Cookie']
-        for attendu in ('HttpOnly', 'SameSite=Strict', 'Path=/'):
+        for attendu in ('HttpOnly', 'SameSite=Strict', 'Path=/', 'Max-Age='):
             with self.subTest(attribut=attendu):
                 self.assertIn(attendu, brut)
 
-    def test_un_nom_inconnu_et_un_mauvais_mot_de_passe_se_ressemblent(
-            self) -> None:
-        """Les distinguer permettrait d'énumérer les comptes existants sans
-        jamais en deviner un mot de passe."""
-        self.installer()
-        _, _, a = self.connecter('chef', 'mauvais-mot-de-passe')
-        _, _, b = self.connecter('zorro', 'mauvais-mot-de-passe')
-        self.assertEqual(json.loads(a)['erreur'], json.loads(b)['erreur'])
+    def test_le_jeton_n_est_pas_stocke_en_clair(self) -> None:
+        _, cookie, _ = self.entrer('Ana')
+        jeton = cookie.split('=', 1)[1]
+        with base._connexion(self.cfg.db_path) as cx:
+            ligne = cx.execute('SELECT * FROM "joueurs.pseudo"').fetchone()
+        self.assertNotIn(jeton, tuple(ligne))
 
-    def test_la_temporisation_se_declenche(self) -> None:
-        self.installer()
-        for _ in range(3):
-            code, _, _ = self.connecter('chef', 'faux')
-            self.assertEqual(code, HTTPStatus.UNAUTHORIZED)
-        code, _, _ = self.connecter('chef', 'faux')
-        self.assertEqual(code, HTTPStatus.TOO_MANY_REQUESTS)
+    def test_un_pseudo_pris_est_refuse_aux_autres_sans_la_casse(self) -> None:
+        self.entrer('Ana')
+        code, cookie, corps = self.entrer('ana')
+        self.assertEqual(code, HTTPStatus.CONFLICT)
+        self.assertEqual(cookie, '')
+        self.assertGreater(corps['reste'], 3500)
 
-    def test_la_deconnexion_ferme_la_session(self) -> None:
-        cookie = self.installer()
-        self.poster('/api/logout', {}, cookie)
-        code, _, _ = self.demande('/api/_module', entetes={'Cookie': cookie})
-        self.assertEqual(code, HTTPStatus.UNAUTHORIZED)
+    def test_un_pseudo_invalide_est_refuse(self) -> None:
+        for pseudo in ('', 'a', 'x' * 21, '<script>'):
+            with self.subTest(pseudo=pseudo):
+                code, _, _ = self.entrer(pseudo)
+                self.assertEqual(code, HTTPStatus.BAD_REQUEST)
 
-    # -- droits ------------------------------------------------------------
-    def test_un_compte_restreint_n_ouvre_que_son_module(self) -> None:
-        chef = self.installer()
-        self.creer('lecteur', ['uno:joueur'], chef)
-        _, cookie, corps = self.connecter('lecteur')
-        self.assertEqual(json.loads(corps)['compte']['modules'],
-                         ['uno'])
-        # `accueil` ne lui est pas accordé : 403, et non 401 - il EST
-        # identifié, ce n'est simplement pas pour lui.
-        code, _, _ = self.demande('/api/_module', entetes={'Cookie': cookie})
-        self.assertEqual(code, HTTPStatus.FORBIDDEN)
-
-    def test_un_compte_ordinaire_ne_gere_pas_les_comptes(self) -> None:
-        chef = self.installer()
-        self.creer('lecteur', ['accueil:acces', 'accueil:acces'], chef)
-        _, cookie, _ = self.connecter('lecteur')
-        code, _, _ = self.demande('/api/comptes', entetes={'Cookie': cookie})
-        self.assertEqual(code, HTTPStatus.FORBIDDEN)
-
-    def test_un_droit_retire_prend_effet_SANS_reconnexion(self) -> None:
-        """Les droits sont relus à chaque requête, jamais figés à l'ouverture
-        de session. Les figer laisserait un accès retiré valable jusqu'à
-        l'expiration - une heure par défaut."""
-        chef = self.installer()
-        self.creer('lecteur', ['accueil:acces'], chef)
-        _, cookie, _ = self.connecter('lecteur')
-        code, _, _ = self.demande('/api/_module', entetes={'Cookie': cookie})
+    def test_redemander_son_propre_pseudo_ne_change_rien(self) -> None:
+        _, cookie, _ = self.entrer('Ana')
+        code, nouveau, _ = self.entrer('ANA', cookie)
         self.assertEqual(code, HTTPStatus.OK)
-        self.poster('/api/comptes/modifier',
-                    {'nom': 'lecteur', 'droits': []}, chef)
-        code, _, _ = self.demande('/api/_module', entetes={'Cookie': cookie})
-        self.assertEqual(code, HTTPStatus.FORBIDDEN)
+        self.assertEqual(nouveau, '')
+        self.assertEqual(self.session(cookie)['pseudo'], 'Ana')
 
-    def test_une_desactivation_ferme_la_session_ouverte(self) -> None:
-        """Sans cela, un compte désactivé garderait son accès jusqu'à
-        expiration du jeton."""
-        chef = self.installer()
-        self.creer('lecteur', ['accueil:acces'], chef)
-        _, cookie, _ = self.connecter('lecteur')
-        self.poster('/api/comptes/modifier',
-                    {'nom': 'lecteur', 'actif': False}, chef)
-        code, _, _ = self.demande('/api/_module', entetes={'Cookie': cookie})
-        self.assertEqual(code, HTTPStatus.UNAUTHORIZED)
+    def test_la_deconnexion_efface_le_cookie_et_garde_le_pseudo(self) -> None:
+        """Déconnecté, le cookie ne vaut plus rien ; le pseudo reste réservé
+        une heure, à tout le monde."""
+        _, cookie, _ = self.entrer('Ana')
+        _, entetes, _ = self.poster('/api/logout', {}, cookie)
+        self.assertIn('Max-Age=0', entetes['Set-Cookie'])
+        self.assertIsNone(self.session(cookie)['pseudo'])
+        code, _, _ = self.entrer('Ana')
+        self.assertEqual(code, HTTPStatus.CONFLICT)
 
-    def test_un_droit_inconnu_n_est_pas_accorde(self) -> None:
-        """Un droit fantôme n'ouvrirait rien et resterait incompréhensible
-        dans la grille."""
-        chef = self.installer()
-        _, _, corps = self.poster(
-            '/api/comptes/creer',
-            {'nom': 'lecteur', 'mot_de_passe': self.MDP,
-             'droits': ['accueil:acces', 'accueil:roi', 'invente:acces',
-                        'accueil']}, chef)
-        self.assertEqual(json.loads(corps)['compte']['droits'],
-                         ['accueil:acces'])
-
-    def test_le_role_tenu_est_rendu_a_l_interface(self) -> None:
-        """L'interface montre ou cache le chevron, les onglets et
-        l'interrupteur selon ce champ. Le lui faire déduire des droits bruts
-        dupliquerait la règle d'inclusion des rôles, qui finirait par
-        diverger."""
-        chef = self.installer()
-        self.creer('op', ['accueil:acces'], chef)
-        _, _, corps = self.connecter('op')
-        self.assertEqual(json.loads(corps)['compte']['roles'],
-                         {'accueil': 'acces'})
-
-    def test_un_superadmin_tient_le_role_le_plus_eleve(self) -> None:
-        self.installer()
-        _, _, corps = self.connecter('chef')
-        self.assertEqual(json.loads(corps)['compte']['roles'],
-                         {'accueil': 'acces', 'uno': 'joueur',
-                          'codenames': 'joueur'})
-
-    def test_on_ne_supprime_pas_son_propre_compte(self) -> None:
-        chef = self.installer()
-        code, _, _ = self.poster('/api/comptes/supprimer', {'nom': 'chef'},
-                                 chef)
-        self.assertEqual(code, HTTPStatus.BAD_REQUEST)
-
-    def test_SEUL_LE_FONDATEUR_nomme_et_retrograde(self) -> None:
-        """Le compte créé à l'installation, et lui seul.
-
-        Un autre superadministrateur gère les comptes - droits, mots de passe,
-        activation - mais ne touche pas au drapeau. C'est la seule différence
-        entre les deux, et elle n'existe que pour empêcher qu'ils se
-        rétrogradent les uns les autres jusqu'à ce qu'il n'en reste qu'un.
-        """
-        chef = self.installer()            # le fondateur
-        self.creer('adjoint', [], chef)
-        self.poster('/api/comptes/modifier',
-                    {'nom': 'adjoint', 'superadmin': True}, chef)
-        self.creer('lecteur', [], chef)
-        _, adjoint, _ = self.connecter('adjoint')
-        # L'adjoint est superadmin : il gère les comptes…
-        code, _, _ = self.demande('/api/comptes',
-                                  entetes={'Cookie': adjoint})
+    def test_la_presence_liste_les_joueurs(self) -> None:
+        _, cookie, _ = self.entrer('Ana')
+        self.entrer('Bob')
+        code, _, corps = self.demande('/api/presence',
+                                      entetes={'Cookie': cookie})
         self.assertEqual(code, HTTPStatus.OK)
-        # …mais pas le drapeau.
-        code, _, corps = self.poster('/api/comptes/modifier',
-                                     {'nom': 'lecteur', 'superadmin': True},
-                                     adjoint)
-        self.assertEqual(code, HTTPStatus.FORBIDDEN)
-        self.assertIn('fondateur', json.loads(corps)['erreur'])
-        # Le fondateur, lui, rétrograde l'adjoint.
-        code, _, corps = self.poster('/api/comptes/modifier',
-                                     {'nom': 'adjoint', 'superadmin': False},
-                                     chef)
-        self.assertEqual(code, HTTPStatus.OK, corps)
-        self.assertFalse(json.loads(corps)['compte']['superadmin'])
+        vue = json.loads(corps)
+        self.assertEqual(vue['moi'], 'Ana')
+        self.assertEqual({j['nom'] for j in vue['joueurs']}, {'Ana', 'Bob'})
+        en_ligne = {j['nom']: j['en_ligne'] for j in vue['joueurs']}
+        self.assertTrue(en_ligne['Ana'])
 
-    def test_un_superadmin_retrograde_PERD_ses_modules(self) -> None:
-        """Les droits sont relus à chaque requête : la rétrogradation prend
-        effet sans reconnexion, comme un droit retiré."""
-        chef = self.installer()
-        self.creer('adjoint', [], chef)
-        self.poster('/api/comptes/modifier',
-                    {'nom': 'adjoint', 'superadmin': True}, chef)
-        _, adjoint, _ = self.connecter('adjoint')
-        code, _, _ = self.demande('/api/_module', entetes={'Cookie': adjoint})
-        self.assertEqual(code, HTTPStatus.OK)
-        self.poster('/api/comptes/modifier',
-                    {'nom': 'adjoint', 'superadmin': False}, chef)
-        code, _, _ = self.demande('/api/_module', entetes={'Cookie': adjoint})
-        self.assertEqual(code, HTTPStatus.FORBIDDEN)
-        # …et il ne gère plus les comptes.
-        code, _, _ = self.demande('/api/comptes', entetes={'Cookie': adjoint})
-        self.assertEqual(code, HTTPStatus.FORBIDDEN)
 
-    def test_la_session_dit_qui_est_le_fondateur(self) -> None:
-        """L'interface s'en sert pour montrer le levier de nomination - et ne
-        pas le montrer à qui recevrait un refus en cliquant."""
-        chef = self.installer()
-        _, _, corps = self.demande('/api/session', entetes={'Cookie': chef})
-        self.assertTrue(json.loads(corps)['compte']['fondateur'])
-
-    def test_le_drapeau_attend_un_booleen(self) -> None:
-        chef = self.installer()
-        self.creer('lecteur', [], chef)
-        code, _, _ = self.poster('/api/comptes/modifier',
-                                 {'nom': 'lecteur', 'superadmin': 'oui'}, chef)
-        self.assertEqual(code, HTTPStatus.BAD_REQUEST)
-
-    def test_la_liste_des_comptes_ne_porte_aucune_empreinte(self) -> None:
-        chef = self.installer()
-        _, _, corps = self.demande('/api/comptes', entetes={'Cookie': chef})
-        self.assertNotIn(b'empreinte', corps)
-        self.assertNotIn(self.MDP.encode(), corps)
-
-    # -- les deux portes dérobées vers le compte fondateur ------------------
-    # Ces deux tests sont des RÉGRESSIONS : les deux chemins fonctionnaient, et
-    # ont été reproduits de bout en bout sur une instance réelle avant d'être
-    # fermés. Ils vivent ici, au niveau de la route, parce que c'est là qu'ils
-    # vivaient : `utilisateurs.py` tenait déjà la règle voisine, et c'est une
-    # route qui ne la posait pas.
-
-    def test_un_superadmin_ne_CREE_pas_un_superadmin(self) -> None:
-        """La porte n°1 : la règle était sur `modifier`, pas sur `creer`.
-
-        Refuser la promotion d'un compte existant et accepter la création d'un
-        compte déjà promu, c'est le même pouvoir par deux portes, dont une
-        seule était fermée. Il suffisait de créer le complice promu.
-        """
-        chef = self.installer()
-        self.creer('adjoint', [], chef)
-        self.poster('/api/comptes/modifier',
-                    {'nom': 'adjoint', 'superadmin': True}, chef)
-        _, adjoint, _ = self.connecter('adjoint')
-        code, _, corps = self.poster(
-            '/api/comptes/creer',
-            {'nom': 'complice', 'mot_de_passe': self.MDP,
-             'superadmin': True}, adjoint)
-        self.assertEqual(code, HTTPStatus.FORBIDDEN)
-        self.assertIn('fondateur', json.loads(corps)['erreur'])
-        # Le compte n'existe pas : le refus précède l'écriture.
-        _, _, liste = self.demande('/api/comptes', entetes={'Cookie': chef})
-        self.assertNotIn('complice',
-                         [c['nom'] for c in json.loads(liste)['comptes']])
-        # Le même appel SANS le drapeau reste permis : gérer les comptes
-        # ordinaires est le travail d'un superadministrateur.
-        code, _, _ = self.poster(
-            '/api/comptes/creer',
-            {'nom': 'stagiaire', 'mot_de_passe': self.MDP}, adjoint)
-        self.assertEqual(code, HTTPStatus.CREATED)
-
-    def test_un_superadmin_ne_prend_pas_le_COMPTE_du_fondateur(self) -> None:
-        """La porte n°2, et la plus grave : le mot de passe du fondateur.
-
-        Le fondateur était protégé de la rétrogradation, de la désactivation
-        et de la suppression - trois refus explicites. Poser un mot de passe
-        sur son compte n'était pas contrôlé, et donnait les trois d'un coup :
-        on se connecte à sa place, on hérite du pouvoir de nommer, et on le
-        laisse dehors. La protection ne peut pas s'énumérer champ par champ,
-        elle porte sur le COMPTE.
-        """
-        chef = self.installer()
-        self.creer('adjoint', [], chef)
-        self.poster('/api/comptes/modifier',
-                    {'nom': 'adjoint', 'superadmin': True}, chef)
-        _, adjoint, _ = self.connecter('adjoint')
-        code, _, corps = self.poster(
-            '/api/comptes/modifier',
-            {'nom': 'chef', 'mot_de_passe': 'vole-par-adjoint'}, adjoint)
-        self.assertEqual(code, HTTPStatus.FORBIDDEN)
-        self.assertIn('fondateur', json.loads(corps)['erreur'])
-        # Le mot de passe volé n'ouvre rien…
-        code, _, _ = self.connecter('chef', 'vole-par-adjoint')
-        self.assertEqual(code, HTTPStatus.UNAUTHORIZED)
-        # …et celui du fondateur vaut toujours : rien n'a été écrit.
-        self.srv.sessions.succes('127.0.0.1')
-        code, _, _ = self.connecter('chef')
-        self.assertEqual(code, HTTPStatus.OK)
-
-    def test_le_fondateur_change_SON_mot_de_passe(self) -> None:
-        """La contrepartie à ne pas casser : il reste maître de son compte."""
-        chef = self.installer()
-        code, _, corps = self.poster(
-            '/api/comptes/modifier',
-            {'nom': 'chef', 'mot_de_passe': 'nouveau-mot-de-passe'}, chef)
-        self.assertEqual(code, HTTPStatus.OK, corps)
-        code, _, _ = self.connecter('chef', 'nouveau-mot-de-passe')
-        self.assertEqual(code, HTTPStatus.OK)
 if __name__ == '__main__':
     unittest.main()

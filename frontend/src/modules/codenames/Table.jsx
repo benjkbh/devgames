@@ -6,8 +6,9 @@ import {
 import {
   Alerte, Badge, Bouton, Carte, ChampCopiable, Chargement, Confirmation,
   EtatVide, IcoFermer, IcoRecharger, IcoSortie, Page, Pastille,
-  QuestionChoix, Saisie, Sr, cx, useAction, useLecture,
+  QuestionChoix, Saisie, Sr, cx, useAction,
 } from '@ui';
+import { useTable } from '../../commun/salons/table';
 import {
   choisir, donnerIndice, exclure, finir, lancer, lienTable, lireTable,
   marquer, melanger, quitter, regler, rejoindre, reveler,
@@ -22,7 +23,6 @@ import { OPTIONS_LISTES, nomListe, resumeListe } from './listes';
 // oracles, lancement par l'hôte), puis la galerie de jeu, puis le résultat de
 // la manche, où l'on peut changer de camp avant la suivante.
 
-const SONDAGE = 1000;
 const NOMBRES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
 
 // Joueur à la table (son interface relit la table) ou absent.
@@ -412,12 +412,17 @@ export default function Table() {
   const [sortie, setSortie] = useState(false);
   const [exclusion, setExclusion] = useState(null);
   const libre = useRef(false);
-  const { donnees: table, erreur, relire } = useLecture(lireTable, { code }, SONDAGE);
+  const {
+    donnees: table, erreur, relire, remplacer,
+  } = useTable(lireTable, code);
   const action = useAction();
 
+  // Le serveur rend la table à jour après chaque coup : elle s'affiche
+  // aussitôt, sans attendre une relecture.
   const agir = async (appel) => {
     const r = await action.executer(appel);
-    relire();
+    if (r.ok && r.resultat && r.resultat.version !== undefined) remplacer(r.resultat);
+    else relire();
     return r;
   };
   const partir = async () => {

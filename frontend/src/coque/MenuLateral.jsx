@@ -2,47 +2,19 @@ import { useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 
 import { NOM_APPLI } from '../commun/appli';
-import { MODULES, modulesVisibles } from './modules';
+import { MODULES } from './modules';
 import { depuisQuand, usePresence } from './presence';
-import { deconnexion, estSuperadmin } from './session';
+import { deconnexion } from './session';
 import {
   Bouton, IcoComptes, IcoEpingle, IcoLune, IcoSoleil, IcoSortie, Marque,
-  Pastille, Popup, cx, usePreference, useTheme,
+  Pastille, Popup, cx, initiales, usePreference, useTheme,
 } from '@ui';
 import './coque.css';
 
-// Menu latéral : liste les modules du registre `coque/modules.jsx` que la
-// session peut ouvrir. Réduit à une bande d'icônes, il se déploie au survol ;
+// Menu latéral : liste les modules du registre `coque/modules.jsx`, tous
+// ouverts à qui a un pseudo. Réduit à une bande d'icônes, il se déploie au survol ;
 // l'épingle le garde déployé (préférence persistée, `ui/hooks/preferences.js`).
 // Sa hauteur est celle de l'écran, sans défilement.
-
-// Rôle le plus étendu tenu par la session, tous modules confondus.
-function qualite(session) {
-  if (estSuperadmin(session)) return 'Superadministrateur';
-  const tenus = (session.compte && session.compte.roles) || {};
-  for (const m of MODULES) {
-    const role = tenus[m.cle];
-    if (!role) continue;
-    const trouve = m.roles.find((r) => r.cle === role);
-    // Le dernier rôle d'un module est le plus étendu.
-    if (trouve && m.roles.indexOf(trouve) === m.roles.length - 1) {
-      return trouve.libelle;
-    }
-  }
-  for (const m of MODULES) {
-    const role = tenus[m.cle];
-    const trouve = role && m.roles.find((r) => r.cle === role);
-    if (trouve) return trouve.libelle;
-  }
-  return 'Aucun accès';
-}
-
-// Initiales de l'avatar : deux caractères au plus.
-function initiales(nom) {
-  const bouts = String(nom || '').split(/[.\-_ ]+/).filter(Boolean);
-  if (bouts.length >= 2) return (bouts[0][0] + bouts[1][0]).toUpperCase();
-  return String(nom || '?').slice(0, 2).toUpperCase();
-}
 
 function Lien({
   chemin, libelle, Ico, auClic,
@@ -69,18 +41,19 @@ const SANTE = {
   ok: ['vert', 'Serveur en ligne'],
   degrade: ['orange', 'Service dégradé'],
   injoignable: ['rouge', 'Serveur injoignable'],
-  session: ['orange', 'Session expirée'],
+  session: ['orange', 'Pseudo perdu'],
 };
 
-// Santé du serveur et comptes en ligne ; la liste complète (en ligne, puis
-// hors ligne avec la dernière activité) s'ouvre dans une popup.
+// Santé du serveur et joueurs en ligne ; la liste complète (en ligne, puis
+// partis depuis moins d'une heure, pseudo encore réservé) s'ouvre dans une
+// popup.
 function Presences() {
-  const { statut, comptes, moi } = usePresence();
+  const { statut, joueurs, moi } = usePresence();
   const [ouvert, setOuvert] = useState(false);
   const ancre = useRef(null);
   const [couleur, sante] = SANTE[statut] || SANTE.inconnu;
-  const enLigne = comptes.filter((c) => c.en_ligne);
-  const horsLigne = comptes.filter((c) => !c.en_ligne);
+  const enLigne = joueurs.filter((c) => c.en_ligne);
+  const horsLigne = joueurs.filter((c) => !c.en_ligne);
   const resume = statut === 'ok' || statut === 'degrade'
     ? `${enLigne.length} en ligne` : sante;
   const ligne = (c) => (
@@ -97,7 +70,7 @@ function Presences() {
     <>
       <button ref={ancre} type="button" className="menu-lien menu-presence"
               aria-haspopup="dialog" aria-expanded={ouvert}
-              title={`${sante} · ${enLigne.length} compte(s) en ligne`}
+              title={`${sante} · ${enLigne.length} joueur(s) en ligne`}
               onClick={() => setOuvert(!ouvert)}>
         <span className="menu-lien-ico menu-presence-ico">
           <IcoComptes />
@@ -115,7 +88,7 @@ function Presences() {
         <ul className="presence-liste">{enLigne.map(ligne)}</ul>
         {horsLigne.length > 0 && (
           <>
-            <p className="presence-titre">{`Hors ligne (${horsLigne.length})`}</p>
+            <p className="presence-titre">{`Partis récemment (${horsLigne.length})`}</p>
             <ul className="presence-liste">{horsLigne.map(ligne)}</ul>
           </>
         )}
@@ -139,15 +112,12 @@ export default function MenuLateral({ session, onDeconnecte }) {
   const [theme, basculerTheme] = useTheme();
   const estEpingle = epingle === '1';
 
-  // Seuls les modules que la session peut ouvrir (liste de `/api/session`).
-  const visibles = modulesVisibles(session);
-  const superadmin = estSuperadmin(session);
   const sombre = theme === 'sombre';
 
   async function sortir() {
     try {
       await deconnexion();
-    } catch (e) { /* déconnexion locale même en cas d'erreur */ }
+    } catch (e) { /* oubli local même en cas d'erreur */ }
     await onDeconnecte();
   }
 
@@ -175,7 +145,7 @@ export default function MenuLateral({ session, onDeconnecte }) {
         </div>
 
         <div className="menu-corps">
-          {parCategorie(visibles).map(([categorie, modules]) => (
+          {parCategorie(MODULES).map(([categorie, modules]) => (
             <div key={categorie}>
               <p className="menu-rubrique">
                 <span className="menu-texte">{categorie}</span>
@@ -185,22 +155,9 @@ export default function MenuLateral({ session, onDeconnecte }) {
               </ul>
             </div>
           ))}
-
-          {/* Gestion des comptes, hors registre des modules. */}
-          {superadmin && (
-            <>
-              <p className="menu-rubrique">
-                <span className="menu-texte">Administration</span>
-              </p>
-              <ul className="menu-liste-liens">
-                <Lien chemin="/comptes" libelle="Comptes et accès"
-                      Ico={IcoComptes} />
-              </ul>
-            </>
-          )}
         </div>
 
-        {/* Santé et présence, thème, puis compte, en pied de menu. */}
+        {/* Santé et présence, thème, puis pseudo, en pied de menu. */}
         <div className="menu-pied">
           <Presences />
           <button
@@ -218,30 +175,20 @@ export default function MenuLateral({ session, onDeconnecte }) {
             </span>
           </button>
 
-          {/* Compte connecté et déconnexion ; replié, seul l'avatar reste. */}
+          {/* Pseudo et déconnexion ; replié, seul l'avatar reste. */}
           <div className="menu-compte">
-            <NavLink
-              to="/compte"
-              className={({ isActive }) => cx('menu-profil', isActive && 'actif')}
-              title="Paramètres du compte"
-              aria-label={`Paramètres du compte ${session.compte.nom}`}
-            >
+            <span className="menu-profil" title={`Vous jouez sous le pseudo ${session.pseudo}`}>
               <span className="menu-avatar" aria-hidden="true">
-                {initiales(session.compte.nom)}
+                {initiales(session.pseudo)}
               </span>
               <span className="menu-ident">
-                <span className="menu-nom" title={session.compte.nom}>
-                  {session.compte.nom}
-                </span>
-                <span className={cx('menu-qualite', superadmin && 'super')}>
-                  {qualite(session)}
-                </span>
+                <span className="menu-nom">{session.pseudo}</span>
+                <span className="menu-qualite">Joueur</span>
               </span>
-            </NavLink>
-            <Bouton taille="s" className="menu-sortie"
-                         libelle="Se déconnecter" icone={<IcoSortie />}
-                         onClick={sortir}
-              variante="fantome" />
+            </span>
+            <Bouton taille="s" className="menu-sortie" variante="fantome"
+                    libelle="Changer de pseudo (le vôtre reste réservé une heure)"
+                    icone={<IcoSortie />} onClick={sortir} />
           </div>
         </div>
       </div>

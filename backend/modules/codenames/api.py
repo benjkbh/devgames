@@ -1,5 +1,5 @@
-"""`/api/codenames/*` : tables de Code Names (rôle `joueur` du module
-`codenames`).
+"""`/api/codenames/*` : tables de Code Names, ouvertes à tout joueur qui a
+un pseudo.
 
 Les routes communes des tables viennent de `backend/commun/routes_salons.py`.
 """
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from ...commun.routage import Route
     from .salons import Salons
 
-TABLES = RoutesSalons('codenames', 'joueur', CoupInvalide)
+TABLES = RoutesSalons('codenames', CoupInvalide)
 
 
 def _creer(s: Salons, corps: dict[str, Any], j: str) -> str:

@@ -1,0 +1,14 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: devgames
+    ports:
+      - 8080:8080"
+    environment:
+      COOKIE_SECURE: 1
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+    stop_grace_period: 10s

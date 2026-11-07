@@ -3,9 +3,7 @@
 import { renderToString } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import App from '../src/App';
-import Comptes from '../src/coque/Comptes';
-import MonCompte from '../src/coque/MonCompte';
-import FormulaireConnexion from '../src/coque/FormulaireConnexion';
+import ChoixPseudo from '../src/coque/ChoixPseudo';
 import MenuLateral from '../src/coque/MenuLateral';
 import { MODULES } from '../src/coque/modules';
 import {
@@ -48,77 +46,24 @@ console.error = (...a) => {
   erreurReelle(...a);
 };
 
-// Sessions factices : chaque écran est rendu avec la session qu'il reçoit
-// (installation, compte sans accès, superadministrateur, un rôle par niveau).
-const SESSION = (compte) => ({
-  compte,
-  installationRequise: false,
-  modules: MODULES.map((m) => m.cle),
-  chargee: true,
-});
+// Session factice : un joueur qui a choisi son pseudo.
+const SESSION = { pseudo: 'benjamin', chargee: true };
 
-const tousLesRoles = () => Object.fromEntries(
-  MODULES.map((m) => [m.cle, m.roles[m.roles.length - 1].cle]),
-);
-
-const SUPERADMIN = SESSION({
-  nom: 'benjamin',
-  superadmin: true,
-  fondateur: true,
-  modules: MODULES.map((m) => m.cle),
-  roles: tousLesRoles(),
-});
-// Superadministrateur non fondateur : gère les comptes sans nommer ni
-// rétrograder.
-const SUPERADMIN_NON_FONDATEUR = SESSION({
-  nom: 'adjoint',
-  superadmin: true,
-  fondateur: false,
-  modules: MODULES.map((m) => m.cle),
-  roles: tousLesRoles(),
-});
-const RESTREINT = SESSION({
-  nom: 'lecteur',
-  superadmin: false,
-  modules: ['accueil'],
-  roles: { accueil: 'acces' },
-});
-const SANS_ACCES = SESSION({
-  nom: 'nouveau', superadmin: false, modules: [], roles: {},
-});
 // Chaque écran : un nom, la route et l'élément. Les modules viennent du
 // registre.
 const ECRANS = [
   ['chargement', '/', <App />],
-  ['connexion', '/',
-    <FormulaireConnexion installation={false} onEntre={() => {}} />],
-  ['installation', '/',
-    <FormulaireConnexion installation onEntre={() => {}} />],
-  ['comptes', '/comptes',
-    <Comptes session={SUPERADMIN} onChange={() => {}} />],
-  ['mon compte (superadmin)', '/compte',
-    <MonCompte session={SUPERADMIN} onChange={() => {}} />],
-  ['mon compte (restreint)', '/compte',
-    <MonCompte session={RESTREINT} onChange={() => {}} />],
+  ['choix du pseudo', '/', <ChoixPseudo onEntre={() => {}} />],
   // Modules montés comme dans `App`, sous `<Route path="…/*">`.
   ...MODULES.map((m) => [
     `module ${m.cle}`, m.chemin, (
       <Routes>
         <Route path={`${m.chemin}/*`}
-               element={<m.Composant session={SUPERADMIN} />} />
+               element={<m.Composant session={SESSION} />} />
       </Routes>
     ),
   ]),
-  ['comptes vu par un restreint', '/comptes',
-    <Comptes session={RESTREINT} onChange={() => {}} />],
-  ['comptes vu par un non-fondateur', '/comptes',
-    <Comptes session={SUPERADMIN_NON_FONDATEUR} onChange={() => {}} />],
-  ['menu superadmin', '/',
-    <MenuLateral session={SUPERADMIN} onDeconnecte={() => {}} />],
-  ['menu restreint', '/',
-    <MenuLateral session={RESTREINT} onDeconnecte={() => {}} />],
-  ['menu sans acces', '/',
-    <MenuLateral session={SANS_ACCES} onDeconnecte={() => {}} />],
+  ['menu', '/', <MenuLateral session={SESSION} onDeconnecte={() => {}} />],
 ];
 
 // Table de UNO, telle que le serveur la décrit : attente, manche, fin.

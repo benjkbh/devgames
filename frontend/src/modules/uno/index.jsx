@@ -14,14 +14,6 @@ export default {
   Composant: Uno,
   // Le son part au clic sur l'entrée du menu (geste de l'utilisateur).
   auClic: amorcerMusique,
-  roles: [
-    {
-      cle: 'joueur',
-      libelle: 'Joueur',
-      resume: 'Crée des tables de UNO, en rejoint par code ou par lien, '
-        + 'et y joue.',
-    },
-  ],
-  // Regarder une table sans compte (`GET /api/uno/spectateur`).
+  // Regarder une table sans pseudo (`GET /api/uno/spectateur`).
   publiques: [{ chemin: '/spectateur/:code', Composant: Spectateur }],
 };

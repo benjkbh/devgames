@@ -1,18 +1,18 @@
-"""Schéma complet : celui des comptes, puis celui de chaque module.
+"""Schéma complet : celui des pseudos, puis celui de chaque module.
 
 Un module qui a des tables les déclare dans son manifeste (`Module.schema`,
 `backend/modules/contrat.py`). Les `CREATE TABLE IF NOT EXISTS` ne modifient
 pas une table existante : tout changement de forme passe par une migration.
 """
 from ..modules import MODULES
-from .comptes.schema import SCHEMA as _COMPTES
+from .joueurs.schema import SCHEMA as _JOUEURS
 
 # Réglage persistant du fichier ; doit précéder toute création.
 EN_TETE = 'PRAGMA journal_mode=WAL;'
 
 # Ordre d'exécution.
 MORCEAUX = (
-    ('comptes', _COMPTES),
+    ('joueurs', _JOUEURS),
     *((m.cle, m.schema) for m in MODULES if m.schema),
 )
 

@@ -19,15 +19,16 @@ async function json(reponse) {
 }
 
 // GET. Les paramètres vides (`undefined`, `null`, chaîne vide) ne sont pas
-// envoyés.
-export function lire(chemin, params = {}) {
+// envoyés. `options` : passées à `fetch` (`signal`, pour abandonner une
+// attente longue).
+export function lire(chemin, params = {}, options = {}) {
   const utiles = Object.fromEntries(
     Object.entries(params).filter(
       ([, v]) => v !== undefined && v !== null && v !== '',
     ),
   );
   const q = new URLSearchParams(utiles).toString();
-  return fetch(q ? `${chemin}?${q}` : chemin, COMMUN).then(json);
+  return fetch(q ? `${chemin}?${q}` : chemin, { ...COMMUN, ...options }).then(json);
 }
 
 export function poster(chemin, corps) {

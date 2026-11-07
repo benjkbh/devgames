@@ -6,8 +6,9 @@ import {
 import {
   Alerte, Badge, Bouton, Carte, CarteJeu, Chargement, Confirmation,
   COULEURS_UNO, Dialogue, EtatVide, Eventail, IcoCarteRole, IcoFermer,
-  IcoSortie, Page, VALEURS_UNO, cx, useAction, useLecture,
+  IcoSortie, Page, VALEURS_UNO, cx, useAction,
 } from '@ui';
+import { useTable } from '../../commun/salons/table';
 import {
   contrer, direUno, exclure, fermer, jouer, lancer, lireTable, passer, piocher,
   quitter, regler,
@@ -28,7 +29,6 @@ export { Invitation, SalleAttente };
 // résultat de la manche. À droite du tapis, l'ordre de jeu et le journal
 // (`Cote.jsx`).
 
-const SONDAGE = 1000;
 const ORDRE_COULEURS = [...COULEURS_UNO, 'noir'];
 
 // Main triée par couleur puis par valeur, pour s'y retrouver.
@@ -277,7 +277,9 @@ export default function Table() {
   const [sortie, setSortie] = useState(false);
   const [exclusion, setExclusion] = useState(null);
   const libre = useRef(false);
-  const { donnees: table, erreur, relire } = useLecture(lireTable, { code }, SONDAGE);
+  const {
+    donnees: table, erreur, relire, remplacer,
+  } = useTable(lireTable, code);
   const action = useAction();
 
   // Pendant la manche, le second morceau ; à la table, la veillée.
@@ -287,9 +289,12 @@ export default function Table() {
   }, [enManche]);
   useEffect(() => () => musique.piste('veillee'), []);
 
+  // Le serveur rend la table à jour après chaque coup : elle s'affiche
+  // aussitôt, sans attendre une relecture.
   const agir = async (appel) => {
     const r = await action.executer(appel);
-    relire();
+    if (r.ok && r.resultat && r.resultat.version !== undefined) remplacer(r.resultat);
+    else relire();
     return r;
   };
   // L'hôte, hors manche, ferme la table pour tous ; sinon on la quitte.

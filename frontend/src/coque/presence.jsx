@@ -5,20 +5,20 @@ import {
 import { lire } from '../commun/requete';
 import { Alerte, Bouton, useSondage } from '@ui';
 
-// Contrôle de santé côté client et présence des comptes.
+// Contrôle de santé côté client et présence des joueurs.
 // `GET /api/presence` est relu toutes les `PERIODE` ms (et au retour sur
 // l'onglet) : il dit si le serveur répond, si sa base est lisible, et qui est
-// en ligne. L'appel vaut lui-même signe de vie du compte.
+// en ligne. L'appel vaut lui-même signe de vie du joueur.
 //   statut   inconnu (première lecture) · ok · degrade (base illisible) ·
 //            injoignable (réseau, serveur arrêté, erreur 5xx) · session
-//            (session expirée : 401)
-//   comptes  [{ nom, en_ligne, depuis }] (secondes depuis le dernier signe
-//            de vie ; null : jamais vu depuis le démarrage du serveur)
+//            (pseudo perdu : 401)
+//   joueurs  [{ nom, en_ligne, depuis }] : en ligne, et ceux dont le pseudo
+//            est encore réservé (secondes depuis le dernier signe de vie)
 
 export const PERIODE = 10000;
 
 const VIDE = {
-  statut: 'inconnu', comptes: [], moi: null, verifie: null, relire: () => {},
+  statut: 'inconnu', joueurs: [], moi: null, verifie: null, relire: () => {},
 };
 
 const Contexte = createContext(VIDE);
@@ -34,7 +34,7 @@ export function FournisseurPresence({ children }) {
       const d = await lire('/api/presence');
       setEtat({
         statut: d.base === 'ok' ? 'ok' : 'degrade',
-        comptes: d.comptes || [],
+        joueurs: d.joueurs || [],
         moi: d.moi,
         verifie: Date.now(),
       });
@@ -66,7 +66,7 @@ export function depuisQuand(secondes) {
 }
 
 // Bandeau en tête de zone quand le serveur ne répond plus, que sa base est
-// illisible ou que la session a expiré. Rien quand tout va bien.
+// illisible ou que le pseudo est perdu. Rien quand tout va bien.
 export function BandeauSante() {
   const { statut, relire } = usePresence();
   if (statut === 'injoignable') {
@@ -94,10 +94,10 @@ export function BandeauSante() {
   if (statut === 'session') {
     return (
       <div className="bandeau-sante" role="status">
-        <Alerte niveau="attention" titre="Session expirée" compacte>
-          Reconnectez-vous pour continuer.
+        <Alerte niveau="attention" titre="Pseudo perdu" compacte>
+          Ce navigateur n’a plus de pseudo : choisissez-en un pour continuer.
           {' '}
-          <Bouton taille="s" titre="Se reconnecter"
+          <Bouton taille="s" titre="Choisir un pseudo"
                   onClick={() => window.location.reload()} />
         </Alerte>
       </div>

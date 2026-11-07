@@ -1,10 +1,9 @@
-"""Présence des comptes : dernier signe de vie de chacun, en mémoire.
+"""Présence des joueurs : dernier signe de vie de chacun, en mémoire.
 
-Toute requête authentifiée compte comme signe de vie (`serveur.Requete`), et
+Toute requête d'un joueur compte comme signe de vie (`serveur.Requete`), et
 l'interface en envoie une au moins toutes les 10 s (`GET /api/presence`, son
-contrôle de santé). Un compte est en ligne s'il s'est manifesté depuis moins
-de `EN_LIGNE` secondes. Comme les sessions, la présence est perdue au
-redémarrage.
+contrôle de santé). Un joueur est en ligne s'il s'est manifesté depuis moins
+de `EN_LIGNE` secondes. La présence est perdue au redémarrage.
 """
 from __future__ import annotations
 

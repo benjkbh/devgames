@@ -34,7 +34,7 @@ function Statut({ table }) {
   );
 }
 
-// `spectateur` : vue sans compte ; `outils` (le lecteur) et `actions` (quitter,
+// `spectateur` : vue sans pseudo ; `outils` (le lecteur) et `actions` (quitter,
 // fermer) à droite.
 export function EnTete({
   table, spectateur, outils, actions,
@@ -136,7 +136,7 @@ export function InviterTable({ code }) {
       <div className="uno-inviter-vue">
         <div>
           <strong>Lien spectateur</strong>
-          <span className="dim">{`…${cheminSpectateur(code)} · sans compte`}</span>
+          <span className="dim">{`…${cheminSpectateur(code)} · sans pseudo`}</span>
         </div>
         <Bouton taille="s" titre={vueCopie ? 'Copié' : 'Copier'}
                 onClick={() => copierVue(lienSpectateur(code))} />

@@ -18,9 +18,9 @@ import { musique } from './ambiance';
 //   [data-carte="id"]                              une carte de la main
 
 const DUREE = 280;
-// Décalage entre deux cartes piochées, ms : elles arrivent une à une, pour le
-// suspense (+2, +4, pioche jusqu'à pouvoir jouer).
-const PAS = 500;
+// Décalage entre deux cartes piochées, ms : elles arrivent une à une (+2,
+// +4, pioche jusqu'à pouvoir jouer), assez vite pour ne pas retarder le jeu.
+const PAS = 200;
 const COURBE = 'cubic-bezier(.2, .75, .25, 1)';
 
 const mouvementReduit = () => typeof window !== 'undefined'

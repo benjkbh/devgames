@@ -13,7 +13,10 @@ export function apiSalons(module) {
   const demander = (nom, corps) => poster(chemin(nom), corps);
   return {
     lireTables: () => lire(chemin('salons')),
-    lireTable: ({ code }) => lire(chemin('salon'), { code }),
+    // `version` : celle que l'interface a déjà ; la réponse attend alors le
+    // premier changement (attente longue, `useTable`).
+    lireTable: ({ code, version }, options) => lire(chemin('salon'),
+      { code, version }, options),
     creerTable: (nom, publique, reglages = {}) => demander('creer',
       { nom, public: publique, ...reglages }),
     rejoindre: (code) => demander('rejoindre', { code }),
@@ -28,7 +31,7 @@ export function apiSalons(module) {
     // L'hôte ferme la table : elle disparaît pour tous.
     fermer: (code) => demander('fermer', { code }),
     demander,
-    // Lien à partager pour s'asseoir à une table (compte requis).
+    // Lien à partager pour s'asseoir à une table (pseudo requis).
     lienTable: (code) => `${window.location.origin}/${module}/${code}`,
   };
 }

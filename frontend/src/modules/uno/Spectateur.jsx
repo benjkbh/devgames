@@ -1,9 +1,9 @@
 import { Link, useParams } from 'react-router-dom';
 
 import {
-  Alerte, Carte, Chargement, EtatVide, IcoCarteRole, Page, useLecture,
-  useTheme,
+  Alerte, Carte, Chargement, EtatVide, IcoCarteRole, Page, useTheme,
 } from '@ui';
+import { useTable } from '../../commun/salons/table';
 import { lireSpectateur } from './api';
 import { JournalManche, OrdreJeu } from './Cote';
 import { RappelRegles, RecapRegles } from './ReglesUno';
@@ -12,19 +12,17 @@ import { Scores } from './Table';
 import { Tapis } from './Tapis';
 import './uno.css';
 
-// Regarder une table sans compte : page publique (`/spectateur/<code>`, hors
-// authentification), ouverte avec le code ou le lien de la table. Même
+// Regarder une table sans pseudo : page publique (`/spectateur/<code>`, avant
+// le choix du pseudo), ouverte avec le code ou le lien de la table. Même
 // disposition que pour les joueurs : le tapis, et à sa droite l'ordre de jeu
 // et le journal ; avant la donne, les places et les règles. On voit le nombre
-// de cartes de chacun, jamais une main. La table est relue chaque seconde ;
-// aucune musique.
-
-const SONDAGE = 1000;
+// de cartes de chacun, jamais une main. La table se met à jour au premier
+// changement (attente longue, `useTable`) ; aucune musique.
 
 export default function Spectateur() {
   const { code } = useParams();
   useTheme();
-  const { donnees: table, erreur } = useLecture(lireSpectateur, { code }, SONDAGE);
+  const { donnees: table, erreur } = useTable(lireSpectateur, code);
 
   if (!table && erreur) {
     return (

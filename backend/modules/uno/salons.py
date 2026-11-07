@@ -103,7 +103,7 @@ class Salons(commun.Salons[Salon]):
             self._toucher(salon)
 
     def regarder(self, code: object) -> dict[str, Any]:
-        """La table vue d'un spectateur (sans compte) : le jeu, sans aucune
+        """La table vue d'un spectateur (sans pseudo) : le jeu, sans aucune
         main. Regarder ne vaut pas présence : seuls les joueurs gardent la
         table en vie."""
         with self._verrou:

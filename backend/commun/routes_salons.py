@@ -1,7 +1,7 @@
 """Routes des tables d'un jeu (`backend/commun/salons.py`), sous
 `/api/<module>/`.
 
-Le joueur est toujours le compte de la session, jamais un nom reçu. Les
+Le joueur est toujours le pseudo du cookie, jamais un nom reçu. Les
 demandes rendent la table à jour, vue par le joueur : l'interface n'attend
 pas le sondage suivant. Le registre des tables est l'état en mémoire du
 module (`Module.etat`), lu par `req.etat(module)`.
@@ -9,7 +9,9 @@ module (`Module.etat`), lu par `req.etat(module)`.
 Routes fournies par `routes()` :
 
     GET  salons                tables ouvertes et tables du joueur
-    GET  salon?code=           une table, vue par le joueur
+    GET  salon?code=[&version=]  une table, vue par le joueur ; avec la
+                               version qu'il a, attente longue : la réponse
+                               part au premier changement (`attendre`)
     POST creer                 nom, public et réglages du jeu
     POST rejoindre, quitter    code
     POST exclure               code, joueur (hôte)
@@ -43,15 +45,23 @@ if TYPE_CHECKING:
     Creation = Callable[[Any, dict[str, Any], str], str]
 
 
-class RoutesSalons:
-    """Routes des tables du module `module`, ouvertes au rôle `role`.
-    `erreur` : l'erreur de coup du jeu, rendue en 409 comme les refus du
-    salon."""
+def version_attendue(req: Requete) -> int | None:
+    """Paramètre `version` : la version de la table que l'interface a déjà,
+    ou None (réponse immédiate)."""
+    try:
+        return int(req.parametre('version'))
+    except (TypeError, ValueError):
+        return None
 
-    def __init__(self, module: str, role: str,
+
+class RoutesSalons:
+    """Routes des tables du module `module`, ouvertes à tout joueur qui a
+    un pseudo. `erreur` : l'erreur de coup du jeu, rendue en 409 comme les
+    refus du salon."""
+
+    def __init__(self, module: str,
                  erreur: type[Exception] = ErreurSalon) -> None:
         self.module = module
-        self.role = role
         self.erreurs = (ErreurSalon, erreur)
 
     def chemin(self, nom: str) -> str:
@@ -64,10 +74,10 @@ class RoutesSalons:
     def proteger(self, req: Requete,
                  action: Callable[[str], Reponse]) -> Reponse:
         """Contrôle d'accès, puis `action(joueur)` ; erreurs de jeu en 4xx."""
-        refus = exige(req, self.module, self.role)
+        refus = exige(req)
         if refus:
             return refus
-        joueur = str(req.utilisateur)
+        joueur = str(req.pseudo)
         try:
             return action(joueur)
         except SalonIntrouvable as e:
@@ -98,9 +108,13 @@ class RoutesSalons:
                 HTTPStatus.OK, self.salons(req).lister(j)))
 
         def salon(req: Requete) -> Reponse:
-            return self.proteger(req, lambda j: (
-                HTTPStatus.OK,
-                self.salons(req).vue(req.parametre('code'), j)))
+            def action(j: str) -> Reponse:
+                code = req.parametre('code')
+                version = version_attendue(req)
+                if version is not None:
+                    self.salons(req).attendre(code, version, j)
+                return HTTPStatus.OK, self.salons(req).vue(code, j)
+            return self.proteger(req, action)
 
         def creation(req: Requete) -> Reponse:
             corps = corps_objet(req)

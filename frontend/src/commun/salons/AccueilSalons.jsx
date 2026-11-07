@@ -22,7 +22,7 @@ import './salons.css';
 //   banniere      props de la `Banniere` (titre, description, illustration…)
 //                 ; les compteurs sont ajoutés ici
 //   nomDefaut     début du nom d'une table créée sans nom (« Table de ») ;
-//                 `moi` : le compte connecté, qui le complète
+//                 `moi` : le pseudo du joueur, qui le complète
 //   minJoueurs, maxJoueurs  pour le résumé de la table
 //   reglages      réglages du jeu à la création, envoyés à `creerTable`
 //   Reglages      leurs champs : `({ valeur, onChange })` ; `titreReglages` et
@@ -90,9 +90,9 @@ export function AccueilSalons({
   const creation = useAction();
   const entree = useAction();
   const { donnees, erreur, relire } = useLecture(api.lireTables, {}, 4000);
-  const { comptes } = usePresence();
+  const { joueurs } = usePresence();
   const champNom = useRef(null);
-  const enLigne = comptes.filter((c) => c.en_ligne).length;
+  const enLigne = joueurs.filter((j) => j.en_ligne).length;
   const ouvertes = donnees ? donnees.ouvertes.length : 0;
   const miennes = donnees ? donnees.miennes.length : 0;
   const publique = visibilite === 'publique';

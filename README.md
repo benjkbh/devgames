@@ -1,14 +1,14 @@
-# Gabarit d'application web
+# Jeux de la veillée
 
-Base réutilisable : **authentification, comptes, droits par module et
-catalogue de composants**, sans aucune logique métier. Frontend React/Vite,
-backend Python sans dépendance (bibliothèque standard, SQLite).
+Jeux à plusieurs dans le navigateur (UNO, Code Names). **Pas de compte** : on
+entre en choisissant un pseudo, et tous les jeux sont ouverts. Frontend
+React/Vite, backend Python sans dépendance (bibliothèque standard, SQLite).
 
 ```
-frontend/          coque, connexion, comptes, mon compte
+frontend/          coque : choix du pseudo, menu, page principale
   src/commun/      requêtes ; salons/ : API et accueil des tables de jeu
   src/modules/     un dossier par module, avec son manifeste (index.jsx)
-backend/           serveur HTTP, sessions, comptes et droits, base SQLite
+backend/           serveur HTTP, pseudos, base SQLite
   commun/          outils de route ; salons : tables de jeu et leurs routes
   modules/         un paquet par module, avec son manifeste (__init__.py)
 storybook/         bibliothèque de composants (ui/) et son catalogue,
@@ -23,13 +23,15 @@ Dockerfile         build de l'interface puis service
 2. Nommer l'application : `frontend/src/commun/appli.js`,
    `frontend/index.html`, `frontend/package.json`, `backend/config.py`
    (`NOM_APPLI`), `pyproject.toml`.
-3. Backend : `python -m backend` (variables : `backend/config.py`). Au premier
-   démarrage, l'interface demande de créer le superadministrateur fondateur.
+3. Backend : `python -m backend` (variables : `backend/config.py`). La base
+   (`DB_PATH`) garde les pseudos.
 4. Frontend : `cd frontend && npm install && npm run dev` (le proxy relaie
    `/api` vers `BACKEND_URL`, par défaut `http://127.0.0.1:8080`).
 5. Vérifier : `python -m unittest discover -s tests -t .`,
    `cd frontend && npm run verifier` et `cd storybook && npm run verifier`.
-6. Docker : `docker build -t mon-application .`
+6. Docker : `docker compose up -d --build` (`compose.yaml`, qui construit le
+   `Dockerfile`), puis http://localhost:8080. La base est dans le volume
+   `donnees` ; `PORT=9000` change le port publié.
 
 ## Storybook
 
@@ -48,20 +50,18 @@ projet autonome, sans compte ni serveur. L'application l'importe par l'alias
 ## Ajouter un module (de bout en bout)
 
 Un module est autonome : un dossier de chaque côté, avec un manifeste. Le
-noyau (coque, serveur, comptes, droits) n'en connaît aucun autrement que par
-les deux registres.
+noyau (coque, serveur, pseudos) n'en connaît aucun autrement que par les deux
+registres. Tout joueur qui a un pseudo ouvre tous les modules.
 
 1. **Backend** : paquet `backend/modules/<cle>/` dont `__init__.py` définit
-   `MODULE = Module(...)` (contrat : `backend/modules/contrat.py`) : rôles
-   du moins au plus étendu, routes, état en mémoire, schéma de base. Chaque
-   route commence par `refus = exige(req, '<cle>', 'role')`
-   (`backend/commun/routage.py`) : les droits côté interface ne font que
-   masquer, seul `exige` protège. L'inscrire dans `MODULES`
-   (`backend/modules/__init__.py`). Modèles : `accueil/` (rôles seuls),
-   `uno/` (complet).
+   `MODULE = Module(...)` (contrat : `backend/modules/contrat.py`) : routes
+   sous `/api/<cle>/`, état en mémoire, schéma de base. Chaque route
+   commence par `refus = exige(req)` (`backend/commun/routage.py`) : il faut
+   un pseudo. L'inscrire dans `MODULES` (`backend/modules/__init__.py`).
+   Modèles : `accueil/` (sans route), `uno/` (complet).
 2. **Frontend** : dossier `frontend/src/modules/<cle>/` dont `index.jsx`
    exporte le manifeste (contrat en tête de `frontend/src/coque/modules.jsx`) :
-   mêmes clés et mêmes rôles, avec libellés, chemin, icône, racine. L'inscrire
+   même clé, avec libellé, chemin, icône, racine. L'inscrire
    dans `MODULES` de `coque/modules.jsx`, dans le même ordre ;
    `tests/test_partage.py` contrôle l'accord des deux registres.
 
@@ -70,41 +70,44 @@ de `backend/commun/salons.py`, monte ses routes avec `RoutesSalons`
 (`backend/commun/routes_salons.py`), et côté interface reprend
 `apiSalons` et `AccueilSalons` (`frontend/src/commun/salons/`).
 
-Une page publique (jeton dans l'URL) : route sans `exige` côté serveur,
+Une page publique (sans pseudo) : route sans `exige` côté serveur,
 documentée dans le manifeste, et entrée `publiques` du manifeste
-d'interface, aiguillée par `frontend/src/App.jsx` avant la connexion.
+d'interface, aiguillée par `frontend/src/App.jsx` avant le choix du pseudo.
 
-## Modèle de comptes
+## Pseudos
 
-- Un compte tient **un rôle par module** ; les rôles s'incluent
-  (`admin` ⊃ `operator` ⊃ `view`).
-- Le **superadmin** tient tous les modules, présents et à venir, et gère les
-  comptes. Le **fondateur** (créé à l'installation) est le seul à nommer ou
-  rétrograder un superadmin, et son compte n'est administrable que par
-  lui-même. Il reste toujours un superadmin actif.
-- Droits relus en base à chaque requête (un retrait prend effet sans
-  reconnexion) ; sessions en mémoire (un redémarrage déconnecte tout le
-  monde) ; mots de passe en scrypt salé ; temporisation exponentielle des
-  échecs de connexion par adresse.
+- On entre en choisissant un **pseudo** (2 à 20 caractères : lettres,
+  chiffres, espaces, tirets, points, apostrophes), unique sans tenir compte de
+  la casse. Pas de compte, pas de mot de passe ; tout joueur ouvre tous les
+  jeux.
+- Le pseudo est lié au navigateur par un **cookie** (`joueur`, HttpOnly,
+  SameSite=Strict, 30 jours) qui porte un jeton aléatoire ; la base
+  (`"joueurs.pseudo"`) n'en garde que l'empreinte SHA-256.
+- Un pseudo est **réservé une heure** après la dernière activité de son joueur,
+  ou après sa déconnexion (« Changer de pseudo » dans le menu) : personne ne
+  peut le prendre pendant ce temps, pas même le navigateur qui vient de le
+  quitter. Passé ce délai, le premier qui le choisit l'obtient ; tant que
+  personne ne l'a repris, le cookie de son joueur reste valable.
+- Règles dans `backend/metier/joueurs/pseudos.py` (`RESERVATION`), écriture en
+  base dans `backend/base/joueurs/`. L'activité est écrite au plus une fois
+  par minute.
 
 ## API fournie
 
 | Méthode | Route | Accès |
 |---|---|---|
-| GET | `/api/session` | libre : compte courant, `installation_requise` |
-| POST | `/api/login`, `/api/logout` | libre |
-| POST | `/api/installation` | libre tant qu'aucun compte n'existe |
-| GET | `/api/compte` ; POST `/api/compte/mot-de-passe`, `/api/compte/sessions/fermer` | tout compte actif |
-| GET | `/api/comptes` ; POST `/api/comptes/{creer,modifier,supprimer}` | superadmin |
+| GET | `/api/session` | libre : le pseudo de ce navigateur (ou `null`), les modules |
+| POST | `/api/pseudo` `{pseudo}` | libre : prend le pseudo et pose le cookie ; 400 invalide, 409 réservé (`reste` : secondes) |
+| POST | `/api/logout` | libre : oublie le pseudo, réservé encore une heure |
 | GET | `/api/sante` | libre : 200 si la base répond |
-| GET | `/api/presence` | tout compte actif : santé vue de l'interface (sondée toutes les 10 s) et comptes en ligne |
-| GET | `/api/uno/salons`, `/api/uno/salon?code=` | rôle `uno:joueur` |
-| POST | `/api/uno/{creer,rejoindre,quitter,exclure,regler,lancer,pret,reprendre,fermer}` | rôle `uno:joueur` |
-| POST | `/api/uno/{jouer,piocher,passer,uno,contrer}` | rôle `uno:joueur` |
-| GET | `/api/uno/spectateur?code=` | libre : une table vue sans compte, sans aucune main |
-| GET | `/api/codenames/salons`, `/api/codenames/salon?code=` | rôle `codenames:joueur` |
-| POST | `/api/codenames/{creer,rejoindre,quitter,exclure,pret,reprendre,fermer,choisir,melanger,regler,lancer}` | rôle `codenames:joueur` |
-| POST | `/api/codenames/{indice,marquer,reveler,finir}` | rôle `codenames:joueur` |
+| GET | `/api/presence` | pseudo : santé vue de l'interface (sondée toutes les 10 s), joueurs en ligne et partis depuis moins d'une heure |
+| GET | `/api/uno/salons`, `/api/uno/salon?code=[&version=]` | pseudo ; avec `version`, attente longue |
+| POST | `/api/uno/{creer,rejoindre,quitter,exclure,regler,lancer,pret,reprendre,fermer}` | pseudo |
+| POST | `/api/uno/{jouer,piocher,passer,uno,contrer}` | pseudo |
+| GET | `/api/uno/spectateur?code=[&version=]` | libre : une table vue sans pseudo, sans aucune main |
+| GET | `/api/codenames/salons`, `/api/codenames/salon?code=[&version=]` | pseudo ; avec `version`, attente longue |
+| POST | `/api/codenames/{creer,rejoindre,quitter,exclure,pret,reprendre,fermer,choisir,melanger,regler,lancer}` | pseudo |
+| POST | `/api/codenames/{indice,marquer,reveler,finir}` | pseudo |
 
 ## Module UNO
 
@@ -112,7 +115,7 @@ Tables de UNO en mémoire (`backend/modules/uno/`) : règles de base dans
 `regles.py` (le détail en tête de fichier), salons dans `salons.py`. Une table
 se partage par son code de 5 caractères ou par le lien `/uno/<code>` ; le
 créateur en est l'hôte, lance les manches (2 à 10 joueurs) et peut exclure un
-joueur (qui ne peut plus s'y asseoir). Comme les sessions, les tables
+joueur (qui ne peut plus s'y asseoir). Les tables vivent en mémoire : elles
 disparaissent au redémarrage, après 2 h sans activité, ou dès que plus aucun
 joueur ne la regarde depuis 2 minutes.
 
@@ -128,8 +131,8 @@ couleur, puis on s'arrête par `POST /api/uno/passer`). Elles sont définies dan
 ajouter une règle, c'est une entrée de chaque côté et son effet dans `Partie`.
 
 **Spectateurs** : le lien `/spectateur/<code>` montre la table (joueurs, nombre
-de leurs cartes, défausse, tour, journal, jamais une main) à qui n'a pas de
-compte. C'est la seule page publique de l'application : entrée `publiques`
+de leurs cartes, défausse, tour, journal, jamais une main) sans avoir à
+choisir de pseudo. C'est la seule page publique de l'application : entrée `publiques`
 du manifeste `frontend/src/modules/uno/index.jsx` et
 `GET /api/uno/spectateur`, sans `exige` ; le code de
 la table en est le secret, comme pour s'y asseoir. Un spectateur ne garde pas
@@ -144,8 +147,18 @@ une table (nom, visibilité, réglages du jeu), la rejoindre par un code saisi
 case par case (un lien collé se répartit tout seul), listes de ses tables et
 des tables ouvertes.
 
-**Interface** (`frontend/src/modules/uno/`) : elle relit la table chaque
-seconde, ce qui permet aussi de montrer qui est encore à la table. En-tête de
+**Mise à jour en direct** : pas de relecture à intervalle fixe. L'interface
+demande la table en donnant la version qu'elle a déjà (`salon?version=`) ; le
+serveur ne répond qu'au premier changement (un coup, un joueur qui arrive,
+s'absente ou revient), ou au bout de 25 s (`attendre`, `ATTENTE`), et
+l'interface repose aussitôt la question (`frontend/src/commun/salons/table.js`,
+`useTable`). Un coup arrive ainsi chez tous les joueurs en quelques dizaines de
+millisecondes ; sa propre action s'affiche dès la réponse du serveur, qui rend
+la table à jour. Un joueur qui attend compte comme présent. Chaque attente
+occupe un fil du serveur, ce qui convient à l'échelle d'une veillée.
+
+**Interface** (`frontend/src/modules/uno/`) : la table se met à jour en direct
+(voir ci-dessus), ce qui permet aussi de montrer qui est encore à la table. En-tête de
 la table (retour, nom, état, musique, quitter ou fermer) et salle d'attente
 dans `Salle.jsx` : les places autour de la table, puis, pour l'hôte,
 l'invitation (code, lien pour jouer, lien spectateur) et les variantes en
@@ -164,7 +177,7 @@ En fin de manche, l'hôte rechoisit les règles et tous peuvent inviter d'autres
 joueurs (code et liens), sans quitter la table. Le décor (lune, loup, sapins, bougies) est dans
 `Tapis.jsx`. La taille des cartes, et donc du tapis, suit la hauteur de la
 fenêtre (`--uno-l` dans `uno.css`) : tout tient dans un écran de 1080p. Les poses et les pioches glissent (`animations.js`),
-les cartes piochées une à une, toutes les 0,5 s :
+les cartes piochées une à une, toutes les 0,2 s :
 le serveur numérote ces événements dans la vue de la manche (`evenements`), et
 l'interface rejoue ceux qu'elle n'a pas vus. Pendant une manche, quitter la
 table par le menu, un lien ou le bouton « précédent » demande confirmation
@@ -210,10 +223,10 @@ dans `codenames.css` (préfixe `cn-`). Pas de musique ni de page spectateur.
 
 L'interface relit `GET /api/presence` toutes les 10 s
 (`frontend/src/coque/presence.jsx`) : un bandeau prévient quand le serveur ne
-répond plus, que sa base est illisible ou que la session a expiré, et le pied
-du menu montre l'état du serveur et les comptes en ligne (popup : en ligne,
-puis hors ligne avec la dernière activité). Toute requête authentifiée vaut
-signe de vie ; un compte est en ligne pendant 30 s après le dernier.
+répond plus, que sa base est illisible ou que le pseudo est perdu, et le pied
+du menu montre l'état du serveur et les joueurs en ligne (popup : en ligne,
+puis partis depuis moins d'une heure). Toute requête d'un joueur vaut signe de
+vie ; il est en ligne pendant 30 s après le dernier.
 
 ## Ce qui n'est pas inclus
 
@@ -222,8 +235,9 @@ signe de vie ; un compte est en ligne pendant 30 s après le dernier.
   migrations versionnées (`backend/base/migrations.py`) ainsi qu'une
   réparation de base corrompue (`backend/base/commun/reparation.py`), à
   reprendre dès qu'une base de production doit évoluer.
-- **Sessions persistantes, SSO, politique de mot de passe** : à ajouter selon
-  le besoin (`backend/metier/comptes/`).
+- **Tables des anciens comptes** : une base créée avant le passage aux
+  pseudos garde ses tables `"comptes.utilisateur"` et `"comptes.droit"`,
+  désormais inutilisées ; on peut les supprimer.
 
 Les données de démonstration du Storybook (pointeuses, commandes…) sont
 fictives et peuvent être renommées librement.

@@ -10,12 +10,4 @@ export default {
   libelle: 'Code Names',
   Ico: IcoManoir,
   Composant: CodeNames,
-  roles: [
-    {
-      cle: 'joueur',
-      libelle: 'Joueur',
-      resume: 'Crée des tables de Code Names au manoir, en rejoint par '
-        + 'code ou par lien, et y joue.',
-    },
-  ],
 };

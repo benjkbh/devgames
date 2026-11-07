@@ -1,13 +1,20 @@
 """Tables communes à tous les jeux (`backend/commun/salons.py`) : prêt,
-reprise d'une table dont l'hôte est absent, fermeture. Éprouvées sur les
-tables de UNO."""
+reprise d'une table dont l'hôte est absent, fermeture, attente longue.
+Éprouvées sur les tables de UNO."""
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import random
+import threading
+import time
 import unittest
 
 from backend.commun import salons as commun
 from backend.modules.uno import salons
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 class Prets(unittest.TestCase):
@@ -98,6 +105,53 @@ class Fermeture(unittest.TestCase):
         with self.assertRaises(salons.ErreurSalon):
             self.salons.fermer(self.code, 'bob')
         self.assertTrue(self.salons.vue(self.code, 'bob')['membre'])
+
+
+class AttenteLongue(unittest.TestCase):
+    """`attendre` : la réponse part au premier changement de la table."""
+
+    def setUp(self) -> None:
+        self.salons = salons.Salons(random.Random(3))
+        self.code = self.salons.creer('ana')
+        self.version = self.salons.vue(self.code, 'ana')['version']
+
+    def _plus_tard(self, action: Callable[[], object]) -> None:
+        fil = threading.Timer(0.1, action)
+        fil.start()
+        self.addCleanup(fil.join)
+
+    def test_une_version_depassee_repond_aussitot(self) -> None:
+        debut = time.monotonic()
+        self.salons.attendre(self.code, self.version - 1, 'ana', delai=5)
+        self.assertLess(time.monotonic() - debut, 0.5)
+
+    def test_un_changement_reveille_l_attente(self) -> None:
+        self._plus_tard(lambda: self.salons.rejoindre(self.code, 'bob'))
+        debut = time.monotonic()
+        self.salons.attendre(self.code, self.version, 'ana', delai=5)
+        self.assertLess(time.monotonic() - debut, 2)
+        self.assertIn('bob', self.salons.vue(self.code, 'ana')['joueurs'])
+
+    def test_sans_changement_l_attente_finit_au_delai(self) -> None:
+        debut = time.monotonic()
+        self.salons.attendre(self.code, self.version, 'ana', delai=0.3)
+        self.assertGreaterEqual(time.monotonic() - debut, 0.3)
+
+    def test_une_table_fermee_pendant_l_attente_est_introuvable(self) -> None:
+        self._plus_tard(lambda: self.salons.fermer(self.code, 'ana'))
+        with self.assertRaises(salons.SalonIntrouvable):
+            self.salons.attendre(self.code, self.version, delai=5)
+
+    def test_qui_attend_reste_present(self) -> None:
+        maintenant = [1000.0]
+        s = salons.Salons(random.Random(3), horloge=lambda: maintenant[0])
+        code = s.creer('ana')
+        s.rejoindre(code, 'bob')
+        version = s.vue(code, 'ana')['version']
+        maintenant[0] += commun.PRESENCE_TABLE * 3
+        s.attendre(code, version, 'ana', delai=0.05)
+        presents = s.vue(code, 'bob')['presents']
+        self.assertTrue(presents['ana'])
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-"""`GET /api/sante`, sans session : sonde d'un orchestrateur ou de Docker."""
+"""`GET /api/sante`, sans pseudo : sonde d'un orchestrateur ou de Docker."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -8,7 +8,7 @@ from http import HTTPStatus
 from ... import base
 
 if TYPE_CHECKING:
-    from .acces import Reponse
+    from ...commun.routage import Reponse
     from ...serveur import Requete
 
 

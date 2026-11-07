@@ -18,7 +18,6 @@ RUN mkdir -p /data
 # Référence des variables : `backend/config.py`.
 ENV DB_PATH=/data/app.db \
     LISTEN_PORT=8080 \
-    SESSION_TTL=3600 \
     TRUST_PROXY=0 \
     COOKIE_SECURE=0 \
     PYTHONUNBUFFERED=1 \

@@ -11,7 +11,8 @@ export const {
   fermer, lienTable,
 } = tables;
 // Une table vue d'un spectateur : sans session, sans aucune main.
-export const lireSpectateur = ({ code }) => lire('/api/uno/spectateur', { code });
+export const lireSpectateur = ({ code, version }, options) => lire(
+  '/api/uno/spectateur', { code, version }, options);
 
 export const creerTable = (nom, publique, regles) => tables.creerTable(
   nom, publique, { regles });
@@ -26,6 +27,6 @@ export const direUno = (code) => tables.demander('uno', { code });
 export const contrer = (code, cible) => tables.demander('contrer',
   { code, cible });
 
-// Regarder une table sans compte.
+// Regarder une table sans pseudo.
 export const cheminSpectateur = (code) => `/spectateur/${code}`;
 export const lienSpectateur = (code) => `${window.location.origin}${cheminSpectateur(code)}`;

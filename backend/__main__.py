@@ -5,7 +5,7 @@ import signal
 import sys
 
 from . import base, config, serveur
-from .metier.comptes import utilisateurs
+from .base.joueurs import depot as pseudos
 
 # Couleurs ANSI par niveau. Actives par défaut
 COULEURS = {'info': '32', 'alerte': '33', 'erreur': '1;31'}
@@ -40,7 +40,7 @@ def main() -> int:
         logging('erreur', str(e))
         return 1
 
-    for ligne in cfg.resume(len(utilisateurs.lister(cfg.db_path))):
+    for ligne in cfg.resume(pseudos.compter(cfg.db_path)):
         logging('info', ligne)
 
     srv = serveur.creer(cfg, logging)
