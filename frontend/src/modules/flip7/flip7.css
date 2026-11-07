@@ -1,0 +1,140 @@
+/* Module Flip 7, à la fête foraine, la nuit : chapiteau rayé rouge et
+   crème, guirlandes d'ampoules, néons. La piste reste sombre dans les deux
+   thèmes, comme un stand éclairé dans la nuit. Les nombres prennent les
+   couleurs vives des cartes du jeu. Tout ce qui bouge respecte « mouvement
+   réduit ». */
+
+.f7-page, .f7-accueil {
+  --f7-nuit: #140a1e;
+  --f7-nuit-2: #22102f;
+  --f7-rouge: #e5323f;
+  --f7-creme: #f6e6c4;
+  --f7-or: #ffc23d;
+  --f7-neon: #ff4fa3;
+  --f7-turquoise: #29d3c2;
+}
+
+/* -- bannière --- */
+.f7-banniere {
+  background:
+    radial-gradient(380px 240px at 80% 40%, rgba(255, 79, 163, .25), transparent 70%),
+    radial-gradient(300px 200px at 20% 0%, rgba(255, 194, 61, .14), transparent 70%),
+    linear-gradient(180deg, #0b0614 0%, #1c0c29 60%, #2e0f1f 100%);
+}
+.f7-banniere-scene { position: relative; display: flex; align-items: flex-end; }
+.f7-chapiteau { width: min(300px, 70vw); height: auto; }
+.f7-chap-sol { fill: #0b0610; }
+.f7-chap-toile { fill: var(--f7-creme); }
+.f7-chap-raie { fill: var(--f7-rouge); }
+.f7-chap-porte { fill: #2a0d14; }
+.f7-chap-mat { stroke: #d9c79c; stroke-width: 3; }
+.f7-chap-fanion { fill: var(--f7-or); }
+.f7-chap-fil { fill: none; stroke: rgba(246, 230, 196, .5); stroke-width: 1.2; }
+.f7-ampoule { fill: var(--f7-or); filter: drop-shadow(0 0 4px var(--f7-or)); animation: f7-clignote 1.4s ease-in-out infinite alternate; }
+.f7-banniere-cartes { position: absolute; right: -6px; bottom: 6px; display: flex; gap: 4px; transform: rotate(-6deg); }
+
+/* -- la piste --- */
+.f7-piste {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e4);
+  padding: var(--e6) var(--e5) var(--e5);
+  overflow: hidden;
+  border: 2px solid #5b2a3a;
+  border-radius: var(--r-xl);
+  background:
+    radial-gradient(70% 50% at 50% 0%, rgba(255, 79, 163, .16), transparent 70%),
+    repeating-linear-gradient(90deg, rgba(229, 50, 63, .07) 0 34px, transparent 34px 68px),
+    linear-gradient(180deg, var(--f7-nuit-2), var(--f7-nuit));
+  box-shadow: inset 0 0 0 4px rgba(0, 0, 0, .35), 0 18px 40px rgba(0, 0, 0, .4);
+  color: #f3e9f7;
+}
+.f7-guirlande { position: absolute; top: 10px; left: 0; right: 0; display: flex; justify-content: space-around; pointer-events: none; }
+.f7-guirlande i { width: 9px; height: 9px; border-radius: 50%; background: var(--f7-or); box-shadow: 0 0 8px var(--f7-or); animation: f7-clignote 1.2s ease-in-out infinite alternate; }
+.f7-guirlande i:nth-child(3n) { background: var(--f7-neon); box-shadow: 0 0 8px var(--f7-neon); animation-delay: -.4s; }
+.f7-guirlande i:nth-child(3n+1) { background: var(--f7-turquoise); box-shadow: 0 0 8px var(--f7-turquoise); animation-delay: -.8s; }
+.f7-piste-tete { display: flex; flex-wrap: wrap; gap: var(--e2) var(--e5); color: rgba(243, 233, 247, .7); font-size: var(--t-xs); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+
+.f7-message { color: #f3e9f7; font-family: var(--police-titre); font-size: var(--t-xl); text-align: center; }
+.f7-message.vous { color: var(--f7-or); text-shadow: 0 0 12px rgba(255, 194, 61, .5); }
+.f7-cibles { display: flex; flex-direction: column; align-items: center; gap: var(--e3); }
+.f7-boutons { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--e3); }
+
+.f7-bilan { align-self: center; min-width: min(420px, 100%); padding: var(--e4) var(--e5); border: 1px solid rgba(255, 194, 61, .5); border-radius: var(--r-l); background: rgba(10, 4, 16, .6); text-align: center; }
+.f7-bilan-titre { color: var(--f7-or); font-family: var(--police-titre); font-size: var(--t-xl); }
+.f7-bilan ul { display: flex; flex-direction: column; gap: var(--e1); margin: var(--e3) 0; padding: 0; list-style: none; }
+.f7-bilan .btn { margin-top: var(--e2); }
+
+.f7-stands { display: flex; flex-direction: column; gap: var(--e3); margin: 0; padding: 0; list-style: none; }
+.f7-stand {
+  display: grid;
+  grid-template-columns: minmax(160px, 220px) minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: var(--e1) var(--e4);
+  padding: var(--e3) var(--e4);
+  border: 1px solid rgba(243, 233, 247, .14);
+  border-radius: var(--r-l);
+  background: rgba(10, 4, 16, .45);
+  transition: border-color var(--duree), box-shadow var(--duree);
+}
+.f7-stand.au-trait { border-color: var(--f7-or); box-shadow: 0 0 0 1px var(--f7-or), 0 0 22px rgba(255, 194, 61, .35); }
+.f7-stand.saute { opacity: .6; }
+.f7-stand.saute .f7-stand-cartes { filter: grayscale(.6); }
+.f7-stand-tete { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e2); }
+.f7-stand-nom { font-family: var(--police-titre); font-size: var(--t-l); font-weight: 700; overflow-wrap: anywhere; }
+.f7-stand-points { margin-left: auto; color: var(--f7-or); font-weight: 800; font-variant-numeric: tabular-nums; }
+.f7-stand-cartes { grid-row: 1 / span 2; grid-column: 2; display: flex; flex-wrap: wrap; gap: var(--e2); min-height: 72px; align-items: center; }
+.f7-stand-compte { font-size: var(--t-xs); color: rgba(243, 233, 247, .55); }
+
+/* -- les cartes --- */
+.f7-carte {
+  --f7-c: #7a7fa3;
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 70px;
+  border: 2px solid var(--f7-creme);
+  border-radius: 8px;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--f7-c) 85%, #fff), var(--f7-c));
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .45);
+  color: #fff;
+  animation: f7-retourne .35s cubic-bezier(.3, 1.5, .5, 1) both;
+}
+.f7-carte-centre { font-family: var(--police-titre); font-size: 26px; font-weight: 800; line-height: 1; text-shadow: 0 2px 2px rgba(0, 0, 0, .35); }
+.f7-carte-coin { position: absolute; top: 2px; left: 4px; font-size: 10px; font-weight: 800; opacity: .85; }
+.f7-carte-legende { position: absolute; bottom: 3px; left: 2px; right: 2px; font-size: 7.5px; font-weight: 800; line-height: 1.05; text-align: center; text-transform: uppercase; }
+.f7-carte.doublon { border-color: var(--f7-rouge); box-shadow: 0 0 0 2px var(--f7-rouge), 0 0 16px rgba(229, 50, 63, .7); }
+/* Nombres : un arc-en-ciel, du 0 au 12. */
+.f7-v0 { --f7-c: #8f8f9e; } .f7-v1 { --f7-c: #b07a4d; } .f7-v2 { --f7-c: #d6a33a; }
+.f7-v3 { --f7-c: #9cb53a; } .f7-v4 { --f7-c: #3fa55a; } .f7-v5 { --f7-c: #2aa39a; }
+.f7-v6 { --f7-c: #2d8cc4; } .f7-v7 { --f7-c: #3f5fd1; } .f7-v8 { --f7-c: #7048c8; }
+.f7-v9 { --f7-c: #a63fbd; } .f7-v10 { --f7-c: #cf3f8e; } .f7-v11 { --f7-c: #e0444f; }
+.f7-v12 { --f7-c: #e8722e; }
+.f7-carte-bonus, .f7-carte-fois2 { --f7-c: #1e1a12; border-color: var(--f7-or); color: var(--f7-or); }
+.f7-carte-bonus .f7-carte-centre, .f7-carte-fois2 .f7-carte-centre { font-size: 20px; }
+.f7-carte-gel { --f7-c: #3e7fb8; }
+.f7-carte-trois { --f7-c: #d9771d; }
+.f7-carte-chance { --f7-c: #2f9a62; }
+.f7-carte-gel .f7-carte-centre, .f7-carte-trois .f7-carte-centre, .f7-carte-chance .f7-carte-centre { font-size: 22px; }
+
+/* Scores : une jauge vers l'objectif. */
+.f7-jauge { position: relative; flex: 0 0 70px; height: 5px; overflow: hidden; border-radius: var(--r-plein); background: var(--surface-3); }
+.f7-jauge i { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: linear-gradient(90deg, var(--f7-neon), var(--f7-or)); }
+
+@keyframes f7-clignote { from { opacity: .45; } to { opacity: 1; } }
+@keyframes f7-retourne {
+  from { opacity: 0; transform: rotateY(90deg) translateY(-12px); }
+  to { opacity: 1; transform: none; }
+}
+@media (max-width: 640px) {
+  .f7-stand { grid-template-columns: 1fr; }
+  .f7-stand-cartes { grid-row: auto; grid-column: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .f7-ampoule, .f7-guirlande i, .f7-carte { animation: none; }
+}

@@ -1,6 +1,9 @@
 import accueil from '../modules/accueil';
 import uno from '../modules/uno';
 import codenames from '../modules/codenames';
+import flip7 from '../modules/flip7';
+import menteur from '../modules/menteur';
+import trio from '../modules/trio';
 
 // Registre des modules, lu par le menu latéral (entrées) et par `App`
 // (routes). La coque ne connaît aucun module autrement que par ce registre.
@@ -32,7 +35,7 @@ import codenames from '../modules/codenames';
 //   2. le module porte son état, son API et ses constantes dans son dossier ;
 //      les briques partagées sont dans `@ui` (composants, `storybook/ui`) et
 //      `commun/` (requêtes, tables de jeu).
-export const MODULES = [accueil, uno, codenames];
+export const MODULES = [accueil, uno, codenames, flip7, menteur, trio];
 
 // Pages publiques de tous les modules.
 export const PAGES_PUBLIQUES = MODULES.flatMap((m) => m.publiques || []);

@@ -9,6 +9,10 @@ from __future__ import annotations
 from .accueil import MODULE as _ACCUEIL
 from .codenames import MODULE as _CODENAMES
 from .contrat import Module
+from .flip7 import MODULE as _FLIP7
+from .menteur import MODULE as _MENTEUR
+from .trio import MODULE as _TRIO
 from .uno import MODULE as _UNO
 
-MODULES: tuple[Module, ...] = (_ACCUEIL, _UNO, _CODENAMES)
+MODULES: tuple[Module, ...] = (_ACCUEIL, _UNO, _CODENAMES, _FLIP7, _MENTEUR,
+                               _TRIO)

@@ -7,6 +7,12 @@ Les joueurs sont désignés par leur pseudo. Un salon `public` est listé aux
 autres joueurs tant qu'aucune manche n'est en cours. L'hôte peut exclure un
 joueur (il ne peut plus s'asseoir).
 
+Spectateurs : un joueur peut regarder la table sans s'y asseoir (`lever`), et
+un joueur assis se lever entre deux manches pour regarder ; un spectateur
+s'assoit par `rejoindre`, entre deux manches. Il voit la manche comme un
+spectateur (`vue_spectateur` du jeu), sans aucune main ; il ne garde pas la
+table en vie.
+
 Comme les sessions, les salons vivent en mémoire : un redémarrage du service
 les efface. Un salon sans activité depuis `INACTIVITE` secondes est retiré,
 comme un salon dont aucun joueur n'a relu la table depuis `ABSENCE_TABLE`
@@ -21,8 +27,8 @@ présent : il regarde la table.
 
 Un jeu dérive `Salon` (ce que la table garde entre deux manches) et `Salons`
 (ses règles de table), et fournit sa manche : un objet qui a `finie`,
-`gagnant`, `retirer(joueur)` et `vue(joueur)`. Les crochets à redéfinir sont
-regroupés en tête de `Salons`.
+`gagnant`, `retirer(joueur)`, `vue(joueur)` et `vue_spectateur()`. Les
+crochets à redéfinir sont regroupés en tête de `Salons`.
 """
 from __future__ import annotations
 
@@ -85,6 +91,8 @@ class Salon:
     exclus: set[str] = field(default_factory=set)
     # Joueurs qui se sont dits prêts pour la prochaine manche.
     prets: set[str] = field(default_factory=set)
+    # Joueurs qui regardent la table sans y être assis.
+    spectateurs: list[str] = field(default_factory=list)
 
     @property
     def derniere_presence(self) -> float:
@@ -275,13 +283,40 @@ class Salons(Generic[S]):
                 raise self.Erreur('La table est complète (%d joueurs).'
                                   % self.MAX_JOUEURS)
             salon.joueurs.append(joueur)
+            if joueur in salon.spectateurs:
+                salon.spectateurs.remove(joueur)
             salon.vus[joueur] = self._horloge()
             self._assis(salon, joueur)
             self._toucher(salon)
             return salon.code
 
+    def lever(self, code: object, joueur: str) -> None:
+        """`joueur` regarde la table sans jouer : assis, il se lève (entre
+        deux manches, l'hôte passant au suivant) ; sinon, il entre en
+        spectateur."""
+        with self._verrou:
+            salon = self._salon(code)
+            if joueur in salon.spectateurs:
+                return
+            if joueur in salon.joueurs:
+                self._hors_manche(salon, 'Une manche est en cours : on ne '
+                                         'se lève pas au milieu.')
+                if len(salon.joueurs) == 1:
+                    raise self.Erreur('Vous êtes seul assis : quittez plutôt '
+                                      'la table.')
+                self._retirer(salon, joueur)
+            salon.spectateurs.append(joueur)
+            salon.vus[joueur] = self._horloge()
+            self._toucher(salon)
+
     def quitter(self, code: object, joueur: str) -> None:
         with self._verrou:
+            salon = self._salon(code)
+            if joueur in salon.spectateurs:
+                salon.spectateurs.remove(joueur)
+                salon.vus.pop(joueur, None)
+                self._toucher(salon)
+                return
             self._retirer(self._membre(code, joueur), joueur)
 
     def exclure(self, code: object, joueur: str, cible: object) -> None:
@@ -379,6 +414,10 @@ class Salons(Generic[S]):
             'min_joueurs': self.MIN_JOUEURS,
             'max_joueurs': self.MAX_JOUEURS,
             'prets': [j for j in salon.joueurs if j in salon.prets],
+            # Spectateurs qui regardent la table en ce moment.
+            'spectateurs': [s for s in salon.spectateurs
+                            if maintenant - salon.vus.get(s, float('-inf'))
+                            < PRESENCE_TABLE],
             # Absence de l'hôte (s, arrondie), et délai pour reprendre sa
             # table.
             'absence_hote': None if absence is None
@@ -393,7 +432,8 @@ class Salons(Generic[S]):
         maintenant = self._horloge()
         absence = self._absence(salon, salon.hote)
         return (tuple(maintenant - salon.vus.get(j, float('-inf'))
-                      < PRESENCE_TABLE for j in salon.joueurs),
+                      < PRESENCE_TABLE
+                      for j in salon.joueurs + salon.spectateurs),
                 absence is not None and absence >= DELAI_REPRISE)
 
     def attendre(self, code: object, version: int,
@@ -405,11 +445,11 @@ class Salons(Generic[S]):
         fin = time.monotonic() + delai
         with self._verrou:
             salon = self._salon(code)
-            if joueur is not None and joueur in salon.joueurs:
+            if joueur is not None and self._regarde(salon, joueur):
                 salon.vus[joueur] = self._horloge()
             presences = self._presences(salon)
             while True:
-                if joueur is not None and joueur in salon.joueurs:
+                if joueur is not None and self._regarde(salon, joueur):
                     salon.vus[joueur] = self._horloge()
                 reste = fin - time.monotonic()
                 if salon.version != version or reste <= 0:
@@ -421,24 +461,35 @@ class Salons(Generic[S]):
                 if self._presences(salon) != presences:
                     return
 
+    @staticmethod
+    def _regarde(salon: S, joueur: str) -> bool:
+        """`joueur` est à la table, assis ou spectateur."""
+        return joueur in salon.joueurs or joueur in salon.spectateurs
+
     def vue(self, code: object, joueur: str) -> dict[str, Any]:
-        """Le salon vu par `joueur`. Non assis : de quoi décider de
-        s'asseoir (nom, joueurs, état), sans rien du jeu."""
+        """Le salon vu par `joueur`. Spectateur : la manche sans aucune
+        main. Ni assis ni spectateur : de quoi décider de s'asseoir (nom,
+        joueurs, état), sans rien du jeu."""
         with self._verrou:
             salon = self._salon(code)
             membre = joueur in salon.joueurs
-            if membre:
+            spectateur = joueur in salon.spectateurs
+            if membre or spectateur:
                 # Lire la table vaut présence (sans changer la version).
                 salon.vus[joueur] = self._horloge()
             vue: dict[str, Any] = {
                 **self._commun(salon),
                 'membre': membre,
+                'spectateur': spectateur,
                 'exclu': joueur in salon.exclus,
                 'moi': joueur,
                 'partie': None,
             }
-            if membre and salon.partie is not None:
-                vue['partie'] = salon.partie.vue(joueur)
+            if salon.partie is not None:
+                if membre:
+                    vue['partie'] = salon.partie.vue(joueur)
+                elif spectateur:
+                    vue['partie'] = salon.partie.vue_spectateur()
             return vue
 
     def lister(self, joueur: str) -> dict[str, list[dict[str, Any]]]:

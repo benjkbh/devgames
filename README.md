@@ -1,6 +1,6 @@
 # Jeux de la veillée
 
-Jeux à plusieurs dans le navigateur (UNO, Code Names). **Pas de compte** : on
+Jeux à plusieurs dans le navigateur (UNO, Code Names, Flip 7, Menteur, Trio). **Pas de compte** : on
 entre en choisissant un pseudo, et tous les jeux sont ouverts. Frontend
 React/Vite, backend Python sans dépendance (bibliothèque standard, SQLite).
 
@@ -102,12 +102,16 @@ d'interface, aiguillée par `frontend/src/App.jsx` avant le choix du pseudo.
 | GET | `/api/sante` | libre : 200 si la base répond |
 | GET | `/api/presence` | pseudo : santé vue de l'interface (sondée toutes les 10 s), joueurs en ligne et partis depuis moins d'une heure |
 | GET | `/api/uno/salons`, `/api/uno/salon?code=[&version=]` | pseudo ; avec `version`, attente longue |
-| POST | `/api/uno/{creer,rejoindre,quitter,exclure,regler,lancer,pret,reprendre,fermer}` | pseudo |
+| POST | `/api/uno/{creer,rejoindre,quitter,lever,exclure,regler,lancer,pret,reprendre,fermer}` | pseudo |
 | POST | `/api/uno/{jouer,piocher,passer,uno,contrer}` | pseudo |
 | GET | `/api/uno/spectateur?code=[&version=]` | libre : une table vue sans pseudo, sans aucune main |
 | GET | `/api/codenames/salons`, `/api/codenames/salon?code=[&version=]` | pseudo ; avec `version`, attente longue |
-| POST | `/api/codenames/{creer,rejoindre,quitter,exclure,pret,reprendre,fermer,choisir,melanger,regler,lancer}` | pseudo |
+| POST | `/api/codenames/{creer,rejoindre,quitter,lever,exclure,pret,reprendre,fermer,choisir,melanger,regler,lancer}` | pseudo |
 | POST | `/api/codenames/{indice,marquer,reveler,finir}` | pseudo |
+| GET, POST | `/api/{flip7,menteur,trio}/…` : les routes communes des tables (`salons`, `salon`, `creer`, `rejoindre`, `quitter`, `lever`, `exclure`, `lancer`, `pret`, `reprendre`, `fermer`) | pseudo |
+| POST | `/api/flip7/{piocher,rester,cibler,suivante}` | pseudo |
+| POST | `/api/menteur/{poser,menteur,accepter}` | pseudo |
+| POST | `/api/trio/{demander,retourner}` | pseudo |
 
 ## Module UNO
 
@@ -138,7 +142,10 @@ du manifeste `frontend/src/modules/uno/index.jsx` et
 la table en est le secret, comme pour s'y asseoir. Un spectateur ne garde pas
 la table en vie.
 
-**Tables communes à tous les jeux** (`backend/commun/salons.py`) : chacun peut
+**Tables communes à tous les jeux** (`backend/commun/salons.py`) : on peut
+regarder une table sans s'y asseoir (`lever`), se lever entre deux manches
+pour la regarder, et s'asseoir (`rejoindre`) avant la donne ; un spectateur
+suit la manche sans aucune main et ne garde pas la table en vie. Chacun peut
 se dire prêt pour la prochaine manche (`pret`, remis à zéro à la donne) ;
 quand l'hôte ne relit plus la table depuis `DELAI_REPRISE` (60 s), un joueur
 assis peut la reprendre et en devenir l'hôte (`reprendre`) ; l'hôte peut
@@ -176,7 +183,7 @@ n'a pas dit UNO peut être contré (jusqu'à la fin du tour du joueur suivant).
 En fin de manche, l'hôte rechoisit les règles et tous peuvent inviter d'autres
 joueurs (code et liens), sans quitter la table. Le décor (lune, loup, sapins, bougies) est dans
 `Tapis.jsx`. La taille des cartes, et donc du tapis, suit la hauteur de la
-fenêtre (`--uno-l` dans `uno.css`) : tout tient dans un écran de 1080p. Les poses et les pioches glissent (`animations.js`),
+fenêtre (`--uno-l` dans `uno.css`) : tout tient dans un écran de 1080p. À l'ouverture d'une manche, les cartes sont distribuées une à une autour de la table (en 2,4 s au plus). Les poses et les pioches glissent (`animations.js`),
 les cartes piochées une à une, toutes les 0,2 s :
 le serveur numérote ces événements dans la vue de la manche (`evenements`), et
 l'interface rejoue ceux qu'elle n'a pas vus. Pendant une manche, quitter la
@@ -218,6 +225,40 @@ tous) puis les révèlent. Le Comte fait perdre le camp qui le révèle.
 thèmes. Dessins (sceaux des camps, du domestique et du Comte, manoir de
 l'accueil, icône du menu) dans `decor.jsx`, galerie dans `Galerie.jsx`, styles
 dans `codenames.css` (préfixe `cn-`). Pas de musique ni de page spectateur.
+
+## Jeux simples : Flip 7, Menteur, Trio
+
+Trois jeux bâtis sur la même base, pour qu'un nouveau jeu tienne en peu de
+code :
+
+- **serveur** : `backend/commun/jeux.py` (des victoires par joueur, et chaque
+  coup transmis à la méthode du même nom de la manche, avec les paramètres de
+  `COUPS`). Un jeu fournit ses règles (`regles.py`, une classe `Partie`
+  avec `vue`, `vue_spectateur`, `retirer`, `finie`, `gagnant`) et quelques
+  lignes de `salons.py` ;
+- **interface** : `frontend/src/commun/salons/PageTable.jsx` porte toute la
+  page d'une table (en-tête, salle d'attente, invitation, prêt, regarder sans
+  jouer, fin de partie, garde) ; un jeu ne fournit que son `Plateau`, son
+  accueil (`AccueilSalons`) et son habillage.
+
+**Flip 7**, à la fête foraine (`modules/flip7/`, de 2 à 8 joueurs) : une
+partie se joue en manches jusqu'à 200 points. Piocher ou s'arrêter ; un
+doublon fait sauter, sept nombres différents font un Flip 7 (+15). Les cartes
+Gel et Trois-à-la-suite visent un joueur choisi par celui qui les tire ; la
+Seconde chance pardonne un doublon. Règles détaillées en tête de
+`regles.py`.
+
+**Menteur**, à la taverne des pirates (`modules/menteur/`, de 3 à 8
+joueurs) : 52 cartes distribuées ; on pose face cachée de 1 à 4 cartes du rang
+demandé (As, 2… Roi, puis de nouveau As), en mentant au besoin. Avant la pose
+suivante, n'importe qui peut crier « Menteur ! » ; le perdant ramasse le tas.
+Qui pose ses dernières cartes ne gagne qu'une fois la pose acceptée.
+
+**Trio**, à l'observatoire (`modules/trio/`, de 3 à 6 joueurs) : 36 cartes
+de 1 à 12 en trois exemplaires, des mains rangées et des cartes cachées au
+centre. À son tour, on révèle la plus petite ou la plus grande carte d'un
+joueur, ou une carte du centre, tant qu'elles sont identiques ; trois
+identiques font un trio. Trois trios, ou le trio de 7, gagnent.
 
 ## Santé et présence
 

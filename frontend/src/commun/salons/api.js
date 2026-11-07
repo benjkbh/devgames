@@ -23,6 +23,9 @@ export function apiSalons(module) {
     quitter: (code) => demander('quitter', { code }),
     exclure: (code, joueur) => demander('exclure', { code, joueur }),
     lancer: (code) => demander('lancer', { code }),
+    // Regarder sans jouer : se lever entre deux manches, ou entrer en
+    // spectateur ; `rejoindre` fait s'asseoir.
+    lever: (code) => demander('lever', { code }),
     // Prêt pour la prochaine manche (`pret` faux : ne l'est plus).
     pret: (code, pret = true) => demander('pret', { code, pret }),
     // Devenir l'hôte d'une table dont l'hôte est absent depuis

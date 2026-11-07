@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom';
 
 import {
-  Alerte, Badge, Bouton, Carte, CarteJeu, IcoCadenas, IcoCarteRole, IcoCopier,
+  Badge, Bouton, Carte, CarteJeu, IcoCadenas, IcoCarteRole, IcoCopier,
   IcoInviter, IcoLien, IcoLune, IcoOeil, IcoRetour, IcoValide, Jauge, Pastille,
-  Places, SaisieCode, Sr, useAction, useCopie,
+  Places, SaisieCode, Sr, useCopie,
 } from '@ui';
 import {
-  cheminSpectateur, lancer, lienSpectateur, lienTable, pret as declarerPret,
-  regler, rejoindre, reprendre,
+  cheminSpectateur, lancer, lever, lienSpectateur, lienTable,
+  pret as declarerPret, regler, rejoindre, reprendre,
 } from './api';
 import { ChoixRegles, RappelRegles, RecapRegles } from './ReglesUno';
 
@@ -110,7 +110,24 @@ export function AutourTable({ table, onInviter, onExclure }) {
               libelle="Places autour de la table"
               onInviter={onInviter} libelleInviter="Copier le lien d’invitation"
               onRetirer={onExclure} retirable={(j) => j.nom !== table.moi} />
+      {(table.spectateurs || []).length > 0 && (
+        <p className="uno-spectateurs">
+          <IcoOeil />
+          {`${table.spectateurs.length > 1 ? 'Spectateurs' : 'Spectateur'} : `}
+          {table.spectateurs.map((s) => (s === table.moi ? `${s} (vous)` : s)).join(', ')}
+        </p>
+      )}
     </Carte>
+  );
+}
+
+// Se lever pour regarder la manche sans jouer (entre deux manches, s'il
+// reste quelqu'un d'assis).
+function BoutonLever({ table, onAction }) {
+  if (table.joueurs.length < 2) return null;
+  return (
+    <Bouton taille="l" icone={<IcoOeil />} titre="Regarder sans jouer"
+            onClick={() => onAction(() => lever(table.code))} />
   );
 }
 
@@ -175,7 +192,7 @@ function Pied({
         <p className="uno-pied-titre">{titre}</p>
         <p className="dim">{texte}</p>
       </div>
-      {action}
+      <div className="uno-pied-actions">{action}</div>
     </section>
   );
 }
@@ -211,7 +228,12 @@ function PiedHote({ table, onAction }) {
       <Pied ico={<IcoInviter />} titre={`Il manque encore ${pluriel(manque, 'joueur')}`}
             texte={'Partagez le code ou le lien : la distribution se débloque à '
               + `${table.min_joueurs} joueurs.`}
-            action={<Bouton taille="l" icone={<IcoCadenas />} disabled titre="Distribuer les cartes" />} />
+            action={(
+              <>
+                <BoutonLever table={table} onAction={onAction} />
+                <Bouton taille="l" icone={<IcoCadenas />} disabled titre="Distribuer les cartes" />
+              </>
+            )} />
     );
   }
   const autres = table.joueurs.filter((j) => j !== table.moi);
@@ -222,9 +244,12 @@ function PiedHote({ table, onAction }) {
             : `${prets} sur ${pluriel(autres.length, 'joueur')} ${prets > 1 ? 'sont prêts' : 'est prêt'}`}
           texte="Distribuez quand vous voulez : chaque joueur assis reçoit sa main."
           action={(
-            <Bouton variante="principal" taille="l" icone={<IcoCarteRole />}
-                    titre="Distribuer les cartes"
-                    onClick={() => onAction(() => lancer(table.code))} />
+            <>
+              <BoutonLever table={table} onAction={onAction} />
+              <Bouton variante="principal" taille="l" icone={<IcoCarteRole />}
+                      titre="Distribuer les cartes"
+                      onClick={() => onAction(() => lancer(table.code))} />
+            </>
           )} />
   );
 }
@@ -240,14 +265,19 @@ function PiedJoueur({ table, onAction }) {
     )}
           titre={pret ? 'Vous êtes prêt' : 'Êtes-vous prêt ?'}
           texte={`${table.hote} distribuera les cartes quand tout le monde sera assis.`}
-          action={pret ? (
-            <Bouton couleur="vert" taille="l" icone={<IcoValide />} titre="Prêt"
-                    aria-pressed="true" title="Ne plus être prêt"
-                    onClick={() => onAction(() => declarerPret(table.code, false))} />
-          ) : (
-            <Bouton variante="principal" couleur="vert" taille="l" titre="Je suis prêt"
-                    aria-pressed="false"
-                    onClick={() => onAction(() => declarerPret(table.code, true))} />
+          action={(
+            <>
+              <BoutonLever table={table} onAction={onAction} />
+              {pret ? (
+                <Bouton couleur="vert" taille="l" icone={<IcoValide />} titre="Prêt"
+                        aria-pressed="true" title="Ne plus être prêt"
+                        onClick={() => onAction(() => declarerPret(table.code, false))} />
+              ) : (
+                <Bouton variante="principal" couleur="vert" taille="l" titre="Je suis prêt"
+                        aria-pressed="false"
+                        onClick={() => onAction(() => declarerPret(table.code, true))} />
+              )}
+            </>
           )} />
   );
 }
@@ -292,17 +322,17 @@ export function SalleAttente({
   );
 }
 
-// Arrivé par un lien, pas encore assis : la table, ses règles, et de quoi
-// s'asseoir ou regarder.
-export function Invitation({ table, onAssis }) {
-  const action = useAction();
+// Pas assis : arrivé par un lien, ou spectateur entre deux manches. La
+// table, ses règles, et de quoi s'asseoir ou regarder sans jouer.
+export function Invitation({ table, onAction }) {
   const pleine = table.joueurs.length >= table.max_joueurs;
   const enManche = table.etat === 'partie';
-  const asseoir = async () => {
-    const r = await action.executer(() => rejoindre(table.code));
-    if (r.ok) onAssis();
-  };
+  let titre = `Vous êtes invité à la table de ${table.hote}`;
   let texte = 'Asseyez-vous : vous jouerez la prochaine manche.';
+  if (table.spectateur) {
+    titre = 'Vous regardez la table';
+    texte = 'Asseyez-vous quand vous voulez, avant la donne.';
+  }
   if (table.exclu) texte = 'L’hôte vous a exclu de cette table.';
   else if (pleine) texte = 'La table est complète : vous pouvez la regarder.';
   else if (enManche) texte = 'Une manche est en cours : vous pourrez vous asseoir à la fin.';
@@ -310,13 +340,19 @@ export function Invitation({ table, onAssis }) {
     <div className="uno-salle">
       <div className="uno-salle-principal">
         <AutourTable table={table} />
-        {action.erreur && <Alerte compacte>{action.erreur}</Alerte>}
-        <Pied ico={<IcoInviter />} titre={`Vous êtes invité à la table de ${table.hote}`}
+        <Pied ico={table.spectateur ? <IcoOeil /> : <IcoInviter />} titre={titre}
               texte={texte}
               action={(
-                <Bouton variante="principal" taille="l" waiting={action.occupe}
-                        disabled={pleine || enManche || table.exclu}
-                        titre="S’asseoir à la table" onClick={asseoir} />
+                <>
+                  {!table.spectateur && (
+                    <Bouton taille="l" icone={<IcoOeil />} titre="Regarder sans jouer"
+                            onClick={() => onAction(() => lever(table.code))} />
+                  )}
+                  <Bouton variante="principal" taille="l"
+                          disabled={pleine || enManche || table.exclu}
+                          titre="S’asseoir à la table"
+                          onClick={() => onAction(() => rejoindre(table.code))} />
+                </>
               )} />
       </div>
       <aside className="uno-salle-cote" aria-label="Table">
@@ -326,10 +362,10 @@ export function Invitation({ table, onAssis }) {
           <RappelRegles />
         </Carte>
         <Carte className="uno-inviter">
-          <p className="uno-surtitre">Sans jouer</p>
+          <p className="uno-surtitre">Sans pseudo</p>
           <Link to={cheminSpectateur(table.code)} className="uno-lien uno-lien-ico">
             <IcoOeil />
-            Regarder en spectateur
+            Page spectateur à partager
           </Link>
         </Carte>
       </aside>

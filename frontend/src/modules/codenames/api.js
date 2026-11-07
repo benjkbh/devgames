@@ -6,7 +6,8 @@ import { apiSalons } from '../../commun/salons/api';
 const tables = apiSalons('codenames');
 
 export const {
-  lireTables, lireTable, rejoindre, quitter, exclure, lancer, lienTable,
+  lireTables, lireTable, rejoindre, quitter, lever, exclure, lancer,
+  lienTable,
 } = tables;
 
 export const creerTable = (nom, publique, liste) => tables.creerTable(

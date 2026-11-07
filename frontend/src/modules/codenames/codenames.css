@@ -76,6 +76,9 @@
 .cn-invitation { max-width: 520px; }
 .cn-invitation .carte-corps { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e3); }
 .cn-invitation-nom { font-family: var(--police-titre); font-size: var(--t-2xl); }
+.cn-invitation-actions { display: flex; flex-wrap: wrap; gap: var(--e3); }
+/* Se lever pour regarder : discret, en tête de la préparation. */
+.cn-lever { align-self: flex-end; }
 .cn-attente-page { display: flex; flex-direction: column; gap: var(--e5); }
 .cn-partage {
   display: flex;

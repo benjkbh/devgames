@@ -7,8 +7,8 @@ import { apiSalons } from '../../commun/salons/api';
 const tables = apiSalons('uno');
 
 export const {
-  lireTables, lireTable, rejoindre, quitter, exclure, lancer, pret, reprendre,
-  fermer, lienTable,
+  lireTables, lireTable, rejoindre, quitter, lever, exclure, lancer, pret,
+  reprendre, fermer, lienTable,
 } = tables;
 // Une table vue d'un spectateur : sans session, sans aucune main.
 export const lireSpectateur = ({ code, version }, options) => lire(

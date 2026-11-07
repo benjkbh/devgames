@@ -1,6 +1,6 @@
 """Tables communes à tous les jeux (`backend/commun/salons.py`) : prêt,
-reprise d'une table dont l'hôte est absent, fermeture, attente longue.
-Éprouvées sur les tables de UNO."""
+reprise d'une table dont l'hôte est absent, fermeture, spectateurs,
+attente longue. Éprouvées sur les tables de UNO."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -106,6 +106,63 @@ class Fermeture(unittest.TestCase):
             self.salons.fermer(self.code, 'bob')
         self.assertTrue(self.salons.vue(self.code, 'bob')['membre'])
 
+
+class Spectateurs(unittest.TestCase):
+    """Regarder sans jouer, se lever, se rasseoir."""
+
+    def setUp(self) -> None:
+        self.salons = salons.Salons(random.Random(3))
+        self.code = self.salons.creer('ana')
+        self.salons.rejoindre(self.code, 'bob')
+
+    def test_entrer_en_spectateur_sans_s_asseoir(self) -> None:
+        self.salons.lever(self.code, 'cyd')
+        vue = self.salons.vue(self.code, 'cyd')
+        self.assertTrue(vue['spectateur'])
+        self.assertFalse(vue['membre'])
+        self.assertEqual(vue['spectateurs'], ['cyd'])
+        self.assertNotIn('cyd', vue['joueurs'])
+
+    def test_un_joueur_se_leve_et_se_rassoit(self) -> None:
+        self.salons.lever(self.code, 'bob')
+        vue = self.salons.vue(self.code, 'ana')
+        self.assertEqual(vue['joueurs'], ['ana'])
+        self.assertEqual(vue['spectateurs'], ['bob'])
+        self.salons.rejoindre(self.code, 'bob')
+        vue = self.salons.vue(self.code, 'ana')
+        self.assertEqual(vue['joueurs'], ['ana', 'bob'])
+        self.assertEqual(vue['spectateurs'], [])
+
+    def test_l_hote_qui_se_leve_passe_la_main(self) -> None:
+        self.salons.lever(self.code, 'ana')
+        self.assertEqual(self.salons.vue(self.code, 'bob')['hote'], 'bob')
+
+    def test_le_dernier_assis_ne_se_leve_pas(self) -> None:
+        self.salons.quitter(self.code, 'bob')
+        with self.assertRaises(salons.ErreurSalon):
+            self.salons.lever(self.code, 'ana')
+
+    def test_on_ne_se_leve_pas_pendant_une_manche(self) -> None:
+        self.salons.lancer(self.code, 'ana')
+        with self.assertRaises(salons.ErreurSalon):
+            self.salons.lever(self.code, 'bob')
+
+    def test_le_spectateur_voit_la_manche_sans_aucune_main(self) -> None:
+        self.salons.lever(self.code, 'cyd')
+        self.salons.lancer(self.code, 'ana')
+        partie = self.salons.vue(self.code, 'cyd')['partie']
+        self.assertIsNotNone(partie)
+        self.assertNotIn('main', partie)
+        # Pendant la manche, il ne s'assoit pas.
+        with self.assertRaises(salons.ErreurSalon):
+            self.salons.rejoindre(self.code, 'cyd')
+
+    def test_un_spectateur_quitte_la_table(self) -> None:
+        self.salons.lever(self.code, 'cyd')
+        self.salons.quitter(self.code, 'cyd')
+        vue = self.salons.vue(self.code, 'cyd')
+        self.assertFalse(vue['spectateur'])
+        self.assertEqual(vue['spectateurs'], [])
 
 class AttenteLongue(unittest.TestCase):
     """`attendre` : la réponse part au premier changement de la table."""

@@ -1,0 +1,115 @@
+/* Module Trio, à l'observatoire : ciel bleu nuit, étoiles, coupole et
+   lunette, cartes-astres en médaillons. Le ciel reste sombre dans les deux
+   thèmes. Tout ce qui bouge respecte « mouvement réduit ». */
+
+.tr-page, .tr-accueil {
+  --tr-nuit: #070d22;
+  --tr-nuit-2: #101a3a;
+  --tr-astre: #f4e3a1;
+  --tr-cyan: #8fd3ff;
+}
+
+/* -- bannière --- */
+.tr-banniere {
+  background:
+    radial-gradient(360px 240px at 74% 30%, rgba(143, 211, 255, .2), transparent 70%),
+    linear-gradient(180deg, #040818 0%, #0c1636 65%, #1a1b44 100%);
+}
+.tr-banniere-scene { position: relative; }
+.tr-observatoire { width: min(320px, 72vw); height: auto; }
+.tr-etoile { fill: #e9eefc; opacity: .7; animation: tr-scintille 3s ease-in-out infinite alternate; }
+.tr-etoile:nth-child(3n) { animation-delay: -1.2s; }
+.tr-etoile:nth-child(4n) { animation-delay: -2s; }
+.tr-lien { fill: none; stroke: rgba(244, 227, 161, .55); stroke-width: 1.2; stroke-dasharray: 3 4; }
+.tr-astre { fill: var(--tr-astre); filter: drop-shadow(0 0 6px var(--tr-astre)); }
+.tr-colline { fill: #050916; }
+.tr-coupole { fill: #c9cfdc; }
+.tr-fente { fill: #1c2747; }
+.tr-lunette { stroke: #8b93a8; stroke-width: 6; stroke-linecap: round; }
+.tr-banniere-cartes { position: absolute; right: 4px; bottom: 6px; display: flex; gap: 4px; }
+
+/* -- le ciel --- */
+.tr-ciel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e4);
+  padding: var(--e5);
+  border: 1px solid #253264;
+  border-radius: var(--r-xl);
+  background:
+    radial-gradient(1.4px 1.4px at 12% 18%, #fff 50%, transparent 51%),
+    radial-gradient(1.2px 1.2px at 38% 8%, #fff 50%, transparent 51%),
+    radial-gradient(1.6px 1.6px at 66% 22%, #fff 50%, transparent 51%),
+    radial-gradient(1.2px 1.2px at 84% 12%, #fff 50%, transparent 51%),
+    radial-gradient(1.4px 1.4px at 22% 64%, #fff 50%, transparent 51%),
+    radial-gradient(1.2px 1.2px at 92% 58%, #fff 50%, transparent 51%),
+    radial-gradient(70% 60% at 50% 30%, rgba(143, 211, 255, .14), transparent 75%),
+    linear-gradient(180deg, var(--tr-nuit-2), var(--tr-nuit));
+  box-shadow: inset 0 0 0 4px rgba(0, 0, 0, .3), 0 18px 40px rgba(0, 0, 0, .4);
+  color: #e6ecfb;
+}
+.tr-message { font-family: var(--police-titre); font-size: var(--t-2xl); text-align: center; }
+.tr-message.vous { color: var(--tr-astre); text-shadow: 0 0 14px rgba(244, 227, 161, .5); }
+.tr-essai { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: var(--e2); color: rgba(230, 236, 251, .8); font-size: var(--t-s); }
+.tr-essai.rate { color: #f0a3a3; }
+
+.tr-centre { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--e3); padding: var(--e3); border-radius: var(--r-l); background: rgba(4, 8, 24, .45); }
+.tr-vide { width: 52px; height: 74px; border: 1px dashed rgba(143, 211, 255, .25); border-radius: 10px; }
+.tr-retourner { padding: 0; border: 0; border-radius: 10px; background: none; cursor: pointer; transition: transform var(--duree); }
+.tr-retourner:hover { transform: translateY(-3px); }
+.tr-retourner:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--tr-astre); }
+
+.tr-joueurs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: var(--e3); margin: 0; padding: 0; list-style: none; }
+.tr-joueur { display: flex; flex-direction: column; gap: var(--e2); padding: var(--e3); border: 1px solid rgba(143, 211, 255, .18); border-radius: var(--r-l); background: rgba(4, 8, 24, .5); }
+.tr-joueur.au-trait { border-color: var(--tr-astre); box-shadow: 0 0 0 1px var(--tr-astre), 0 0 20px rgba(244, 227, 161, .3); }
+.tr-joueur-tete { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e2); }
+.tr-joueur-nom { font-family: var(--police-titre); font-size: var(--t-l); font-weight: 700; }
+.tr-trios { display: inline-flex; flex-wrap: wrap; gap: 4px; margin-left: auto; }
+.tr-trio { padding: 1px 8px; border-radius: var(--r-plein); background: rgba(244, 227, 161, .18); color: var(--tr-astre); font-size: var(--t-xs); font-weight: 800; }
+.tr-main { display: flex; flex-wrap: wrap; gap: 4px; }
+.tr-main .tr-carte { width: 38px; height: 54px; }
+.tr-main .tr-carte-valeur { font-size: 17px; }
+.tr-demandes { display: flex; gap: var(--e2); }
+
+/* -- les cartes-astres --- */
+.tr-carte {
+  --tr-c: #6e7fb8;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 74px;
+  border: 2px solid rgba(244, 227, 161, .7);
+  border-radius: 10px;
+  background:
+    radial-gradient(circle closest-side at 50% 50%, color-mix(in srgb, var(--tr-c) 60%, #fff) 0 72%, var(--tr-c) 74% 88%, transparent 90%),
+    linear-gradient(170deg, #1a2550, #0b1230);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .45);
+  animation: tr-apparait .3s ease-out both;
+}
+.tr-carte-valeur { color: #0b1230; font-family: var(--police-titre); font-size: 22px; font-weight: 800; }
+.tr-carte.petite { width: 30px; height: 42px; border-width: 1.5px; }
+.tr-carte.petite .tr-carte-valeur { font-size: 13px; }
+.tr-carte.cachee {
+  background:
+    radial-gradient(1px 1px at 30% 30%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 70% 60%, #fff 50%, transparent 51%),
+    radial-gradient(circle at 50% 50%, rgba(244, 227, 161, .35) 0 14%, transparent 15%),
+    linear-gradient(170deg, #22306a, #0d1538);
+  border-color: rgba(143, 211, 255, .45);
+}
+.tr-carte.revelee { box-shadow: 0 0 0 2px var(--tr-astre), 0 0 18px rgba(244, 227, 161, .55); }
+.tr-carte.a-moi { opacity: .82; }
+.tr-v1 { --tr-c: #9d8cd8; } .tr-v2 { --tr-c: #7aa6e8; } .tr-v3 { --tr-c: #5fc2df; }
+.tr-v4 { --tr-c: #5fd1b2; } .tr-v5 { --tr-c: #85d672; } .tr-v6 { --tr-c: #c7d85e; }
+.tr-v7 { --tr-c: #f4cf55; } .tr-v8 { --tr-c: #f4a95a; } .tr-v9 { --tr-c: #f08a6c; }
+.tr-v10 { --tr-c: #ec7895; } .tr-v11 { --tr-c: #d67ac8; } .tr-v12 { --tr-c: #b48cef; }
+
+@keyframes tr-scintille { from { opacity: .3; } to { opacity: .9; } }
+@keyframes tr-apparait { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .tr-etoile, .tr-carte { animation: none; }
+  .tr-retourner { transition: none; }
+}

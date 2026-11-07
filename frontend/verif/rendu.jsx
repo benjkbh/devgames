@@ -10,8 +10,13 @@ import {
   Plateau as PlateauCn, Preparation as PreparationCn,
 } from '../src/modules/codenames/Table';
 import Spectateur from '../src/modules/uno/Spectateur';
-import { Invitation, Plateau, SalleAttente } from '../src/modules/uno/Table';
+import {
+  Invitation, JeuSpectateur, Plateau, SalleAttente,
+} from '../src/modules/uno/Table';
 import { Tapis } from '../src/modules/uno/Tapis';
+import PlateauFlip7 from '../src/modules/flip7/Plateau';
+import PlateauMenteur from '../src/modules/menteur/Plateau';
+import PlateauTrio from '../src/modules/trio/Plateau';
 
 
 // -- environnement navigateur minimal --
@@ -110,7 +115,20 @@ ECRANS.push(
     }} onAction={() => {}} />],
   ['uno : invitation (pas encore assis)', '/uno/K7Q2M',
     <Invitation table={{ ...TABLE_UNO, etat: 'attente', moi: 'dan', membre: false }}
-                onAssis={() => {}} />],
+                onAction={() => {}} />],
+  ['uno : spectateur avant la donne', '/uno/K7Q2M',
+    <Invitation table={{
+      ...TABLE_UNO, etat: 'attente', moi: 'dan', membre: false, spectateur: true,
+      spectateurs: ['dan'],
+    }} onAction={() => {}} />],
+  ['uno : spectateur pendant la manche', '/uno/K7Q2M',
+    <JeuSpectateur table={{
+      ...TABLE_UNO, moi: 'dan', membre: false, spectateur: true,
+      spectateurs: ['dan'], partie: MANCHE_SPECTATEUR,
+    }} onAction={() => {}} />],
+  ['uno : salle d’attente avec spectateurs', '/uno/K7Q2M',
+    <SalleAttente table={{ ...TABLE_UNO, etat: 'attente', spectateurs: ['dan', 'eve'] }}
+                  onAction={() => {}} />],
   ['uno : manche en cours', '/uno/K7Q2M',
     <Plateau table={{ ...TABLE_UNO, partie: MANCHE_UNO }} onAction={() => {}} />],
   ['uno : manche finie', '/uno/K7Q2M',
@@ -179,6 +197,66 @@ ECRANS.push(
         ...GRIMOIRE_CN, equipe: null, phase: 'fin', gagnant: 'argent', cause: 'comte',
       },
     }} onAction={() => {}} onExclure={() => {}} />],
+);
+
+// Les jeux simples : une table, telle que le serveur la décrit, en partie.
+const TABLE_JEU = {
+  code: 'S7TAR', nom: 'Veillée', hote: 'ana', moi: 'ana', public: true,
+  membre: true, version: 2, manches: 1, min_joueurs: 2, max_joueurs: 8,
+  joueurs: ['ana', 'bob', 'cyd'], etat: 'partie', victoires: { ana: 1 },
+  presents: { ana: true, bob: true, cyd: true }, prets: [], spectateurs: [],
+};
+const F7 = (type, valeur, id) => ({
+  id, type, valeur, nom: type === 'nombre' ? String(valeur) : type,
+});
+const PARTIE_F7 = {
+  joueurs: [
+    { nom: 'ana', etat: 'actif', ligne: [F7('nombre', 7, 1), F7('bonus', 4, 2), F7('chance', 0, 3)], points: 11, score: 40 },
+    { nom: 'bob', etat: 'saute', ligne: [F7('nombre', 5, 4), F7('nombre', 5, 5)], points: 0, score: 12 },
+    { nom: 'cyd', etat: 'reste', ligne: [F7('nombre', 12, 6), F7('fois2', 0, 7)], points: 24, score: 90 },
+  ],
+  tour: 'ana', attente: null, manche: 3, donneur: 'cyd', bilan: null, flip7: null,
+  pioche: 51, objectif: 200, gagnant: null, journal: ['bob tire un second 5 et saute !'],
+  evenements: [],
+};
+const PARTIE_MT = {
+  joueurs: [{ nom: 'ana', cartes: 3 }, { nom: 'bob', cartes: 18 }, { nom: 'cyd', cartes: 17 }],
+  tour: 'bob', annonce: '8', tas: 14,
+  pose: { joueur: 'ana', nombre: 2, rang: '7' }, verdict: false,
+  revelation: {
+    appelant: 'cyd', poseur: 'bob', rang: '5', menteur: true, ramasse: 'bob',
+    cartes: [{ id: 1, rang: '5', enseigne: 'coeur' }, { id: 2, rang: 'R', enseigne: 'pique' }],
+  },
+  gagnant: null, journal: ['ana pose deux 7.'],
+  main: [{ id: 10, rang: 'A', enseigne: 'pique' }, { id: 11, rang: '8', enseigne: 'coeur' },
+    { id: 12, rang: 'R', enseigne: 'trefle' }],
+};
+const PARTIE_TR = {
+  joueurs: [
+    { nom: 'ana', cartes: 5, revelees: { 0: 3 }, trios: [9] },
+    { nom: 'bob', cartes: 6, revelees: { 0: 3 }, trios: [] },
+    { nom: 'cyd', cartes: 6, revelees: {}, trios: [12] },
+  ],
+  centre: [0, 0, null, 0, 5, 0, 0, null, 0],
+  tour: 'ana', revelees: [{ valeur: 3 }, { valeur: 3 }], essai: null, objectif: 3,
+  gagnant: null, journal: ['ana révèle un 3 chez bob.'], main: [3, 4, 8, 10, 11],
+};
+ECRANS.push(
+  ['flip7 : la piste', '/flip7/S7TAR',
+    <PlateauFlip7 table={{ ...TABLE_JEU, partie: PARTIE_F7 }} onAction={() => {}} />],
+  ['flip7 : choisir une cible', '/flip7/S7TAR',
+    <PlateauFlip7 table={{ ...TABLE_JEU, partie: { ...PARTIE_F7, tour: null, attente: { joueur: 'ana', carte: 'gel' } } }}
+                  onAction={() => {}} />],
+  ['flip7 : bilan de manche', '/flip7/S7TAR',
+    <PlateauFlip7 table={{ ...TABLE_JEU, partie: { ...PARTIE_F7, tour: null, bilan: { ana: 11, bob: 0, cyd: 24 } } }}
+                  onAction={() => {}} />],
+  ['menteur : la taverne', '/menteur/S7TAR',
+    <PlateauMenteur table={{ ...TABLE_JEU, partie: PARTIE_MT }} onAction={() => {}} />],
+  ['menteur : spectateur', '/menteur/S7TAR',
+    <PlateauMenteur table={{ ...TABLE_JEU, membre: false, spectateur: true, partie: { ...PARTIE_MT, main: undefined } }}
+                    onAction={() => {}} />],
+  ['trio : le ciel', '/trio/S7TAR',
+    <PlateauTrio table={{ ...TABLE_JEU, partie: PARTIE_TR }} onAction={() => {}} />],
 );
 
 let echecs = 0;

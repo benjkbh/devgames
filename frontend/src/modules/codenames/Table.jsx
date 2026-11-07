@@ -5,12 +5,12 @@ import {
 
 import {
   Alerte, Badge, Bouton, Carte, ChampCopiable, Chargement, Confirmation,
-  EtatVide, IcoFermer, IcoRecharger, IcoSortie, Page, Pastille,
+  EtatVide, IcoFermer, IcoOeil, IcoRecharger, IcoSortie, Page, Pastille,
   QuestionChoix, Saisie, Sr, cx, useAction,
 } from '@ui';
 import { useTable } from '../../commun/salons/table';
 import {
-  choisir, donnerIndice, exclure, finir, lancer, lienTable, lireTable,
+  choisir, donnerIndice, exclure, finir, lancer, lever, lienTable, lireTable,
   marquer, melanger, quitter, regler, rejoindre, reveler,
 } from './api';
 import {
@@ -125,6 +125,11 @@ export function Preparation({ table, onAction, onExclure }) {
   const code = table.code;
   return (
     <div className="cn-preparation">
+      {table.joueurs.length > 1 && (
+        <Bouton taille="s" variante="fantome" icone={<IcoOeil />}
+                className="cn-lever" titre="Regarder sans jouer"
+                onClick={() => onAction(() => lever(code))} />
+      )}
       <div className="cn-camps">
         {ORDRE_CAMPS.map((c) => (
           <Camp key={c} camp={c} table={table} onAction={onAction} onExclure={onExclure} />
@@ -160,30 +165,37 @@ export function Preparation({ table, onAction, onExclure }) {
   );
 }
 
-function Invitation({ table, onAssis }) {
-  const action = useAction();
+// Pas assis : arrivé par un lien, ou spectateur. De quoi s'asseoir ou
+// regarder sans jouer ; on s'assoit entre deux manches.
+function Invitation({ table, onAction }) {
   const pleine = table.joueurs.length >= table.max_joueurs;
-  const s = async () => {
-    const r = await action.executer(() => rejoindre(table.code));
-    if (r.ok) onAssis();
-  };
+  const enManche = table.etat === 'partie';
   return (
-    <Carte titre="Invitation au manoir" className="cn-invitation">
+    <Carte titre={table.spectateur ? 'Vous regardez le manoir' : 'Invitation au manoir'}
+           className="cn-invitation">
       <p className="cn-invitation-nom">{table.nom}</p>
       <p className="dim">
         {`Hôte : ${table.hote} · ${table.joueurs.length} joueur(s) : ${table.joueurs.join(', ')}`}
       </p>
+      {(table.spectateurs || []).length > 0 && (
+        <p className="dim">{`Spectateurs : ${table.spectateurs.join(', ')}`}</p>
+      )}
       {table.exclu && <Alerte compacte>L’hôte vous a exclu de cette table.</Alerte>}
-      {table.etat === 'partie' && !table.exclu && (
+      {enManche && !table.exclu && (
         <Alerte niveau="info" compacte>
           Une manche est en cours : vous pourrez vous asseoir à la fin.
         </Alerte>
       )}
-      {action.erreur && <Alerte compacte>{action.erreur}</Alerte>}
-      <Bouton variante="principal" taille="l" waiting={action.occupe}
-              disabled={pleine || table.etat === 'partie' || table.exclu}
-              titre={pleine ? 'Table complète' : 'Entrer au manoir'}
-              onClick={s} />
+      <div className="cn-invitation-actions">
+        {!table.spectateur && (
+          <Bouton taille="l" icone={<IcoOeil />} titre="Regarder sans jouer"
+                  onClick={() => onAction(() => lever(table.code))} />
+        )}
+        <Bouton variante="principal" taille="l"
+                disabled={pleine || enManche || table.exclu}
+                titre={pleine ? 'Table complète' : 'Entrer au manoir'}
+                onClick={() => onAction(() => rejoindre(table.code))} />
+      </div>
     </Carte>
   );
 }
@@ -355,10 +367,14 @@ export function Plateau({ table, onAction, onExclure }) {
         {commandes && <div className="cn-commandes">{commandes}</div>}
       </div>
 
-      {finie && (
+      {finie && table.membre && (
         <Carte titre="Fin de la manche" className="cn-fin">
           <Preparation table={table} onAction={onAction} onExclure={onExclure} />
         </Carte>
+      )}
+      {finie && !table.membre && <Invitation table={table} onAction={onAction} />}
+      {!finie && !table.membre && (
+        <p className="cn-attente">Vous regardez la manche : vous pourrez vous asseoir à la fin.</p>
       )}
 
       <Indices partie={p} />
@@ -452,7 +468,11 @@ export default function Table() {
   if (!table) return <Page><Chargement texte="Arrivée au manoir…" /></Page>;
 
   let contenu;
-  if (!table.membre) contenu = <Invitation table={table} onAssis={relire} />;
+  if (!table.membre) {
+    contenu = table.spectateur && table.partie
+      ? <Plateau table={table} onAction={agir} />
+      : <Invitation table={table} onAction={agir} />;
+  }
   else if (!table.partie) {
     contenu = (
       <div className="cn-attente-page">
@@ -474,7 +494,7 @@ export default function Table() {
         <span className="cn-barre-code" aria-hidden="true">{table.code}</span>
         {table.manches > 0 && <Badge titre={`Manche ${table.manches}`} />}
         {table.manches > 0 && <Victoires table={table} />}
-        {table.membre && (
+        {(table.membre || table.spectateur) && (
           <Bouton variante="fantome" taille="s" icone={<IcoSortie />}
                   titre="Quitter la table" onClick={() => setSortie(true)} />
         )}

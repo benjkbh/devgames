@@ -16,6 +16,8 @@ Routes fournies par `routes()` :
     POST rejoindre, quitter    code
     POST exclure               code, joueur (hôte)
     POST lancer                code (hôte)
+    POST lever                 code : regarder sans jouer (se lever entre
+                               deux manches, ou entrer en spectateur)
     POST pret                  code, pret : prêt pour la prochaine manche
     POST reprendre             code : devenir hôte, l'hôte absent depuis
                                `DELAI_REPRISE`
@@ -162,6 +164,8 @@ class RoutesSalons:
                     corps.get('code'), j, corps.get('joueur'))),
             ('POST', self.chemin('lancer')): self.demande(
                 'lancer', lambda s, corps, j: s.lancer(corps.get('code'), j)),
+            ('POST', self.chemin('lever')): self.demande(
+                'lever', lambda s, corps, j: s.lever(corps.get('code'), j)),
             ('POST', self.chemin('pret')): self.demande(
                 'pret', lambda s, corps, j: s.pret(
                     corps.get('code'), j, bool(corps.get('pret', True)))),

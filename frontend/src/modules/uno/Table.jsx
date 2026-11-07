@@ -11,7 +11,7 @@ import {
 import { useTable } from '../../commun/salons/table';
 import {
   contrer, direUno, exclure, fermer, jouer, lancer, lireTable, passer, piocher,
-  quitter, regler,
+  quitter, regler, rejoindre,
 } from './api';
 import { musique } from './ambiance';
 import { JournalManche, OrdreJeu } from './Cote';
@@ -238,6 +238,45 @@ export function Plateau({ table, onAction, onExclure }) {
   );
 }
 
+// -- spectateur ----------------------------------------------------------------
+
+// Spectateur dans l'application, pendant une manche : le tapis sans aucune
+// main ; la manche finie, il peut s'asseoir pour la suivante.
+export function JeuSpectateur({ table, onAction }) {
+  const p = table.partie;
+  const finie = Boolean(p.gagnant);
+  const message = finie ? `${p.gagnant} remporte la manche !` : `${p.tour} joue…`;
+  return (
+    <div className="uno-jeu">
+      <div className="uno-plateau">
+        <Tapis table={table} partie={p} moi={null} message={message}>
+          {finie && (
+            <Carte titre="Fin de la manche" className="uno-fin">
+              <p className="uno-fin-titre">
+                {`${p.gagnant} remporte la manche et marque ${p.points} points.`}
+              </p>
+              <Scores table={table} />
+              <Bouton variante="principal" taille="l"
+                      disabled={table.joueurs.length >= table.max_joueurs || table.exclu}
+                      titre="S’asseoir pour la prochaine manche"
+                      onClick={() => onAction(() => rejoindre(table.code))} />
+            </Carte>
+          )}
+        </Tapis>
+        {!finie && (
+          <p className="dim uno-attente-texte">
+            Vous regardez la manche : vous pourrez vous asseoir à la fin.
+          </p>
+        )}
+      </div>
+      <aside className="uno-jeu-cote" aria-label="Déroulement de la manche">
+        <OrdreJeu table={table} partie={p} />
+        <JournalManche table={table} partie={p} />
+      </aside>
+    </div>
+  );
+}
+
 // -- garde ----------------------------------------------------------------------
 
 // Pendant une manche, toute navigation hors de la table (un autre module du
@@ -326,8 +365,14 @@ export default function Table() {
   }
   if (!table) return <Page><Chargement texte="Arrivée à la table…" /></Page>;
 
+  // Assis ou spectateur : il est à la table, et peut la quitter.
+  const aTable = table.membre || table.spectateur;
   let contenu;
-  if (!table.membre) contenu = <Invitation table={table} onAssis={relire} />;
+  if (!table.membre) {
+    contenu = table.spectateur && table.partie
+      ? <JeuSpectateur table={table} onAction={agir} />
+      : <Invitation table={table} onAction={agir} />;
+  }
   else if (!table.partie) {
     contenu = <SalleAttente table={table} onAction={agir} onExclure={setExclusion} />;
   } else contenu = <Plateau table={table} onAction={agir} onExclure={setExclusion} />;
@@ -348,8 +393,8 @@ export default function Table() {
     <Page className="uno-page">
       <EnTete
         table={table}
-        outils={table.membre && <Lecteur variante="compact" />}
-        actions={table.membre && (
+        outils={aTable && <Lecteur variante="compact" />}
+        actions={aTable && (
           <Bouton icone={<IcoSortie />} titre={titreSortie} onClick={() => setSortie(true)} />
         )} />
       {action.erreur && (

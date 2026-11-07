@@ -1,0 +1,98 @@
+/* Page d'une table de jeu (`PageTable`), commune aux jeux simples. Tout passe
+   par les jetons (`--surface`, `--accent`…) : chaque jeu habille sa page en
+   les redéfinissant sous sa classe (`.f7-page`, `.mt-page`, `.tr-page`). */
+
+.tbl-page .carte-titre { color: var(--txt); font-family: var(--police-titre); font-size: var(--t-xl); font-weight: 700; letter-spacing: 0; text-transform: none; }
+.tbl-page .carte { margin: 0; }
+.tbl-erreur { margin-bottom: var(--e4); }
+.tbl-note { margin-top: var(--e4); text-align: center; }
+.tbl-surtitre { color: var(--accent-txt); font-size: var(--t-2xs); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+
+/* -- en-tête --- */
+.tbl-entete { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e3) var(--e4); margin-bottom: var(--e5); }
+.tbl-retour {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--bord-fort);
+  border-radius: var(--r-m);
+  color: var(--txt-2);
+}
+.tbl-retour:hover { border-color: var(--accent-bord); color: var(--accent-txt); }
+.tbl-retour:focus-visible { outline: none; box-shadow: var(--anneau); }
+.tbl-retour .ico { width: 16px; height: 16px; }
+.tbl-titres { display: flex; flex-direction: column; min-width: 0; }
+.tbl-sur { color: var(--dim); font-size: var(--t-xs); }
+.tbl-code { color: var(--accent-txt); font-weight: 800; letter-spacing: .08em; }
+.tbl-titre { font-size: var(--t-xl); line-height: 1.15; overflow-wrap: anywhere; }
+.tbl-outils { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e3); margin-left: auto; }
+
+/* -- salle d'attente --- */
+.tbl-salle { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 330px); gap: var(--e5); align-items: start; }
+.tbl-salle-principal, .tbl-salle-cote { display: flex; flex-direction: column; gap: var(--e5); min-width: 0; }
+.tbl-spectateurs { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e2); margin-top: var(--e4); color: var(--dim); font-size: var(--t-s); }
+.tbl-spectateurs .ico { width: 16px; height: 16px; color: var(--accent-txt); }
+.tbl-aide .carte-corps { display: flex; flex-direction: column; gap: var(--e2); font-size: var(--t-s); color: var(--txt-2); }
+.tbl-aide ul { display: flex; flex-direction: column; gap: var(--e2); margin: 0; padding-left: var(--e5); }
+
+.tbl-inviter { border-color: var(--accent-bord); background: radial-gradient(360px 180px at 100% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%), var(--surface); }
+.tbl-inviter .carte-corps { display: flex; flex-direction: column; gap: var(--e4); }
+.tbl-inviter-code { display: flex; align-items: center; gap: var(--e2); }
+.tbl-inviter-code .saisie-code { flex: 1 1 auto; }
+.tbl-inviter-code .saisie-code-case { height: 46px; }
+
+.tbl-pied {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--e3) var(--e4);
+  margin-top: var(--e5);
+  padding: var(--e4) var(--e5);
+  border: 1px solid var(--bord);
+  border-radius: var(--r-l);
+  background: var(--surface);
+}
+.tbl-salle-principal .tbl-pied { margin-top: 0; }
+.tbl-pied-ico { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 40px; height: 40px; border-radius: var(--r-m); background: var(--surface-3); color: var(--accent-txt); }
+.tbl-pied-ico .ico { width: 20px; height: 20px; }
+.tbl-pied-textes { flex: 1 1 240px; min-width: 0; font-size: var(--t-s); }
+.tbl-pied-titre { color: var(--txt); font-weight: 700; }
+.tbl-pied-actions { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e2); }
+
+.tbl-absence {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--e3) var(--e4);
+  padding: var(--e3) var(--e4);
+  border: 1px solid var(--attn-bord);
+  border-radius: var(--r-l);
+  background: var(--attn-doux);
+  color: var(--txt-2);
+  font-size: var(--t-s);
+}
+.tbl-absence-ico { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: var(--attn-doux-2); color: var(--attn-txt); }
+.tbl-absence-ico .ico { width: 18px; height: 18px; }
+.tbl-absence-textes { flex: 1 1 260px; min-width: 0; }
+.tbl-absence-titre { color: var(--attn-txt); font-weight: 700; }
+
+/* -- plateau : la table de jeu et sa colonne --- */
+.tbl-jeu { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 270px); gap: var(--e5); align-items: start; }
+.tbl-jeu-cote { display: flex; flex-direction: column; gap: var(--e4); min-width: 0; }
+.tbl-scores { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.tbl-scores li { display: flex; align-items: center; gap: var(--e3); padding: var(--e2) 0; border-bottom: 1px solid var(--bord); font-size: var(--t-s); }
+.tbl-scores li:last-child { border-bottom: 0; }
+.tbl-scores .nom { flex: 1 1 auto; min-width: 0; font-weight: 700; overflow-wrap: anywhere; }
+.tbl-scores .courant .nom { color: var(--accent-txt); }
+.tbl-scores .valeur { color: var(--txt-2); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 1000px) {
+  .tbl-salle, .tbl-jeu { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .tbl-outils { width: 100%; margin-left: 0; }
+}
