@@ -165,3 +165,56 @@ button.qz-puce:hover { border-color: var(--qz-cyan); }
   .qz-recap-ligne { grid-template-columns: 24px minmax(0, 1fr); }
   .qz-recap-sol, .qz-recap-justes { grid-column: 2; }
 }
+
+/* -- illustrations (images, rébus) et signalements --- */
+.qz-illustration { display: flex; flex-direction: column; align-items: center; gap: var(--e1); margin: 0; }
+.qz-illustration-bouton { padding: 0; border: 0; border-radius: var(--r-l); background: none; cursor: zoom-in; }
+.qz-illustration-bouton:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--qz-cyan); }
+.qz-illustration img {
+  display: block;
+  max-width: min(100%, 440px);
+  max-height: 42vh;
+  border-radius: var(--r-l);
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .45);
+  object-fit: contain;
+  user-select: none;
+}
+.qz-illustration.agrandie .qz-illustration-bouton { cursor: zoom-out; }
+.qz-illustration.agrandie img { max-width: 100%; max-height: 80vh; }
+.qz-credit { max-width: 440px; color: rgba(233, 237, 255, .6); font-size: var(--t-2xs); text-align: center; overflow-wrap: anywhere; }
+.qz-credit a { color: inherit; }
+.qz-rebus {
+  padding: var(--e4) var(--e3);
+  border: 1px dashed rgba(255, 201, 77, .5);
+  border-radius: var(--r-l);
+  background: rgba(5, 8, 30, .45);
+  color: #fff;
+  font-size: clamp(36px, 7vw, 64px);
+  line-height: 1.2;
+  letter-spacing: .08em;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.qz-entete-fin { margin-left: auto; }
+.qz-signaler-lien { padding: 2px 8px; border: 1px solid rgba(233, 237, 255, .25); border-radius: var(--r-plein); background: transparent; color: rgba(233, 237, 255, .7); font-size: var(--t-xs); cursor: pointer; }
+.qz-signaler-lien:hover { border-color: var(--qz-rose); color: #fff; }
+.qz-signaler { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; flex-basis: 100%; padding: var(--e2); border-radius: var(--r-m); background: rgba(5, 8, 30, .6); }
+.qz-signaler .saisie { min-width: 160px; }
+.qz-signale { color: var(--qz-cyan); font-size: var(--t-xs); font-weight: 700; }
+.qz-signaler-erreur { color: #ffa8a8; font-size: var(--t-xs); }
+.qz-recap-detail { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e2); padding: var(--e2) 0 var(--e3); }
+.qz-recap-detail .qz-illustration { align-self: center; }
+.qz-recap-rebus { letter-spacing: .05em; }
+.qz-lien-signalements { font-size: var(--t-s); font-weight: 700; }
+.qz-signalements .qz-sig-titre { margin: var(--e4) 0 var(--e2); font-family: var(--police-titre); font-size: var(--t-2xl); }
+.qz-sig-fiches { display: flex; flex-direction: column; gap: var(--e4); margin-top: var(--e4); }
+.qz-sig-fiche .carte-corps { display: flex; flex-direction: column; gap: var(--e2); }
+.qz-sig-tete { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e2); }
+.qz-sig-fichier { font-size: var(--t-xs); }
+.qz-sig-enonce { font-size: var(--t-l); font-weight: 700; }
+.qz-sig-fiche .qz-illustration { align-self: flex-start; }
+.qz-sig-fiche .qz-credit { color: var(--dim); text-align: left; }
+.qz-sig-fiche .qz-rebus { color: var(--txt); background: var(--surface-2); }
+.qz-sig-liste { margin: 0; padding-left: var(--e5); font-size: var(--t-s); }
+.qz-sig-actions { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e3); font-size: var(--t-xs); }

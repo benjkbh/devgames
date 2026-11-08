@@ -7,6 +7,7 @@ import {
   avancer, noter, passer, regler, repondre, revoir, terminer,
 } from './api';
 import CarteMonde, { couleurJoueur, nomPays } from './CarteMonde';
+import { BoutonSignaler, Illustration } from './Illustration';
 import { Reglages } from './reglages';
 
 // Le plateau du quiz, selon la phase de la partie (`backend/modules/quiz/
@@ -84,9 +85,12 @@ function EnTeteQuestion({ partie: p, question: q, index, total }) {
       <Badge couleur="bleu" titre={q.theme} />
       {q.type === 'ouverte' && <Badge couleur="or" titre="Question ouverte" />}
       {q.type === 'carte' && <Badge couleur="vert" titre="Carte" />}
+      {q.rebus && <Badge couleur="orange" titre="Rébus" />}
+      {q.image && <Badge couleur="orange" titre="Image" />}
       {p && p.phase === 'question' && q.type === 'ouverte' && (
         <span className="dim qz-note">Pas de réponse unique : l’hôte jugera à la fin.</span>
       )}
+      <span className="qz-entete-fin"><BoutonSignaler key={q.id} question={q} /></span>
     </div>
   );
 }
@@ -155,6 +159,7 @@ function PhaseQuestion({
       <EnTeteQuestion partie={p} question={q} index={p.index} total={p.total} />
       <Chrono restant={restant} total={p.duree} />
       <h2 className="qz-enonce">{q.enonce}</h2>
+      <Illustration question={q} />
       {table.membre && q.type === 'carte' && (
         <SaisieCarte table={table} partie={p} onAction={onAction} actif={actif} />
       )}
@@ -185,6 +190,7 @@ function PhaseSolution({
       <EnTeteQuestion partie={p} question={q} index={p.index} total={p.total} />
       <Chrono restant={restant} total={q.type === 'carte' ? 9 : 6} />
       <h2 className="qz-enonce">{q.enonce}</h2>
+      <Illustration question={q} credit />
       <div className="qz-solution" role="status">
         <span className="qz-solution-titre">Réponse</span>
         <strong className="qz-solution-txt">{q.solution}</strong>
@@ -309,6 +315,7 @@ function FicheRevue({
   return (
     <>
       <h2 className="qz-enonce">{q.enonce}</h2>
+      <Illustration question={q} credit />
       <div className="qz-solution">
         <span className="qz-solution-titre">{q.type === 'ouverte' ? 'À attendre' : 'Réponse'}</span>
         <strong className="qz-solution-txt">{q.solution}</strong>
@@ -364,9 +371,14 @@ function PhaseRevue({ table, partie: p, onAction }) {
 
 function ReglagesSuivants({ table, onAction }) {
   const [valeur, setValeur] = useState({
-    nombre: table.nombre, duree: table.duree, carte: table.carte, ouvertes: table.ouvertes,
+    nombre: table.nombre,
+    duree: table.duree,
+    carte: table.carte,
+    ouvertes: table.ouvertes,
+    images: table.images !== false,
   });
-  const change = ['nombre', 'duree', 'carte', 'ouvertes'].some((k) => valeur[k] !== table[k]);
+  const change = ['nombre', 'duree', 'carte', 'ouvertes', 'images']
+    .some((k) => valeur[k] !== (k === 'images' ? table.images !== false : table[k]));
   return (
     <Carte titre="Prochaine partie">
       <Reglages valeur={valeur} onChange={setValeur} prefixe="qz-suivante" />
@@ -406,17 +418,25 @@ function PhaseFin({ table, partie: p, onAction }) {
               <button type="button" className="qz-recap-ligne" aria-expanded={ouverte === r.index}
                       onClick={() => setOuverte(ouverte === r.index ? null : r.index)}>
                 <span className="qz-recap-num">{r.index + 1}</span>
-                <span className="qz-recap-enonce">{r.question.enonce}</span>
+                <span className="qz-recap-enonce">
+                  {r.question.rebus && <span className="qz-recap-rebus">{`${r.question.rebus} `}</span>}
+                  {r.question.image && <span aria-label="question illustrée">🖼 </span>}
+                  {r.question.enonce}
+                </span>
                 <span className="qz-recap-sol">{r.question.solution}</span>
                 <span className="dim qz-recap-justes">{justes.length ? justes.join(', ') : 'personne'}</span>
               </button>
               {ouverte === r.index && (
-                <ul className="qz-reponses">
-                  {r.reponses.map((x) => (
-                    <ReponseJoueur key={x.joueur} r={x} question={r.question} hote={false}
-                                   joueurs={p.joueurs} />
-                  ))}
-                </ul>
+                <div className="qz-recap-detail">
+                  <Illustration question={r.question} credit />
+                  <ul className="qz-reponses">
+                    {r.reponses.map((x) => (
+                      <ReponseJoueur key={x.joueur} r={x} question={r.question} hote={false}
+                                     joueurs={p.joueurs} />
+                    ))}
+                  </ul>
+                  <BoutonSignaler key={r.question.id} question={r.question} />
+                </div>
               )}
             </li>
           );

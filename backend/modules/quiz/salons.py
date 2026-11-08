@@ -40,10 +40,12 @@ class Salon(jeux.Salon):
     duree: int = DUREE_DEFAUT
     carte: bool = True
     ouvertes: bool = True
+    images: bool = True
 
     def reglages(self) -> dict[str, Any]:
         return {'nombre': self.nombre, 'duree': self.duree,
-                'carte': self.carte, 'ouvertes': self.ouvertes}
+                'carte': self.carte, 'ouvertes': self.ouvertes,
+                'images': self.images}
 
 
 def _choix(valeur: object, permis: tuple[int, ...], defaut: int) -> int:
@@ -99,13 +101,16 @@ class Salons(jeux.Salons):
         salon.duree = _choix(reglages.get('duree'), DUREES, DUREE_DEFAUT)
         salon.carte = _oui(reglages.get('carte'))
         salon.ouvertes = _oui(reglages.get('ouvertes'))
+        salon.images = _oui(reglages.get('images'))
 
     def _partie(self, salon: Salon) -> Partie:  # type: ignore[override]
         vues = (historique.vues(self.base, salon.joueurs)
                 if self.base else {})
+        exclues = historique.signalees(self.base) if self.base else set()
         questions = self.banque.tirer(salon.nombre, self._rng, vues,
                                       carte=salon.carte,
-                                      ouvertes=salon.ouvertes)
+                                      ouvertes=salon.ouvertes,
+                                      images=salon.images, exclues=exclues)
         if self.base:
             historique.noter(self.base, salon.joueurs,
                              [q.id for q in questions])

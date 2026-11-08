@@ -114,6 +114,7 @@ d'interface, aiguillée par `frontend/src/App.jsx` avant le choix du pseudo.
 | POST | `/api/menteur/{poser,menteur,accepter}` | pseudo |
 | POST | `/api/trio/{demander,retourner}` | pseudo |
 | POST | `/api/givre/{retourner,piocher,prendre,garder,jeter,suivante}` | pseudo |
+| POST, GET | `/api/quiz/signaler` `{question, motif, commentaire}`, `/api/quiz/signalements`, `/api/quiz/retablir` `{question}` | pseudo |
 | POST | `/api/quiz/regler` (hôte, entre deux parties), `/api/quiz/{repondre,avancer}`, `/api/quiz/{passer,noter,revoir,terminer}` (hôte) | pseudo |
 
 ## Module UNO
@@ -296,6 +297,23 @@ par question, les questions de carte et les questions ouvertes.
 - historique (`historique.py`, table `"quiz.vue"`) : au lancement, le tirage
   évite les questions déjà posées à l'un des joueurs assis, varie les thèmes
   et n'en enchaîne jamais deux pareils ;
+- questions **illustrées** (réglage de la table) : une image
+  (`[fichier.jpg] énoncé = réponse`, fichiers dans `frontend/public/quiz/img/`,
+  noms en empreinte pour ne pas trahir la réponse) ou un rébus
+  (`{🦁👑} énoncé = réponse`). Environ 1 000 questions : drapeaux (flag-icons,
+  MIT), silhouettes de pays (Natural Earth), tableaux, monuments, sites,
+  animaux, plantes, objets, instruments, espace et personnalités (Wikimedia
+  Commons, licences libres seulement), schémas dessinés pour le jeu (courbes,
+  fractales, solides, graphes, statistiques, molécules, notes, braille,
+  panneaux), rébus d'emojis (films, séries, livres, expressions) et symboles.
+  L'auteur et la licence de chaque image (`questions/credits.tsv`) s'affichent
+  avec la solution ;
+- **signalements** : pendant la partie (ou dans le récapitulatif), « ⚑ Signaler »
+  met une question de côté (motif et précision facultatifs, table
+  `"quiz.signalement"`) : elle sort des tirages. La page
+  `/quiz/signalements` les liste avec leur fichier ; « Rétablir » remet une
+  question en jeu, et une question corrigée dans son fichier change
+  d'identifiant, donc revient d'elle-même ;
 - carte : `frontend/src/modules/quiz/monde.json`, tiré de Natural Earth 50m
   (domaine public), projection de Miller ; un point près de la capitale d'un
   micro-État compte (`pays.PETITS`).

@@ -5,14 +5,15 @@ import { QuestionBool, QuestionChoix } from '@ui';
 // `backend/modules/quiz/salons.py`.
 
 export const REGLAGES_DEFAUT = {
-  nombre: 15, duree: 30, carte: true, ouvertes: true,
+  nombre: 15, duree: 30, carte: true, ouvertes: true, images: true,
 };
 
 const NOMBRES = [10, 15, 20, 25, 30].map((n) => ({ valeur: String(n), libelle: String(n) }));
 const DUREES = [15, 20, 30, 45, 60].map((n) => ({ valeur: String(n), libelle: `${n} s` }));
 
 export function resumeReglages(r) {
-  const extras = [r.carte && 'carte', r.ouvertes && 'ouvertes'].filter(Boolean);
+  const extras = [r.carte && 'carte', r.ouvertes && 'ouvertes', r.images !== false && 'images']
+    .filter(Boolean);
   return `${r.nombre} questions · ${r.duree} s${extras.length ? ` · ${extras.join(', ')}` : ''}`;
 }
 
@@ -32,6 +33,9 @@ export function Reglages({ valeur, onChange, prefixe = 'qz' }) {
       <QuestionBool libelle="Questions ouvertes"
                     description="Sans réponse unique (« Citez… », « Expliquez… ») : l’hôte les juge à la fin."
                     checked={valeur.ouvertes} onChange={(ouvertes) => changer({ ouvertes })} />
+      <QuestionBool libelle="Questions illustrées"
+                    description="Tableaux, monuments, drapeaux, silhouettes de pays, schémas, rébus d’emojis…"
+                    checked={valeur.images !== false} onChange={(images) => changer({ images })} />
     </div>
   );
 }

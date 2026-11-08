@@ -19,6 +19,7 @@ import PlateauMenteur from '../src/modules/menteur/Plateau';
 import PlateauTrio from '../src/modules/trio/Plateau';
 import PlateauGivre from '../src/modules/givre/Plateau';
 import PlateauQuiz from '../src/modules/quiz/Plateau';
+import Signalements from '../src/modules/quiz/Signalements';
 
 
 // -- environnement navigateur minimal --
@@ -340,6 +341,28 @@ ECRANS.push(
   ['quiz : fin de partie', '/quiz/S7TAR', QUIZ({
     ...FIN_QZ, phase: 'fin', gagnant: 'ana', recap: [REVUE],
   }, { etat: 'finie' })],
+);
+
+// Quiz : questions illustrées (image, rébus) et page des signalements.
+const Q_IMAGE = {
+  id: 'tabc', theme: 'Images : arts', type: 'texte', enonce: 'Qui a peint ce tableau ?',
+  image: '/quiz/img/exemple.jpg',
+};
+const Q_REBUS = {
+  id: 'tdef', theme: 'Rébus : films', type: 'texte', enonce: 'Quel film se cache derrière ces emojis ?',
+  rebus: '🦁👑',
+};
+ECRANS.push(
+  ['quiz : question en image', '/quiz/S7TAR', QUIZ({ question: Q_IMAGE, ma_reponse: null })],
+  ['quiz : rébus', '/quiz/S7TAR', QUIZ({ question: Q_REBUS, ma_reponse: null })],
+  ['quiz : solution d’une image, avec crédit', '/quiz/S7TAR', QUIZ({
+    phase: 'solution', reste: 5, mon_point: 1, ma_reponse: { texte: 'Vinci' },
+    question: {
+      ...Q_IMAGE, solution: 'Léonard de Vinci', variantes: ['Vinci'],
+      credit: 'Leonardo da Vinci · Public domain', source: 'https://commons.wikimedia.org/',
+    },
+  })],
+  ['quiz : page des signalements', '/quiz/signalements', <Signalements />],
 );
 
 let echecs = 0;

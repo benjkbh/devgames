@@ -5,6 +5,7 @@ import { PageTable } from '../../commun/salons/PageTable';
 import { api } from './api';
 import { IcoQuiz, Studio } from './decor';
 import Plateau from './Plateau';
+import Signalements from './Signalements';
 import { REGLAGES_DEFAUT, Reglages, resumeReglages } from './reglages';
 import './quiz.css';
 
@@ -30,7 +31,9 @@ const AIDE = (
     <li>Questions de <strong>carte</strong> : placez un point sur le pays demandé, ou sur le pays d’une capitale.</li>
     <li>Réponse attendue : elle s’affiche à la fin du temps. Question <strong>ouverte</strong> : rien n’est montré.</li>
     <li>À la fin, l’<strong>hôte</strong> revoit toutes les réponses : il confirme la correction proposée et juge les questions ouvertes.</li>
+    <li>Questions <strong>illustrées</strong> : tableaux, monuments, drapeaux, silhouettes de pays, schémas, rébus d’emojis…</li>
     <li>Les questions déjà vues par un joueur assis sont évitées aux parties suivantes.</li>
+    <li>Une question fausse ou une image cassée ? Le bouton « ⚑ Signaler » la met de côté pour la revoir.</li>
   </ul>
 );
 
@@ -41,6 +44,7 @@ function Accueil({ moi }) {
     <AccueilSalons
       prefixe="qz" chemin="/quiz" api={api} Ico={IcoQuiz}
       fil={[<Link key="j" to="/quiz">Plateau télé</Link>, 'Culture G']}
+      outils={<Link className="qz-lien-signalements" to="/quiz/signalements">⚑ Questions signalées</Link>}
       banniere={BANNIERE} nomDefaut="Plateau de" moi={moi}
       minJoueurs={2} maxJoueurs={12}
       reglages={REGLAGES_DEFAUT} Reglages={Reglages}
@@ -63,6 +67,7 @@ export default function Quiz({ session }) {
   return (
     <Routes>
       <Route index element={<Accueil moi={moi} />} />
+      <Route path="signalements" element={<Signalements />} />
       <Route path=":code" element={<Table />} />
     </Routes>
   );

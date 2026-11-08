@@ -1,4 +1,5 @@
 import { apiSalons } from '../../commun/salons/api';
+import { lire, poster } from '../../commun/requete';
 
 // API du module Quiz (`backend/modules/quiz/api.py`) : les routes communes
 // des tables (`commun/salons/api.js`), les réglages et les coups.
@@ -22,3 +23,13 @@ export const revoir = (code, index) => api.demander('revoir', { code, index });
 export const terminer = (code) => api.demander('terminer', { code });
 // L'hôte change les réglages entre deux parties.
 export const regler = (code, reglages) => api.demander('regler', { code, ...reglages });
+
+// Signale une question non conforme (`motif` : reponse, ambigue, image,
+// difficile, autre) : elle est écartée des tirages jusqu'à ce qu'on la
+// rétablisse.
+export const signaler = (question, motif, commentaire) => poster('/api/quiz/signaler',
+  { question, motif, commentaire });
+// Les questions signalées, avec leurs signalements.
+export const lireSignalements = () => lire('/api/quiz/signalements');
+// La question revient aux tirages (corrigée, ou signalement infondé).
+export const retablir = (question) => poster('/api/quiz/retablir', { question });

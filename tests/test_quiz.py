@@ -20,6 +20,8 @@ from tests import muet
 
 MONDE = (Path(__file__).resolve().parent.parent / 'frontend' / 'src'
          / 'modules' / 'quiz' / 'monde.json')
+IMAGES = (Path(__file__).resolve().parent.parent / 'frontend' / 'public'
+          / 'quiz' / 'img')
 
 
 class Horloge:
@@ -285,6 +287,86 @@ class Historique(unittest.TestCase):
             self.assertEqual(len(vues), 30)
             # La casse du pseudo ne compte pas.
             self.assertEqual(len(historique.vues(base, ['ANA'])), 30)
+
+
+class QuestionsIllustrees(unittest.TestCase):
+
+    def test_beaucoup_de_questions_illustrees(self) -> None:
+        illustrees = [q for q in BANQUE.questions if q.illustree]
+        self.assertGreater(len(illustrees), 900)
+        self.assertGreater(sum(1 for q in illustrees if q.rebus), 150)
+
+    @unittest.skipUnless(IMAGES.is_dir(), 'frontend absent')
+    def test_chaque_image_existe(self) -> None:
+        manquantes = [q.image for q in BANQUE.questions
+                      if q.image and not (IMAGES / q.image).is_file()]
+        self.assertEqual(manquantes, [])
+
+    def test_les_images_venues_d_ailleurs_sont_creditees(self) -> None:
+        """Seuls nos propres schémas se passent de crédit."""
+        sans = [q.image for q in BANQUE.questions if q.image
+                and not q.credit and q.fichier != 'schemas.txt']
+        self.assertEqual(sans, [])
+
+    def test_lecture_d_une_ligne_illustree(self) -> None:
+        with tempfile.TemporaryDirectory() as d:
+            (Path(d) / 'x.txt').write_text('\n'.join([
+                '@ Test',
+                '[a1.jpg] Quel est ce pays ? = France',
+                '[b2.jpg] Quel est ce pays ? = Italie',
+                '{🦁👑} Quel film ? = Le Roi lion',
+            ]), encoding='utf-8')
+            (Path(d) / 'credits.tsv').write_text(
+                '\t'.join(['a1.jpg', 'Moi', 'CC0', 'https://exemple.test']),
+                encoding='utf-8')
+            qs = [q for q in banque.charger(Path(d)) if q.theme == 'Test']
+        self.assertEqual([q.image for q in qs], ['a1.jpg', 'b2.jpg', ''])
+        self.assertNotEqual(qs[0].id, qs[1].id)
+        self.assertEqual(qs[2].rebus, '🦁👑')
+        v = qs[0].vue_solution()
+        self.assertEqual(v['image'], '/quiz/img/a1.jpg')
+        self.assertEqual((v['credit'], v['source']),
+                         ('Moi · CC0', 'https://exemple.test'))
+        # Le crédit (qui nomme souvent la réponse) attend la solution.
+        self.assertNotIn('credit', qs[0].vue())
+
+    def test_sans_images(self) -> None:
+        qs = BANQUE.tirer(40, random.Random(8), {}, images=False)
+        self.assertFalse(any(q.illustree for q in qs))
+
+    def test_les_questions_exclues_ne_sortent_pas(self) -> None:
+        petite = Banque([q_texte(i) for i in range(5)])
+        qs = petite.tirer(5, random.Random(1), {}, exclues={'t0', 't3'})
+        self.assertEqual(sorted(q.id for q in qs), ['t1', 't2', 't4'])
+
+
+class Signalements(unittest.TestCase):
+
+    def test_une_question_signalee_est_ecartee_puis_retablie(self) -> None:
+        with tempfile.TemporaryDirectory() as d:
+            base = os.path.join(d, 'app.db')
+            initialiser(base, muet)
+            historique.signaler(base, 't3', 'Ana', 'reponse', 'Faux !')
+            historique.signaler(base, 't3', 'Bob', 'ambigue', '')
+            self.assertEqual(historique.signalees(base), {'t3'})
+            self.assertEqual(sorted(s['joueur'] for s in
+                                    historique.signalements(base)['t3']),
+                             ['Ana', 'Bob'])
+            petite = Banque([q_texte(i) for i in range(5)])
+            s = salons.Salons(random.Random(1), Horloge(), banque=petite)
+            s.base = base
+            code = s.creer('Ana', nombre=10)
+            s.rejoindre(code, 'Bob')
+            s.lancer(code, 'Ana')
+            ids = {q.id for q in s._salons[code].partie.questions}
+            self.assertNotIn('t3', ids)
+            historique.retablir(base, 't3')
+            self.assertEqual(historique.signalees(base), set())
+
+    def test_routes(self) -> None:
+        self.assertIn(('POST', '/api/quiz/signaler'), api.TABLE)
+        self.assertIn(('GET', '/api/quiz/signalements'), api.TABLE)
+        self.assertIn(('POST', '/api/quiz/retablir'), api.TABLE)
 
 
 if __name__ == '__main__':
