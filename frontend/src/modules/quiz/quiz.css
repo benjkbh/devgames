@@ -121,8 +121,22 @@ button.qz-puce:hover { border-color: var(--qz-cyan); }
 .qz-aide { display: flex; flex-direction: column; gap: var(--e1); margin: 0; padding-left: var(--e4); font-size: var(--t-s); color: var(--txt-2); }
 
 /* -- la carte du monde --- */
-.qz-carte { position: relative; overflow: hidden; border: 1px solid rgba(79, 227, 255, .35); border-radius: var(--r-l); background: var(--qz-mer); }
-.qz-carte svg { display: block; width: 100%; height: auto; max-height: 62vh; touch-action: none; user-select: none; }
+/* La carte a une taille fixée par le conteneur, jamais par le SVG : sur un
+   écran large, la forme du planisphère (bornée en hauteur) ; sur un
+   téléphone, une bonne part de l'écran en hauteur, et l'on glisse de côté
+   (`CarteMonde.jsx` cadre la vue sur la forme mesurée). */
+.qz-carte {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1000 / 497;
+  min-height: 300px;
+  max-height: 72vh;
+  overflow: hidden;
+  border: 1px solid rgba(79, 227, 255, .35);
+  border-radius: var(--r-l);
+  background: var(--qz-mer);
+}
+.qz-carte svg { position: absolute; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; user-select: none; -webkit-user-select: none; }
 .qz-carte.saisie svg { cursor: crosshair; }
 .qz-mer { fill: var(--qz-mer); }
 .qz-pays { fill: var(--qz-terre); stroke: #0c2238; stroke-linejoin: round; }
@@ -143,6 +157,11 @@ button.qz-puce:hover { border-color: var(--qz-cyan); }
   .qz-chrono-barre { transition: none; }
 }
 @media (max-width: 720px) {
+  .qz-plateau { padding: var(--e3); border-radius: var(--r-l); }
+  .qz-carte { aspect-ratio: auto; height: 58vh; height: 58svh; min-height: 320px; max-height: none; }
+  .qz-carte-outils .btn { min-width: 40px; min-height: 40px; }
+  .qz-saisie > :first-child { flex-basis: 100%; }
+  .qz-saisie .btn, .qz-saisie-pied .btn { flex: 1 1 auto; }
   .qz-recap-ligne { grid-template-columns: 24px minmax(0, 1fr); }
   .qz-recap-sol, .qz-recap-justes { grid-column: 2; }
 }

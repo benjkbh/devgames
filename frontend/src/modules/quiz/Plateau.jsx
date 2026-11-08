@@ -29,13 +29,18 @@ const formatPoint = (p) => {
 const formatScore = (s) => String(s).replace('.5', ',5');
 
 // Secondes restantes, à partir de `reste` reçu du serveur pour l'étape
-// `cle` ; recalé quand l'étape change ou que l'écart dépasse une seconde.
+// `cle`. L'échéance n'est recalculée qu'à la réception d'une nouvelle valeur
+// (nouvelle étape, ou relecture de la table) : entre deux réceptions, le
+// même `reste` ne doit pas la repousser. Une relecture ne la recale que si
+// l'écart dépasse une seconde (latence du réseau).
 function useCompteur(reste, cle) {
-  const fin = useRef({ cle: null, t: 0 });
+  const fin = useRef({ cle: null, reste: null, t: 0 });
   const [, setTic] = useState(0);
-  const attendu = Date.now() + (reste || 0) * 1000;
-  if (fin.current.cle !== cle || Math.abs(fin.current.t - attendu) > 1000) {
-    fin.current = { cle, t: attendu };
+  if (fin.current.cle !== cle || fin.current.reste !== reste) {
+    const attendu = Date.now() + (reste || 0) * 1000;
+    const t = fin.current.cle !== cle || Math.abs(fin.current.t - attendu) > 1000
+      ? attendu : fin.current.t;
+    fin.current = { cle, reste, t };
   }
   useEffect(() => {
     if (reste === undefined) return undefined;

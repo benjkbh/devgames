@@ -7,7 +7,9 @@ import MONDE from './monde.json';
 
 // Carte du monde du quiz : projection de Miller (fond Natural Earth, domaine
 // public), en SVG. On zoome à la molette ou aux boutons, on se déplace en
-// faisant glisser ; un clic (sans glisser) place le point.
+// faisant glisser ; au doigt, on pince pour zoomer. Un appui bref (sans
+// glisser) place le point. La carte remplit son conteneur, dont la forme
+// suit l'écran (`quiz.css`).
 //
 //   onPlacer   ({ pays, lat, lon }) : un clic place le point ; sans elle, la
 //              carte n'est qu'à lire. `pays` : code du territoire touché, ou
@@ -39,14 +41,27 @@ export function deprojeter(x, y) {
 }
 
 const ZOOM_MAX = 24;
+const FORME = H / L;
 const borner = (v, min, max) => Math.min(max, Math.max(min, v));
 
-function cadrer(vue) {
-  const k = borner(vue.k, 1, ZOOM_MAX);
+// Le cadre visible pour un conteneur de forme `forme` (hauteur / largeur) :
+// zoom `k`, coin haut-gauche `x`, `y`. Au zoom minimal, la carte remplit le
+// conteneur : en entier sur un écran large, sur toute sa hauteur sur un écran
+// haut (un téléphone) ; on glisse alors de côté.
+const zoomMin = (forme) => Math.max(1, forme / FORME);
+function cadrer(vue, forme) {
+  const k = borner(vue.k, zoomMin(forme), ZOOM_MAX);
   const l = L / k;
-  const h = H / k;
-  return { k, x: borner(vue.x, 0, L - l), y: borner(vue.y, 0, H - h) };
+  const h = l * forme;
+  return {
+    k, x: borner(vue.x, 0, Math.max(0, L - l)), y: borner(vue.y, 0, Math.max(0, H - h)),
+  };
 }
+// La vue d'ensemble, centrée (l'Europe et l'Afrique sur un écran haut).
+const ensemble = (forme) => {
+  const k = zoomMin(forme);
+  return cadrer({ k, x: (L - L / k) / 2 - L * 0.04, y: 0 }, forme);
+};
 
 // Couleur stable d'un joueur, d'après son nom.
 const TEINTES = ['#e5484d', '#3e9bff', '#30a46c', '#f5a524', '#8e4ec6', '#12a594', '#e93d82', '#ad7f58', '#5b5bd6', '#ff8b3e', '#46a758', '#0090ff'];
@@ -61,13 +76,39 @@ export function couleurJoueur(nom, joueurs) {
 export default function CarteMonde({
   onPlacer, point, points = [], cible, joueurs, className,
 }) {
+  const boite = useRef(null);
   const svg = useRef(null);
   const glisse = useRef(null);
-  const [vue, setVue] = useState({ k: 1, x: 0, y: 0 });
+  const pince = useRef(null);
+  const doigts = useRef(new Map());
+  // Forme du conteneur (hauteur / largeur), mesurée : le cadre la suit.
+  const forme = useRef(FORME);
+  const [formeVue, setFormeVue] = useState(FORME);
+  const [vue, setVue] = useState(() => ensemble(FORME));
   const [survol, setSurvol] = useState(null);
   const l = L / vue.k;
-  const h = H / vue.k;
+  const h = l * formeVue;
   const r = 4 / vue.k;
+
+  useEffect(() => {
+    const noeud = boite.current;
+    if (!noeud || typeof ResizeObserver === 'undefined') return undefined;
+    const mesurer = () => {
+      const { width, height } = noeud.getBoundingClientRect();
+      if (!width || !height) return;
+      const f = height / width;
+      const avant = forme.current;
+      forme.current = f;
+      setFormeVue(f);
+      // Au zoom minimal, on reste sur la vue d'ensemble ; sinon, on garde
+      // le cadre, borné à la nouvelle forme.
+      setVue((v) => (v.k <= zoomMin(avant) + 1e-6 ? ensemble(f) : cadrer(v, f)));
+    };
+    mesurer();
+    const obs = new ResizeObserver(mesurer);
+    obs.observe(noeud);
+    return () => obs.disconnect();
+  }, []);
 
   const versCarte = (e) => {
     const s = svg.current;
@@ -83,10 +124,11 @@ export default function CarteMonde({
 
   const zoomer = (facteur, centre) => {
     setVue((v) => {
-      const [cx0, cy0] = centre || [v.x + L / v.k / 2, v.y + H / v.k / 2];
-      const k = borner(v.k * facteur, 1, ZOOM_MAX);
+      const f = forme.current;
+      const [cx0, cy0] = centre || [v.x + L / v.k / 2, v.y + (L / v.k) * f / 2];
+      const k = borner(v.k * facteur, zoomMin(f), ZOOM_MAX);
       const ratio = v.k / k;
-      return cadrer({ k, x: cx0 - (cx0 - v.x) * ratio, y: cy0 - (cy0 - v.y) * ratio });
+      return cadrer({ k, x: cx0 - (cx0 - v.x) * ratio, y: cy0 - (cy0 - v.y) * ratio }, f);
     });
   };
 
@@ -102,12 +144,49 @@ export default function CarteMonde({
     return () => noeud.removeEventListener('wheel', molette);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Un doigt (ou la souris) : glisser déplace, un appui bref place le point.
+  // Deux doigts : pincer zoome autour de leur milieu.
   const appui = (e) => {
-    glisse.current = {
-      x: e.clientX, y: e.clientY, vue, bouge: false, id: e.pointerId,
-    };
+    doigts.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (doigts.current.size === 2 && svg.current) {
+      const [a, b] = [...doigts.current.values()];
+      const rect = svg.current.getBoundingClientRect();
+      const mx = (a.x + b.x) / 2 - rect.left;
+      const my = (a.y + b.y) / 2 - rect.top;
+      const lv = L / vue.k;
+      glisse.current = null;
+      pince.current = {
+        d: Math.hypot(a.x - b.x, a.y - b.y) || 1,
+        k: vue.k,
+        cx: vue.x + (mx / rect.width) * lv,
+        cy: vue.y + (my / rect.height) * lv * forme.current,
+      };
+      return;
+    }
+    if (doigts.current.size === 1) {
+      glisse.current = {
+        x: e.clientX, y: e.clientY, vue, bouge: false, id: e.pointerId,
+      };
+    }
   };
   const deplacement = (e) => {
+    if (doigts.current.has(e.pointerId)) {
+      doigts.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    }
+    const pc = pince.current;
+    if (pc && doigts.current.size >= 2 && svg.current) {
+      const [a, b] = [...doigts.current.values()];
+      const rect = svg.current.getBoundingClientRect();
+      const f = forme.current;
+      const k = borner(pc.k * (Math.hypot(a.x - b.x, a.y - b.y) / pc.d), zoomMin(f), ZOOM_MAX);
+      const lv = L / k;
+      const mx = (a.x + b.x) / 2 - rect.left;
+      const my = (a.y + b.y) / 2 - rect.top;
+      setVue(cadrer({
+        k, x: pc.cx - (mx / rect.width) * lv, y: pc.cy - (my / rect.height) * lv * f,
+      }, f));
+      return;
+    }
     const g = glisse.current;
     if (!g || g.id !== e.pointerId) return;
     const dx = e.clientX - g.x;
@@ -119,12 +198,18 @@ export default function CarteMonde({
     g.bouge = true;
     const rect = svg.current.getBoundingClientRect();
     const echelle = (L / g.vue.k) / rect.width;
-    setVue(cadrer({ ...g.vue, x: g.vue.x - dx * echelle, y: g.vue.y - dy * echelle }));
+    setVue(cadrer({ ...g.vue, x: g.vue.x - dx * echelle, y: g.vue.y - dy * echelle },
+      forme.current));
+  };
+  const lacher = (e) => {
+    doigts.current.delete(e.pointerId);
+    if (doigts.current.size < 2) pince.current = null;
   };
   const relache = (e) => {
+    lacher(e);
     const g = glisse.current;
     glisse.current = null;
-    if (!g || g.bouge || !onPlacer) return;
+    if (!g || g.bouge || g.id !== e.pointerId || !onPlacer) return;
     const c = versCarte(e);
     if (!c) return;
     const code = e.target && e.target.dataset ? e.target.dataset.c || null : null;
@@ -142,11 +227,11 @@ export default function CarteMonde({
   const marque = point && projeter(point.lon, point.lat);
 
   return (
-    <div className={cx('qz-carte', onPlacer && 'saisie', className)}>
+    <div ref={boite} className={cx('qz-carte', onPlacer && 'saisie', className)}>
       <svg ref={svg} viewBox={`${vue.x} ${vue.y} ${l} ${h}`}
            role="img" aria-label={onPlacer ? 'Carte du monde : cliquez pour placer votre point' : 'Carte du monde'}
            onPointerDown={appui} onPointerMove={deplacement} onPointerUp={relache}
-           onPointerCancel={() => { glisse.current = null; }}
+           onPointerCancel={(e) => { lacher(e); glisse.current = null; }}
            onMouseOver={(e) => setSurvol((e.target.dataset && e.target.dataset.c) || null)}
            onMouseLeave={() => setSurvol(null)}>
         <rect className="qz-mer" x="0" y="0" width={L} height={H} />
@@ -178,7 +263,7 @@ export default function CarteMonde({
       <div className="qz-carte-outils">
         <Bouton taille="s" libelle="Zoomer" titre="+" onClick={() => zoomer(1.6)} />
         <Bouton taille="s" libelle="Dézoomer" titre="−" onClick={() => zoomer(1 / 1.6)} />
-        <Bouton taille="s" libelle="Vue entière" titre="Monde" onClick={() => setVue({ k: 1, x: 0, y: 0 })} />
+        <Bouton taille="s" libelle="Vue entière" titre="Monde" onClick={() => setVue(ensemble(forme.current))} />
         {nomSurvol && !onPlacer && <span className="qz-carte-survol">{nomSurvol}</span>}
       </div>
     </div>
