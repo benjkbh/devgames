@@ -1,0 +1,96 @@
+@ Espace et astronomie
+Quelle est la planète la plus proche du Soleil ? = Mercure
+Quelle est la plus grande planète du système solaire ? = Jupiter
+Quelle est la plus petite planète du système solaire ? = Mercure
+Quelle planète est surnommée « la planète rouge » ? = Mars
+Quelle planète est célèbre pour ses anneaux spectaculaires ? = Saturne
+Quelle planète est la plus chaude du système solaire ? = Vénus
+Quelle planète est surnommée « l'étoile du berger » ? = Vénus
+Quelle planète tourne « couchée » sur le côté ? = Uranus
+Quelle est la planète la plus éloignée du Soleil ? = Neptune
+Combien de planètes compte le système solaire ? = 8 | huit
+Quel astre a perdu son statut de planète en 2006 ? = Pluton
+Quelle est la seule planète du système solaire qui ne porte pas un nom de divinité ? = Terre | La Terre
+Comment s'appelle le plus grand satellite de Jupiter ? = Ganymède
+Comment s'appellent les deux satellites de Mars (un suffit) ? = Phobos | Deimos
+Quel est le plus grand satellite de Saturne ? = Titan
+Quelle grande tache est une tempête géante sur Jupiter ? = Grande Tache rouge | Tache rouge
+Quel est le plus grand volcan connu du système solaire, sur Mars ? = Olympus Mons
+Quelle est l'étoile la plus proche de la Terre ? = Soleil | Le Soleil
+Quelle est l'étoile la plus proche du Soleil ? = Proxima du Centaure | Proxima Centauri | Proxima
+Quelle étoile indique le nord dans le ciel ? = Étoile polaire | Polaris
+Dans quelle constellation se trouve l'étoile polaire ? = Petite Ourse
+Quelle est l'étoile la plus brillante du ciel nocturne ? = Sirius
+Comment s'appelle notre galaxie ? = Voie lactée | La Voie lactée
+Quelle est la grande galaxie la plus proche de la Voie lactée ? = Andromède | Galaxie d'Andromède
+En combien de temps la lumière du Soleil atteint-elle la Terre (en minutes) ? = 8 | huit
+En combien de jours la Terre fait-elle le tour du Soleil (arrondi) ? = 365
+Combien de temps met la Lune pour faire le tour de la Terre (en jours, arrondi) ? = 27 | 28 | 29
+Quelle distance sépare la Terre de la Lune, en km (arrondie) ? = 384000 | 384 000 | 380000 | 384400
+Quelle distance sépare la Terre du Soleil, en millions de km (arrondie) ? = 150
+Comment appelle-t-on la distance moyenne Terre-Soleil ? = Unité astronomique | UA
+Quelle unité de distance correspond au trajet de la lumière en un an ? = Année-lumière | Année lumière
+Comment appelle-t-on le phénomène où la Lune passe devant le Soleil ? = Éclipse solaire | Éclipse de Soleil | Éclipse
+Comment appelle-t-on la phase où la Lune est entièrement éclairée ? = Pleine lune
+Quelle phase de la Lune suit la pleine lune ? = Dernier quartier | Lune décroissante | Gibbeuse décroissante
+Comment appelle-t-on les jours les plus longs et les plus courts de l'année ? = Solstices | Solstice
+Comment appelle-t-on les jours où le jour et la nuit ont la même durée ? = Équinoxes | Équinoxe
+Pourquoi a-t-on des saisons sur Terre ? ~ À cause de l'inclinaison de l'axe de rotation de la Terre (environ 23°)
+Comment appelle-t-on une « étoile filante » en réalité ? = Météore | Météoroïde
+Comment appelle-t-on un corps rocheux tombé sur Terre ? = Météorite
+Comment appelle-t-on un corps glacé à longue queue lumineuse ? = Comète
+Quelle comète passe près de la Terre environ tous les 76 ans ? = Comète de Halley | Halley
+Entre quelles planètes se trouve la ceinture principale d'astéroïdes ? = Mars et Jupiter | Mars | Jupiter
+Comment appelle-t-on les lumières colorées des régions polaires ? = Aurores polaires | Aurore boréale | Aurores boréales
+Comment appelle-t-on une étoile qui explose en fin de vie ? = Supernova
+Comment appelle-t-on une étoile morte très dense de la taille d'une ville ? = Étoile à neutrons | Pulsar
+Comment appelle-t-on la théorie de l'origine de l'Univers ? = Big Bang
+Quel âge a l'Univers environ (en milliards d'années) ? = 13,8 | 13.8 | 14 | 13
+Quel âge a la Terre environ (en milliards d'années) ? = 4,5 | 4.5 | 4,6 | 4.6
+Quel astronome a donné son nom au télescope spatial lancé en 1990 ? = Edwin Hubble | Hubble
+Quel télescope spatial a été lancé en décembre 2021 ? = James Webb | JWST | Télescope James Webb
+Qui a été le premier homme dans l'espace en 1961 ? = Youri Gagarine | Gagarine
+Qui a été la première femme dans l'espace ? = Valentina Terechkova | Terechkova | Tereshkova
+Quel chien a été le premier être vivant en orbite ? = Laïka | Laika
+Quelle mission a permis le premier pas sur la Lune ? = Apollo 11
+Qui accompagnait Neil Armstrong sur la Lune ? = Buzz Aldrin | Aldrin
+Quelle phrase a prononcée Neil Armstrong en posant le pied sur la Lune ? ~ « C'est un petit pas pour l'homme, un bond de géant pour l'humanité »
+Quelle mission Apollo a connu un grave incident en 1970 (« Houston, nous avons un problème ») ? = Apollo 13
+Combien d'hommes ont marché sur la Lune ? = 12 | douze
+Quel est le premier Français dans l'espace ? = Jean-Loup Chrétien | Chrétien
+Quel astronaute français a séjourné dans l'ISS en 2016-2017 et 2021 ? = Thomas Pesquet | Pesquet
+Quelle est la première Française dans l'espace ? = Claudie Haigneré | Haigneré
+Que signifie l'acronyme « ISS » ? = International Space Station | Station spatiale internationale
+Que signifie l'acronyme « NASA » ? = National Aeronautics and Space Administration
+Comment s'appelle l'agence spatiale européenne ? = ESA | Agence spatiale européenne
+Depuis quelle ville de Guyane les fusées européennes sont-elles lancées ? = Kourou
+Comment s'appelle la fusée européenne de nouvelle génération lancée en 2024 ? = Ariane 6 | Ariane
+Comment s'appelle la navette spatiale qui a explosé au décollage en 1986 ? = Challenger
+Comment s'appelle le premier robot à avoir roulé sur Mars en 1997 ? = Sojourner
+Comment s'appelle le rover de la NASA arrivé sur Mars en 2021 ? = Perseverance
+Comment s'appelle l'hélicoptère qui a volé sur Mars en 2021 ? = Ingenuity
+Quelle sonde a quitté le système solaire la première ? = Voyager 1 | Voyager
+Quelle sonde européenne a déposé le robot Philae sur une comète ? = Rosetta
+Quel programme de la NASA vise à renvoyer des humains sur la Lune ? = Artemis
+Quelle entreprise a créé la capsule Crew Dragon ? = SpaceX
+Quel pays a posé le premier engin sur la face cachée de la Lune en 2019 ? = Chine
+Comment appelle-t-on une planète en dehors du système solaire ? = Exoplanète
+Comment s'appelle la limite autour d'un trou noir d'où rien ne ressort ? = Horizon des événements | Horizon
+Quel astronome polonais a proposé l'héliocentrisme ? = Nicolas Copernic | Copernic
+Quel astronome a énoncé les lois du mouvement des planètes au XVIIe siècle ? = Johannes Kepler | Kepler
+Quel savant a découvert les quatre principales lunes de Jupiter en 1610 ? = Galilée
+Quel astronome a découvert Uranus en 1781 ? = William Herschel | Herschel
+Quel astronome français a calculé la position de Neptune avant sa découverte ? = Urbain Le Verrier | Le Verrier
+Combien de constellations du zodiaque sont utilisées en astrologie ? = 12 | douze
+Quel signe du zodiaque est représenté par une balance ? = Balance
+Quel signe du zodiaque est représenté par un bélier ? = Bélier
+Quel signe du zodiaque est représenté par des jumeaux ? = Gémeaux
+Quel signe du zodiaque est représenté par un porteur d'eau ? = Verseau
+Quel signe du zodiaque est représenté par un crabe ? = Cancer
+Citez une constellation. ~ Grande Ourse, Petite Ourse, Orion, Cassiopée, Andromède, Pégase, Lion, Scorpion, Cygne, Croix du Sud, Lyre…
+Citez une planète gazeuse. ~ Jupiter, Saturne (géantes gazeuses), Uranus, Neptune (géantes de glaces)
+Citez un satellite naturel d'une planète du système solaire autre que la Lune. ~ Io, Europe, Ganymède, Callisto, Titan, Encelade, Phobos, Deimos, Triton, Miranda, Charon (Pluton)…
+Citez un astronaute ou cosmonaute célèbre. ~ Gagarine, Armstrong, Aldrin, Terechkova, Leonov, Pesquet, Chrétien, Haigneré, Glenn, Sally Ride…
+Citez une mission spatiale célèbre. ~ Apollo 11, Apollo 13, Spoutnik, Vostok, Voyager, Rosetta, Hubble, Curiosity, Perseverance, Artemis, Mir, ISS…
+Expliquez pourquoi le ciel est bleu. ~ La lumière bleue du Soleil est davantage diffusée par les molécules de l'air (diffusion Rayleigh)
+Expliquez pourquoi on voit toujours la même face de la Lune. ~ Elle tourne sur elle-même dans le même temps qu'elle tourne autour de la Terre (rotation synchrone)

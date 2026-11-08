@@ -1,6 +1,7 @@
 # Jeux de la veillée
 
-Jeux à plusieurs dans le navigateur (UNO, Code Names, Flip 7, Menteur, Trio). **Pas de compte** : on
+Jeux à plusieurs dans le navigateur (UNO, Code Names, Flip 7, Menteur, Trio,
+Givre, Culture G). **Pas de compte** : on
 entre en choisissant un pseudo, et tous les jeux sont ouverts. Frontend
 React/Vite, backend Python sans dépendance (bibliothèque standard, SQLite).
 
@@ -108,10 +109,12 @@ d'interface, aiguillée par `frontend/src/App.jsx` avant le choix du pseudo.
 | GET | `/api/codenames/salons`, `/api/codenames/salon?code=[&version=]` | pseudo ; avec `version`, attente longue |
 | POST | `/api/codenames/{creer,rejoindre,quitter,lever,exclure,pret,reprendre,fermer,choisir,melanger,regler,lancer}` | pseudo |
 | POST | `/api/codenames/{indice,marquer,reveler,finir}` | pseudo |
-| GET, POST | `/api/{flip7,menteur,trio}/…` : les routes communes des tables (`salons`, `salon`, `creer`, `rejoindre`, `quitter`, `lever`, `exclure`, `lancer`, `pret`, `reprendre`, `fermer`) | pseudo |
+| GET, POST | `/api/{flip7,menteur,trio,givre,quiz}/…` : les routes communes des tables (`salons`, `salon`, `creer`, `rejoindre`, `quitter`, `lever`, `exclure`, `lancer`, `pret`, `reprendre`, `fermer`) | pseudo |
 | POST | `/api/flip7/{piocher,rester,cibler,suivante}` | pseudo |
 | POST | `/api/menteur/{poser,menteur,accepter}` | pseudo |
 | POST | `/api/trio/{demander,retourner}` | pseudo |
+| POST | `/api/givre/{retourner,piocher,prendre,garder,jeter,suivante}` | pseudo |
+| POST | `/api/quiz/regler` (hôte, entre deux parties), `/api/quiz/{repondre,avancer}`, `/api/quiz/{passer,noter,revoir,terminer}` (hôte) | pseudo |
 
 ## Module UNO
 
@@ -226,9 +229,9 @@ thèmes. Dessins (sceaux des camps, du domestique et du Comte, manoir de
 l'accueil, icône du menu) dans `decor.jsx`, galerie dans `Galerie.jsx`, styles
 dans `codenames.css` (préfixe `cn-`). Pas de musique ni de page spectateur.
 
-## Jeux simples : Flip 7, Menteur, Trio
+## Jeux simples : Flip 7, Menteur, Trio, Givre, Culture G
 
-Trois jeux bâtis sur la même base, pour qu'un nouveau jeu tienne en peu de
+Cinq jeux bâtis sur la même base, pour qu'un nouveau jeu tienne en peu de
 code :
 
 - **serveur** : `backend/commun/jeux.py` (des victoires par joueur, et chaque
@@ -259,6 +262,43 @@ de 1 à 12 en trois exemplaires, des mains rangées et des cartes cachées au
 centre. À son tour, on révèle la plus petite ou la plus grande carte d'un
 joueur, ou une carte du centre, tant qu'elles sont identiques ; trois
 identiques font un trio. Trois trios, ou le trio de 7, gagnent.
+
+**Givre**, au chalet (`modules/givre/`, de 2 à 8 joueurs) : un jeu de cartes
+« golf », où l'on vise le plus petit total. 150 cartes-glaçons de -2 à 12 ;
+chacun a 12 cartes cachées en grille de 3 × 4 et en retourne deux. À son
+tour, on prend la défausse ou on pioche, et l'on remplace une carte de sa
+grille (ou l'on jette la pioche et retourne une carte). Une colonne de trois
+cartes identiques fond. Qui a tout retourné le premier fait jouer un dernier
+tour aux autres, et voit ses points doublés s'il n'a pas, seul, le plus petit
+total. La partie s'arrête à 100 points. Règles détaillées en tête de
+`regles.py`.
+
+**Culture G**, sur un plateau télé (`modules/quiz/`, de 2 à 12 joueurs) : un
+quiz de culture générale à réponses libres, sans choix multiples. L'hôte
+règle à la création (et entre deux parties) le nombre de questions, le temps
+par question, les questions de carte et les questions ouvertes.
+
+- trois sortes de questions : à **réponse attendue** (corrigées d'office :
+  casse, accents, article et petites fautes de frappe pardonnés, nombres
+  comparés), **ouvertes** (« Citez… », « Expliquez… » : rien n'est montré,
+  l'hôte juge) et de **carte** (placer un pays, ou le pays d'une capitale, sur
+  la carte du monde : zoom, déplacement, clic) ;
+- déroulé (`regles.py`) : question et compte à rebours, puis la réponse
+  quelques secondes (pas pour une question ouverte) ; à la fin, l'**hôte**
+  passe toutes les questions en revue avec toutes les réponses, confirme ou
+  renverse la correction proposée et donne 0, ½ ou 1 point. Tout le monde suit
+  la revue ;
+- banque (`banque.py`) : les fichiers `questions/*.txt`, un thème par
+  fichier, une question par ligne (`énoncé = réponse | variante`, ou
+  `énoncé ~ indication pour l'hôte`), plus les questions tirées de la table
+  des pays (`pays.py`) : environ 3 000 questions. Ajouter une question, c'est
+  ajouter une ligne ;
+- historique (`historique.py`, table `"quiz.vue"`) : au lancement, le tirage
+  évite les questions déjà posées à l'un des joueurs assis, varie les thèmes
+  et n'en enchaîne jamais deux pareils ;
+- carte : `frontend/src/modules/quiz/monde.json`, tiré de Natural Earth 50m
+  (domaine public), projection de Miller ; un point près de la capitale d'un
+  micro-État compte (`pays.PETITS`).
 
 ## Santé et présence
 

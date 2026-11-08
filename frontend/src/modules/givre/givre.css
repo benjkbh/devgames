@@ -1,0 +1,137 @@
+/* Module Givre, au chalet : nuit d'hiver bleu glacier, neige qui tombe,
+   cartes-glaçons givrées dont la teinte va du bleu (négatif) au rouge (les
+   plus lourdes). La table reste sombre dans les deux thèmes. Tout ce qui
+   bouge respecte « mouvement réduit ». */
+
+.gv-page, .gv-accueil {
+  --gv-nuit: #0a1a2c;
+  --gv-nuit-2: #13304a;
+  --gv-glacier: #bfe6ff;
+  --gv-neige: #f4fbff;
+  --gv-bois: #6b3f22;
+}
+
+/* -- bannière --- */
+.gv-banniere {
+  background:
+    radial-gradient(360px 240px at 76% 30%, rgba(191, 230, 255, .22), transparent 70%),
+    linear-gradient(180deg, #06111f 0%, #0f2a44 65%, #1b3c5c 100%);
+}
+.gv-banniere-scene { position: relative; }
+.gv-chalet { width: min(320px, 72vw); height: auto; }
+.gv-mont-loin { fill: #2a4a6c; }
+.gv-neige-loin { fill: #dff3ff; }
+.gv-mont { fill: #e8f5fd; }
+.gv-chalet-mur { fill: var(--gv-bois); }
+.gv-chalet-toit { fill: #3d2414; }
+.gv-chalet-neige { fill: #ffffff; }
+.gv-fenetre { fill: #ffd27a; filter: drop-shadow(0 0 4px #ffb84d); }
+.gv-sapin { fill: #1f4a3a; }
+.gv-flocon { fill: #fff; opacity: .85; animation: gv-neige 6s linear infinite; }
+.gv-flocon:nth-child(3n) { animation-duration: 8s; animation-delay: -3s; }
+.gv-flocon:nth-child(4n) { animation-duration: 10s; animation-delay: -5s; }
+.gv-banniere-cartes { position: absolute; right: 0; bottom: 4px; display: flex; gap: 4px; transform: rotate(-5deg); }
+
+/* -- la table --- */
+.gv-chalet-table {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e4);
+  padding: var(--e5);
+  border: 1px solid #27506f;
+  border-radius: var(--r-xl);
+  background:
+    radial-gradient(1.4px 1.4px at 14% 20%, #fff 50%, transparent 51%),
+    radial-gradient(1.2px 1.2px at 42% 10%, #fff 50%, transparent 51%),
+    radial-gradient(1.6px 1.6px at 70% 24%, #fff 50%, transparent 51%),
+    radial-gradient(1.2px 1.2px at 88% 14%, #fff 50%, transparent 51%),
+    radial-gradient(70% 60% at 50% 20%, rgba(191, 230, 255, .14), transparent 75%),
+    linear-gradient(180deg, var(--gv-nuit-2), var(--gv-nuit));
+  box-shadow: inset 0 0 0 4px rgba(0, 0, 0, .3), 0 18px 40px rgba(0, 0, 0, .4);
+  color: #e6f2fb;
+}
+.gv-message { font-family: var(--police-titre); font-size: var(--t-2xl); text-align: center; }
+.gv-message.vous { color: var(--gv-glacier); text-shadow: 0 0 14px rgba(191, 230, 255, .6); }
+
+.gv-centre { display: flex; align-items: flex-end; justify-content: center; flex-wrap: wrap; gap: var(--e6); padding: var(--e3); border-radius: var(--r-l); background: rgba(3, 10, 20, .45); }
+.gv-tas { display: flex; flex-direction: column; align-items: center; gap: var(--e2); }
+.gv-tas-titre { color: rgba(230, 242, 251, .75); font-size: var(--t-xs); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.gv-tas .gv-carte { width: 64px; height: 90px; }
+.gv-tas .gv-valeur { font-size: 30px; }
+.gv-tas-bouton { padding: 0; border: 0; border-radius: 12px; background: none; cursor: pointer; transition: transform var(--duree); }
+.gv-tas-bouton:hover { transform: translateY(-3px); }
+.gv-tas-bouton:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--gv-glacier); }
+.gv-tas-bouton.choisie .gv-carte { box-shadow: 0 0 0 3px var(--gv-glacier), 0 0 22px rgba(191, 230, 255, .7); transform: translateY(-6px); }
+.gv-main .gv-carte.tiree { box-shadow: 0 0 0 3px #ffd27a, 0 0 22px rgba(255, 210, 122, .55); }
+
+.gv-bilan { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: var(--e3) var(--e4); padding: var(--e3) var(--e4); border: 1px solid rgba(191, 230, 255, .35); border-radius: var(--r-l); background: rgba(191, 230, 255, .08); font-size: var(--t-s); }
+
+.gv-joueurs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: var(--e3); margin: 0; padding: 0; list-style: none; }
+.gv-joueur { display: flex; flex-direction: column; gap: var(--e2); padding: var(--e3); border: 1px solid rgba(191, 230, 255, .18); border-radius: var(--r-l); background: rgba(3, 10, 20, .5); }
+.gv-joueur.moi { border-color: rgba(191, 230, 255, .45); }
+.gv-joueur.au-trait { border-color: var(--gv-glacier); box-shadow: 0 0 0 1px var(--gv-glacier), 0 0 20px rgba(191, 230, 255, .3); }
+.gv-joueur-tete { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e2); }
+.gv-joueur-nom { font-family: var(--police-titre); font-size: var(--t-l); font-weight: 700; }
+.gv-joueur-points { margin-left: auto; color: rgba(230, 242, 251, .8); font-size: var(--t-xs); font-weight: 700; font-variant-numeric: tabular-nums; }
+.gv-objectif { margin-bottom: var(--e2); font-size: var(--t-xs); }
+
+.gv-grille { display: flex; justify-content: center; gap: 6px; }
+.gv-colonne { display: flex; flex-direction: column; gap: 6px; }
+.gv-case { display: inline-flex; padding: 0; border: 0; border-radius: 9px; background: none; }
+button.gv-case { cursor: pointer; transition: transform var(--duree); }
+button.gv-case:hover { transform: translateY(-3px); }
+button.gv-case:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--gv-glacier); }
+button.gv-case .gv-carte { box-shadow: 0 0 0 2px rgba(191, 230, 255, .6), 0 4px 10px rgba(0, 0, 0, .45); }
+.gv-joueur.moi .gv-carte { width: 54px; height: 76px; }
+.gv-joueur.moi .gv-valeur { font-size: 26px; }
+
+/* -- les cartes-glaçons --- */
+.gv-carte {
+  --gv-c: #7fb6dc;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 62px;
+  border: 2px solid rgba(255, 255, 255, .75);
+  border-radius: 9px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, .55) 0 18%, transparent 38%),
+    radial-gradient(120% 90% at 50% 110%, color-mix(in srgb, var(--gv-c) 70%, #000) 0, transparent 70%),
+    linear-gradient(170deg, color-mix(in srgb, var(--gv-c) 55%, #fff), var(--gv-c));
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .45);
+  color: #0a1a2c;
+  animation: gv-apparait .3s ease-out both;
+}
+.gv-valeur { font-family: var(--police-titre); font-size: 22px; font-weight: 800; text-shadow: 0 1px 0 rgba(255, 255, 255, .5); }
+.gv-coin { position: absolute; top: 2px; left: 5px; font-size: 10px; font-weight: 800; opacity: .75; }
+.gv-carte.petite { width: 30px; height: 42px; border-width: 1.5px; }
+.gv-carte.petite .gv-valeur { font-size: 14px; }
+.gv-carte.petite .gv-coin { display: none; }
+.gv-glace { --gv-c: #3f6fd1; color: #f4fbff; }
+.gv-glace .gv-valeur { text-shadow: 0 1px 0 rgba(0, 0, 0, .35); }
+.gv-givre { --gv-c: #8fd3f5; }
+.gv-vert { --gv-c: #6fcf97; }
+.gv-jaune { --gv-c: #f2c94c; }
+.gv-rouge { --gv-c: #eb5757; }
+.gv-carte.cachee {
+  border-color: rgba(191, 230, 255, .5);
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, .06) 0 6px, transparent 6px 12px),
+    linear-gradient(170deg, #1f4f7a, #0d2740);
+}
+.gv-dos { width: 60%; height: 60%; fill: none; stroke: rgba(223, 243, 255, .75); stroke-width: 1.6; stroke-linecap: round; }
+.gv-carte.fondue {
+  border: 1px dashed rgba(191, 230, 255, .35);
+  background: radial-gradient(60% 30% at 50% 80%, rgba(143, 211, 245, .3), transparent 70%);
+  box-shadow: none;
+}
+.gv-carte.recente { box-shadow: 0 0 0 2px #ffd27a, 0 0 16px rgba(255, 210, 122, .5); }
+
+@keyframes gv-neige { from { transform: translateY(-10px); } to { transform: translateY(70px); opacity: 0; } }
+@keyframes gv-apparait { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .gv-flocon, .gv-carte { animation: none; }
+  .gv-tas-bouton, button.gv-case { transition: none; }
+}

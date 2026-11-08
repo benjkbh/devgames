@@ -10,9 +10,11 @@ from .accueil import MODULE as _ACCUEIL
 from .codenames import MODULE as _CODENAMES
 from .contrat import Module
 from .flip7 import MODULE as _FLIP7
+from .givre import MODULE as _GIVRE
 from .menteur import MODULE as _MENTEUR
+from .quiz import MODULE as _QUIZ
 from .trio import MODULE as _TRIO
 from .uno import MODULE as _UNO
 
 MODULES: tuple[Module, ...] = (_ACCUEIL, _UNO, _CODENAMES, _FLIP7, _MENTEUR,
-                               _TRIO)
+                               _TRIO, _GIVRE, _QUIZ)

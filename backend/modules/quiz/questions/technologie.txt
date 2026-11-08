@@ -1,0 +1,107 @@
+@ Inventions et technologies
+Qui a inventé le téléphone (brevet de 1876) ? = Alexander Graham Bell | Graham Bell | Bell
+Qui a inventé l'ampoule électrique à incandescence pratique ? = Thomas Edison | Edison
+Qui a inventé l'imprimerie à caractères mobiles en Europe ? = Gutenberg | Johannes Gutenberg
+Qui a inventé la dynamite ? = Alfred Nobel | Nobel
+Qui a inventé la pile électrique ? = Alessandro Volta | Volta
+Qui a inventé la machine à vapeur améliorée au XVIIIe siècle ? = James Watt | Watt
+Qui a inventé le paratonnerre ? = Benjamin Franklin | Franklin
+Qui a inventé l'alphabet pour les aveugles ? = Louis Braille | Braille
+Qui a inventé la photographie (première photo connue) ? = Nicéphore Niépce | Niépce
+Qui a inventé le moteur diesel ? = Rudolf Diesel | Diesel
+Qui a inventé la radio (une réponse suffit) ? = Guglielmo Marconi | Marconi | Nikola Tesla | Tesla
+Quels frères ont réalisé le premier vol motorisé en 1903 ? = Wright | Frères Wright
+Quels frères ont fait voler la première montgolfière ? = Montgolfier | Frères Montgolfier
+Qui a traversé la Manche en avion le premier, en 1909 ? = Louis Blériot | Blériot
+Qui a réalisé la première traversée de l'Atlantique en solitaire en avion ? = Charles Lindbergh | Lindbergh
+Quelle aviatrice a été la première femme à traverser l'Atlantique en solitaire ? = Amelia Earhart | Earhart
+Qui a inventé le World Wide Web ? = Tim Berners-Lee | Berners-Lee
+Dans quel organisme a été inventé le Web ? = CERN
+Qui a fondé Microsoft avec Paul Allen ? = Bill Gates | Gates
+Qui a cofondé Apple avec Steve Wozniak ? = Steve Jobs | Jobs
+Qui a fondé Facebook ? = Mark Zuckerberg | Zuckerberg
+Qui a fondé Amazon ? = Jeff Bezos | Bezos
+Qui a fondé SpaceX ? = Elon Musk | Musk
+Qui a fondé Google (un nom suffit) ? = Larry Page | Sergey Brin | Page | Brin
+En quelle année le premier iPhone est-il sorti ? = 2007
+Que signifie l'acronyme « USB » ? = Universal Serial Bus
+Que signifie l'acronyme « GPS » ? = Global Positioning System
+Que signifie l'acronyme « PDF » ? = Portable Document Format
+Que signifie l'acronyme « HTML » ? = HyperText Markup Language
+Que signifie l'acronyme « URL » ? = Uniform Resource Locator
+Que signifie l'acronyme « CPU » ? = Central Processing Unit | Processeur
+Que signifie l'acronyme « RAM » ? = Random Access Memory | Mémoire vive
+Que signifie l'acronyme « IA » ? = Intelligence artificielle
+Que signifie le « www » des adresses Web ? = World Wide Web
+Combien d'octets dans un kilooctet (selon le Système international) ? = 1000 | mille
+Combien de bits dans un octet ? = 8 | huit
+Comment s'appelle le système de numération à base 2 ? = Binaire
+Quel langage de programmation porte le nom d'une île indonésienne ? = Java
+Quel langage de programmation porte le nom d'une troupe de comiques britanniques ? = Python
+Quel système d'exploitation a pour mascotte un manchot ? = Linux
+Qui a créé le noyau Linux ? = Linus Torvalds | Torvalds
+Quelle entreprise développe le système Android ? = Google
+Quelle entreprise a créé la console Switch ? = Nintendo
+Quelle entreprise a créé la PlayStation ? = Sony
+Quelle entreprise a créé la Xbox ? = Microsoft
+Quel plombier moustachu est la mascotte de Nintendo ? = Mario | Super Mario
+Comment s'appelle le frère de Mario ? = Luigi
+Comment s'appelle la princesse que Mario doit sauver ? = Peach | Princesse Peach
+Quel hérisson bleu est la mascotte de Sega ? = Sonic
+Comment s'appelle le héros de « The Legend of Zelda » ? = Link
+Quel jeu vidéo de 1980 met en scène une boule jaune mangeant des pastilles ? = Pac-Man | Pacman
+Quel jeu de blocs qui tombent a été créé par Alexeï Pajitnov ? = Tetris
+Quel jeu vidéo de construction en cubes est le plus vendu de l'histoire ? = Minecraft
+Quelle série de jeux met en scène des créatures à capturer dans des balles ? = Pokémon | Pokemon
+Quel Pokémon jaune électrique est la mascotte de la série ? = Pikachu
+Quel jeu de bataille royale d'Epic Games est sorti en 2017 ? = Fortnite
+Quel jeu de rôle en ligne massivement multijoueur de Blizzard est sorti en 2004 ? = World of Warcraft | WoW
+Quelle série de jeux d'Ubisoft met en scène des assassins à travers l'histoire ? = Assassin's Creed
+Dans quel jeu vidéo incarne-t-on un plombier qui va dans des tuyaux verts ? = Super Mario Bros | Super Mario | Mario
+Quel réseau social a pour logo un oiseau bleu jusqu'en 2023 ? = Twitter | X
+Quel réseau social est spécialisé dans les photos et appartient à Meta ? = Instagram
+Quel réseau social chinois est spécialisé dans les vidéos courtes ? = TikTok | Douyin
+Quel moteur de recherche domine le marché mondial ? = Google
+Quelle encyclopédie en ligne collaborative a été lancée en 2001 ? = Wikipédia | Wikipedia
+Quelle entreprise a développé ChatGPT ? = OpenAI
+Comment appelle-t-on un logiciel malveillant qui chiffre les données et réclame une rançon ? = Rançongiciel | Ransomware
+Comment appelle-t-on la technique de fraude par faux mails pour voler des identifiants ? = Hameçonnage | Phishing
+Comment appelle-t-on la première monnaie numérique décentralisée, créée en 2009 ? = Bitcoin
+Qui est le créateur présumé (pseudonyme) du bitcoin ? = Satoshi Nakamoto | Nakamoto
+Quel ordinateur d'IBM a battu Kasparov aux échecs ? = Deep Blue
+Quel programme de Google a battu un champion de go en 2016 ? = AlphaGo
+Quel mathématicien britannique a contribué à casser le code Enigma ? = Alan Turing | Turing
+Quelle machine de chiffrement allemande a été déchiffrée pendant la Seconde Guerre mondiale ? = Enigma
+Quel test évalue la capacité d'une machine à imiter l'humain dans une conversation ? = Test de Turing | Turing
+Quelle mathématicienne est considérée comme la première programmeuse ? = Ada Lovelace | Lovelace
+Quel avion supersonique franco-britannique a volé de 1976 à 2003 ? = Concorde
+Quel est le plus gros avion de ligne de passagers construit en série ? = Airbus A380 | A380
+Dans quelle ville se trouve le siège d'Airbus ? = Toulouse | Blagnac | Leyde
+Quel train détient le record de vitesse sur rail (574,8 km/h) ? = TGV
+En quelle année le TGV a-t-il été mis en service commercial en France ? = 1981
+Quel tunnel relie la France à l'Angleterre ? = Tunnel sous la Manche | Eurotunnel
+En quelle année a été inauguré le tunnel sous la Manche ? = 1994
+Quel est le plus haut viaduc routier du monde, en Aveyron ? = Viaduc de Millau | Millau
+Quelle marque automobile a produit la Ford T ? = Ford
+Quelle marque automobile française a créé la 2 CV ? = Citroën | Citroen
+Quelle marque automobile française a pour logo un lion ? = Peugeot
+Quelle marque automobile italienne a pour emblème un cheval cabré ? = Ferrari
+Quelle marque automobile allemande a pour logo quatre anneaux ? = Audi
+Quelle marque automobile allemande fabrique la Coccinelle ? = Volkswagen | VW
+Quelle marque automobile japonaise est le premier constructeur mondial en volume ? = Toyota
+Quelle marque automobile allemande porte le nom de son fondateur, Ferdinand ? = Porsche
+Quelle entreprise américaine produit des voitures électriques et porte le nom d'un inventeur ? = Tesla
+Quel est le premier satellite artificiel de l'histoire ? = Spoutnik | Spoutnik 1 | Sputnik
+Comment appelle-t-on l'impression d'objets en volume couche par couche ? = Impression 3D | Fabrication additive
+Quel appareil de cuisine utilise des ondes pour chauffer les aliments ? = Four à micro-ondes | Micro-ondes
+Qui a inventé le stylo à bille moderne ? = László Bíró | Biro | Ladislao Biro
+Qui a inventé le phonographe ? = Thomas Edison | Edison
+Quelle invention chinoise a servi à orienter les navigateurs ? = Boussole
+Citez une des quatre grandes inventions de la Chine ancienne. ~ Papier, boussole, poudre à canon, imprimerie
+Citez un réseau social. ~ Facebook, Instagram, X (Twitter), TikTok, Snapchat, LinkedIn, Reddit, Pinterest, Bluesky, Mastodon, Threads…
+Citez un langage de programmation. ~ Python, Java, JavaScript, C, C++, C#, Rust, Go, PHP, Ruby, Swift, Kotlin, SQL (débattu)…
+Citez une console de jeux vidéo. ~ NES, Super Nintendo, Game Boy, Wii, Switch, PlayStation 1 à 5, Xbox, Mega Drive, Dreamcast, Atari 2600…
+Citez un personnage de jeu vidéo. ~ Mario, Luigi, Link, Zelda, Sonic, Pikachu, Lara Croft, Master Chief, Kratos, Pac-Man, Donkey Kong, Rayman…
+Citez une invention française. ~ Montgolfière, cinématographe, braille, stéthoscope, carte à puce, pasteurisation, photographie, Minitel, TGV, bikini…
+Citez une marque de smartphone. ~ Apple (iPhone), Samsung, Xiaomi, Huawei, Google (Pixel), OnePlus, Oppo, Sony, Motorola, Nokia…
+Expliquez ce qu'est le « cloud ». ~ Stocker des données ou utiliser des logiciels sur des serveurs distants, via Internet

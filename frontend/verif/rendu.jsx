@@ -17,6 +17,8 @@ import { Tapis } from '../src/modules/uno/Tapis';
 import PlateauFlip7 from '../src/modules/flip7/Plateau';
 import PlateauMenteur from '../src/modules/menteur/Plateau';
 import PlateauTrio from '../src/modules/trio/Plateau';
+import PlateauGivre from '../src/modules/givre/Plateau';
+import PlateauQuiz from '../src/modules/quiz/Plateau';
 
 
 // -- environnement navigateur minimal --
@@ -257,6 +259,87 @@ ECRANS.push(
                     onAction={() => {}} />],
   ['trio : le ciel', '/trio/S7TAR',
     <PlateauTrio table={{ ...TABLE_JEU, partie: PARTIE_TR }} onAction={() => {}} />],
+);
+
+// Givre : départ, au trait avec une carte piochée, bilan.
+const GRILLE = (v) => [v, 'cachee', 3, 'cachee', -2, 'cachee', null, null, null, 12, 'cachee', 0];
+const PARTIE_GV = {
+  joueurs: [
+    { nom: 'ana', grille: GRILLE(5), visible: 18, score: 12, pret: true },
+    { nom: 'bob', grille: GRILLE(-1), visible: 12, score: 40, pret: true },
+    { nom: 'cyd', grille: GRILLE(9), visible: 22, score: 7, pret: true },
+  ],
+  phase: 'jeu', manche: 2, tour: 'ana', pioche: 90, defausse: 4, main: 7,
+  doit_retourner: false, finisseur: null, derniers: [],
+  dernier_coup: { joueur: 'bob', type: 'pose', place: 2, valeur: 3 },
+  bilan: null, objectif: 100, gagnant: null, journal: ['bob pose un 3.'], lignes: 3, colonnes: 4,
+};
+// Quiz : question de texte, de carte, solution, revue, fin.
+const Q_TEXTE = { id: 't1', theme: 'Histoire', type: 'texte', enonce: 'En quelle année a eu lieu la prise de la Bastille ?' };
+const Q_CARTE = { id: 'cpFRA', theme: 'Carte du monde', type: 'carte', enonce: 'Placez sur la carte : France' };
+const REVUE = {
+  index: 1,
+  question: { ...Q_CARTE, solution: 'France', cible: 'FRA', lat: 48.87, lon: 2.33 },
+  reponses: [
+    { joueur: 'ana', reponse: { pays: 'FRA', lat: 47, lon: 2 }, auto: 1, point: 1 },
+    { joueur: 'bob', reponse: { pays: 'ESP', lat: 40, lon: -3 }, auto: 0, point: 0.5 },
+    { joueur: 'cyd', reponse: null, auto: 0, point: 0 },
+  ],
+};
+const SOMMAIRE = [
+  { index: 0, type: 'texte', theme: 'Histoire', a_juger: 0, justes: 2 },
+  { index: 1, type: 'carte', theme: 'Carte du monde', a_juger: 0, justes: 1 },
+  { index: 2, type: 'ouverte', theme: 'Arts', a_juger: 2, justes: 0 },
+];
+const PARTIE_QZ = {
+  phase: 'question', index: 0, total: 3, duree: 30, joueurs: ['ana', 'bob', 'cyd'],
+  gagnant: null, ex_aequo: [], reste: 21, repondu: ['bob'], question: Q_TEXTE,
+  ma_reponse: { texte: '1789' },
+};
+const TABLE_QZ = {
+  ...TABLE_JEU, nombre: 15, duree: 30, carte: true, ouvertes: true,
+};
+const QUIZ = (partie, table = {}) => (
+  <PlateauQuiz table={{ ...TABLE_QZ, ...table, partie: { ...PARTIE_QZ, ...partie } }}
+               onAction={() => {}} />
+);
+const FIN_QZ = {
+  phase: 'revue', revue: REVUE, sommaire: SOMMAIRE, scores: { ana: 2, bob: 1.5, cyd: 0 },
+};
+ECRANS.push(
+  ['givre : au trait, carte piochée', '/givre/S7TAR',
+    <PlateauGivre table={{ ...TABLE_JEU, partie: PARTIE_GV }} onAction={() => {}} />],
+  ['givre : départ', '/givre/S7TAR',
+    <PlateauGivre table={{
+      ...TABLE_JEU, partie: { ...PARTIE_GV, phase: 'depart', tour: null, main: null },
+    }} onAction={() => {}} />],
+  ['givre : bilan', '/givre/S7TAR',
+    <PlateauGivre table={{
+      ...TABLE_JEU,
+      partie: {
+        ...PARTIE_GV, phase: 'bilan', tour: null, main: null, finisseur: 'bob',
+        bilan: {
+          ana: { points: 18, double: false },
+          bob: { points: 24, double: true },
+          cyd: { points: 3, double: false },
+        },
+      },
+    }} onAction={() => {}} />],
+  ['quiz : question de texte', '/quiz/S7TAR', QUIZ({})],
+  ['quiz : question de carte', '/quiz/S7TAR', QUIZ({ index: 1, question: Q_CARTE, ma_reponse: null })],
+  ['quiz : spectateur', '/quiz/S7TAR', QUIZ({ ma_reponse: undefined }, { membre: false, spectateur: true })],
+  ['quiz : solution sur la carte', '/quiz/S7TAR', QUIZ({
+    phase: 'solution', index: 1, reste: 6, question: REVUE.question,
+    ma_reponse: { pays: 'FRA', lat: 47, lon: 2 }, mon_point: 1,
+    points_carte: [{
+      joueur: 'ana', pays: 'FRA', lat: 47, lon: 2, point: 1,
+    }],
+  })],
+  ['quiz : revue par l’hôte', '/quiz/S7TAR', QUIZ(FIN_QZ)],
+  ['quiz : revue suivie par un joueur', '/quiz/S7TAR', QUIZ(FIN_QZ, { moi: 'bob' })],
+  ['quiz : fin de partie', '/quiz/S7TAR', QUIZ({
+    ...FIN_QZ, phase: 'fin', gagnant: 'ana', recap: [REVUE],
+  }, { etat: 'finie' })],
 );
 
 let echecs = 0;

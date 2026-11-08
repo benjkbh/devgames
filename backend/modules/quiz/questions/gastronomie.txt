@@ -1,0 +1,143 @@
+@ Gastronomie
+De quel pays est originaire la pizza ? = Italie
+De quelle ville italienne la pizza Margherita est-elle originaire ? = Naples
+De quel pays sont originaires les sushis ? = Japon
+De quel pays est originaire la paella ? = Espagne
+De quelle région espagnole la paella est-elle originaire ? = Valence | Communauté valencienne
+De quel pays est originaire le goulash ? = Hongrie
+De quel pays est originaire la moussaka (dans sa version la plus connue) ? = Grèce
+De quel pays est originaire le couscous ? = Maghreb | Algérie | Maroc | Tunisie
+De quel pays est originaire le kimchi ? = Corée | Corée du Sud
+De quel pays est originaire le pad thaï ? = Thaïlande
+De quel pays est originaire le ceviche ? = Pérou
+De quel pays est originaire la feijoada ? = Brésil
+De quel pays est originaire le tiramisu ? = Italie
+De quel pays est originaire le strudel aux pommes ? = Autriche
+De quel pays est originaire la poutine ? = Canada | Québec
+De quel pays est originaire le guacamole ? = Mexique
+De quel pays est originaire le houmous (au sens large, d'où vient-il) ? ~ Proche-Orient : Liban, Syrie, Palestine, Israël, Égypte… (l'hôte juge)
+De quel pays est originaire la feta ? = Grèce
+De quel pays est originaire le gouda ? = Pays-Bas
+De quel pays est originaire le parmesan ? = Italie
+De quel pays est originaire la mozzarella ? = Italie
+De quel pays est originaire le cheddar ? = Royaume-Uni | Angleterre
+De quel pays vient la bière Guinness ? = Irlande
+Quelle ville est la capitale mondiale autoproclamée de la gastronomie en France ? = Lyon
+Dans quelle région est née la choucroute à la française ? = Alsace
+De quelle ville le cassoulet est-il traditionnellement associé (une suffit) ? = Castelnaudary | Toulouse | Carcassonne
+De quelle région vient la bouillabaisse ? = Provence | Marseille
+De quelle région vient la fondue savoyarde ? = Savoie
+De quelle région vient la tartiflette ? = Savoie | Haute-Savoie
+De quelle région vient le kouign-amann ? = Bretagne
+De quelle ville viennent les bêtises, bonbons à la menthe ? = Cambrai
+De quelle ville viennent les calissons ? = Aix-en-Provence | Aix
+De quelle ville viennent les canelés ? = Bordeaux
+De quelle ville vient la moutarde la plus célèbre de France ? = Dijon
+Quelle ville lorraine est célèbre pour ses macarons ? = Nancy
+Quelle ville est célèbre pour ses bergamotes ? = Nancy
+Quelle ville lorraine a donné son nom à une tarte aux lardons ? = Lorraine | Nancy | Metz
+Quel fromage normand est en forme de cœur ? = Neufchâtel
+Quel fromage normand a été emporté par les poilus dans des boîtes en bois ? = Camembert
+Quel fromage est affiné dans les caves de Roquefort-sur-Soulzon ? = Roquefort
+Avec quel lait est fabriqué le roquefort ? = Brebis | Lait de brebis
+Avec quel lait est fabriqué le crottin de Chavignol ? = Chèvre | Lait de chèvre
+Quel fromage des Alpes à pâte pressée cuite a des trous ? = Emmental | Emmentaler
+Quel fromage est utilisé dans la raclette ? = Raclette | Fromage à raclette
+Quel fromage est surnommé « le roi des fromages » ? = Brie | Brie de Meaux
+Quel fromage italien bleu est fabriqué en Lombardie ? = Gorgonzola
+Quel fromage espagnol au lait de brebis vient de la Mancha ? = Manchego
+Quel est l'ingrédient principal du guacamole ? = Avocat
+Quel est l'ingrédient principal du houmous ? = Pois chiches | Pois chiche
+Quel est l'ingrédient principal des falafels ? = Pois chiches | Fèves | Pois chiche
+Quel est l'ingrédient principal du tzatziki (avec le concombre) ? = Yaourt | Yaourt grec
+Quel est l'ingrédient principal de la ratatouille (une suffit) ? = Courgette | Aubergine | Tomate | Poivron
+Quel est l'ingrédient principal du gaspacho ? = Tomate | Tomates
+Quel légume est la base de la soupe borscht ? = Betterave
+Quel légume compose le « baba ganoush » ? = Aubergine
+Quel fruit compose la tarte Tatin ? = Pomme | Pommes
+Quel fruit compose le clafoutis traditionnel ? = Cerise | Cerises
+Quel fruit est associé à la poire Belle-Hélène ? = Poire
+Quels sont les trois ingrédients d'une pâte à crêpes de base (un suffit) ? ~ Farine, œufs, lait (et beurre, sel, sucre)
+Quel ingrédient fait lever le pain ? = Levure | Levain
+Quelle épice donne sa couleur jaune au curry ? = Curcuma
+Quelle épice est la plus chère du monde ? = Safran
+Quelle herbe aromatique est à la base du pesto ? = Basilic
+Quels sont les ingrédients principaux de la mayonnaise (un suffit) ? = Œuf | Jaune d'œuf | Huile | Moutarde
+Quelle sauce est à base de beurre, jaune d'œuf et estragon ? = Béarnaise | Sauce béarnaise
+Quelle sauce est à base de lait, beurre et farine ? = Béchamel | Sauce béchamel
+Quelle sauce japonaise est à base de soja fermenté ? = Sauce soja | Shoyu
+Quelle pâte japonaise piquante verte accompagne les sushis ? = Wasabi
+Comment s'appelle le gingembre mariné servi avec les sushis ? = Gari
+Comment s'appelle le bouillon japonais à base d'algue et de bonite ? = Dashi
+Quelle soupe japonaise est à base de pâte de soja fermentée ? = Soupe miso | Miso
+Comment s'appellent les nouilles japonaises de blé épaisses ? = Udon
+Comment s'appellent les raviolis chinois cuits à la vapeur ? = Dim sum | Dim-sum | Raviolis vapeur
+Quel plat espagnol froid est une soupe de tomates ? = Gaspacho | Gazpacho
+Quel plat italien est composé de riz crémeux ? = Risotto
+Quelle pâte italienne a la forme de petits papillons ? = Farfalle
+Quelle pâte italienne a la forme de tubes coupés en biseau ? = Penne
+Quel plat napolitain est composé de pâtes, guanciale, œufs et pecorino ? = Carbonara | Pâtes carbonara
+Quelle viande est utilisée dans le bœuf bourguignon ? = Bœuf
+Quel vin est utilisé dans le bœuf bourguignon ? = Vin rouge | Bourgogne | Vin de Bourgogne
+Quelle volaille est utilisée dans le coq au vin ? = Coq | Poulet
+Quel est l'organe utilisé pour le foie gras ? = Foie
+Quel animal est utilisé pour faire le foie gras (un suffit) ? = Canard | Oie
+Comment appelle-t-on les œufs de poisson d'esturgeon ? = Caviar
+Quel mollusque est l'ingrédient principal des moules-frites ? = Moule | Moules
+Comment appelle-t-on le pain en forme de croissant de lune venu d'Autriche ? = Croissant
+Quelle viennoiserie contient deux barres de chocolat ? = Pain au chocolat | Chocolatine
+Quel gâteau breton est très riche en beurre ? = Kouign-amann | Far breton | Quatre-quarts
+Quel gâteau de Noël a la forme d'une bûche ? = Bûche de Noël | Bûche
+Quelle galette contient une fève ? = Galette des rois | Galette
+Quel gâteau en forme de couronne est fourré à la crème pralinée et nommé d'après une course cycliste ? = Paris-Brest
+Quel dessert est composé de choux empilés et de caramel ? = Croquembouche | Pièce montée
+Quel dessert contient de la crème, du sucre caramélisé au chalumeau ? = Crème brûlée
+Quel dessert italien à base de café et de mascarpone signifie « remonte-moi » ? = Tiramisu
+Quelle pâtisserie est composée de couches de pâte feuilletée et de crème pâtissière ? = Mille-feuille | Millefeuille
+Quel gâteau en forme de bouchon ou de couronne est imbibé de sirop au rhum ? = Baba au rhum | Baba | Savarin
+Quel gâteau est associé à Proust ? = Madeleine
+Quel chocolatier suisse a inventé le chocolat au lait ? = Daniel Peter | Peter | Nestlé
+De quel arbre provient le chocolat ? = Cacaoyer | Cacaotier
+Quel pays est le premier producteur mondial de cacao ? = Côte d'Ivoire
+Quel pays est le premier producteur mondial de café ? = Brésil
+De quel pays le thé matcha est-il originaire (usage moderne) ? = Japon
+Comment s'appelle un café serré italien ? = Espresso | Expresso | Ristretto
+Comment s'appelle un expresso allongé d'eau chaude ? = Americano | Café allongé | Allongé
+Comment s'appelle un expresso avec du lait mousseux et de la mousse de lait ? = Cappuccino
+Quel alcool est à base d'anis et se boit dilué avec de l'eau dans le Sud ? = Pastis
+Quel alcool est fabriqué à partir de canne à sucre ? = Rhum
+Quel alcool est obtenu à partir de pommes et vient de Normandie ? = Calvados
+Quel alcool est fabriqué à partir de baies de genévrier ? = Gin | Genièvre
+Quel alcool japonais est à base de riz ? = Saké | Sake
+Quel alcool russe ou polonais est à base de céréales ou pommes de terre ? = Vodka
+Quel alcool mexicain est à base d'agave bleu ? = Tequila
+Quelle région viticole produit le champagne ? = Champagne
+Dans quelle région se trouvent les vins de Saint-Émilion et Pomerol ? = Bordeaux | Bordelais
+Dans quelle région se trouve le vignoble de Châteauneuf-du-Pape ? = Vallée du Rhône | Rhône | Provence
+Quel cocktail est à base de rhum, menthe, citron vert et eau gazeuse ? = Mojito
+Quel cocktail est composé de crème de cassis et de vin blanc ? = Kir
+Quel cocktail associe de la tequila, du triple sec et du citron vert ? = Margarita
+Quel cocktail italien est à base d'Aperol, prosecco et eau gazeuse ? = Spritz | Aperol Spritz
+Comment s'appelle le métier de sommelier ? = Sommelier
+Comment appelle-t-on l'art de la dégustation du vin ? = Œnologie | Oenologie
+Quel guide attribue des étoiles aux restaurants ? = Guide Michelin | Michelin
+Combien d'étoiles au maximum peut obtenir un restaurant au guide Michelin ? = 3 | trois
+Quel chef lyonnais a été surnommé « le pape de la gastronomie » ? = Paul Bocuse | Bocuse
+Quel concours culinaire mondial porte le nom de ce chef ? = Bocuse d'or
+Quel légume est surnommé « l'asperge du pauvre » ? = Poireau
+Quel fruit exotique a une peau rose et une chair blanche à pépins noirs ? = Pitaya | Fruit du dragon
+Quel fruit est surnommé « fruit de la passion » ? = Maracuja | Passiflore | Fruit de la passion
+Quel agrume ressemble à une petite orange et est souvent mangé à Noël ? = Clémentine | Mandarine
+Quel fruit sec vient du noyer ? = Noix
+De quel fruit fait-on le cidre ? = Pomme | Pommes
+De quel fruit fait-on le poiré ? = Poire | Poires
+Citez un fromage français à pâte molle. ~ Camembert, brie, coulommiers, munster, époisses, reblochon (pressée non cuite…), pont-l'évêque, livarot, chaource, neufchâtel…
+Citez un fromage au lait de chèvre. ~ Crottin de Chavignol, sainte-maure, valençay, pélardon, rocamadour, picodon, chabichou, selles-sur-cher…
+Citez un plat traditionnel japonais. ~ Sushi, ramen, tempura, sashimi, okonomiyaki, udon, yakitori, gyoza, onigiri, miso, sukiyaki, takoyaki…
+Citez une variété de pomme. ~ Golden, Granny Smith, Gala, Pink Lady, Fuji, Reinette, Boskoop, Elstar, Jonagold, Braeburn, Canada…
+Citez un plat à base de pommes de terre. ~ Frites, purée, gratin dauphinois, tartiflette, aligot, hachis parmentier, rösti, pommes sarladaises, tortilla…
+Citez une spécialité culinaire régionale française. ~ Choucroute, cassoulet, bouillabaisse, fondue, crêpes, quiche lorraine, aligot, ratatouille, tarte flambée, potée…
+Citez une épice. ~ Poivre, cannelle, cumin, curcuma, safran, muscade, clou de girofle, paprika, gingembre, cardamome, piment…
+Citez une pâte italienne. ~ Spaghetti, penne, farfalle, tagliatelles, fusilli, linguine, lasagnes, rigatoni, tortellini, raviolis, orecchiette…
+Citez un cépage de vin rouge. ~ Merlot, cabernet sauvignon, pinot noir, syrah, grenache, gamay, malbec, cabernet franc, mourvèdre, carignan…
+Citez un cépage de vin blanc. ~ Chardonnay, sauvignon blanc, riesling, chenin, gewurztraminer, viognier, sémillon, muscat, pinot gris, aligoté…
